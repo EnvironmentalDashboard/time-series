@@ -1,14 +1,13 @@
 #! /bin/bash
 
-# This script installs the time series and its dependancies, which reside in other repos
+# This script installs the time series and its dependancies, which are in other repos
 # It assumes none of the other repos have been installed before (it overwrites the files and database)
 # It is essentially the same script that is used to install CWD
 
 # Our webpage's address is cardcoded in to the database in various places, so do a sed to replace them
 read -p "Enter your domain name (this will be used to update the URLs of assets in the database): " DOMAIN
 DOMAIN_ESC=$(sed 's/[\*\.]/\\&/g' <<<"$DOMAIN")
-# See http://stackoverflow.com/a/5174368/2624391
-sed -e "s|http://104\.131\.103\.232/oberlin|$DOMAIN_ESC|g" install.sql > install.sql.tmp && mv install.sql.tmp install.sql
+
 read -p "Do you want to install Citywide Dashboard as well (y/n)? " REPLY
 echo # for newline
 echo "BuildingOS API information"
@@ -25,34 +24,60 @@ read -p "Enter user: " MYSQL_USER
 read -p "Enter password: " MYSQL_PASSWORD
 read -p "Enter database name: " MYSQL_DB
 
-# Directory structure
+# Create directories
 mkdir gauges
 mkdir includes
 mkdir scripts
 mkdir prefs
 mkdir time-series
+
 cd time-series
 git clone "https://github.com/EnvironmentalDashboard/time-series.git"
+sed -e "s|http://104\.131\.103\.232/oberlin|$DOMAIN_ESC|g" install.sql > install.sql.tmp && mv install.sql.tmp install.sql # http://stackoverflow.com/a/5174368/2624391
 # Save the API information. Hopefully will be through OAUTH or something in the future
 echo "INSERT INTO api (client_id, client_secret, username, password) VALUES($BOS_CLIENT_ID, $BOS_CLIENT_SECRET, $BOS_USERNAME, $BOS_PASSWORD);" >> "install.sql"
 # Install db
 mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" "-p$MYSQL_PASSWORD" "$MYSQL_DB" < install.sql
 rm install.sql
+# Replace URLs
+for filename in *.php; do
+  sed -e "s|http://104\.131\.103\.232/oberlin|$DOMAIN_ESC|g" "$filename" > "$filename.tmp" && mv "$filename.tmp" "$filename"
+done
+
 cd ../gauges
 git clone "https://github.com/EnvironmentalDashboard/gauges.git"
 rm install.sql # Because we already did this
+for filename in *.php; do
+  sed -e "s|http://104\.131\.103\.232/oberlin|$DOMAIN_ESC|g" "$filename" > "$filename.tmp" && mv "$filename.tmp" "$filename"
+done
+
 cd ../includes
 git clone "https://github.com/EnvironmentalDashboard/includes.git"
+for filename in *.php; do
+  sed -e "s|http://104\.131\.103\.232/oberlin|$DOMAIN_ESC|g" "$filename" > "$filename.tmp" && mv "$filename.tmp" "$filename"
+done
+
 cd ../scripts
 git clone "https://github.com/EnvironmentalDashboard/scripts.git"
+for filename in *.php; do
+  sed -e "s|http://104\.131\.103\.232/oberlin|$DOMAIN_ESC|g" "$filename" > "$filename.tmp" && mv "$filename.tmp" "$filename"
+done
+
 cd ../prefs
 git clone "https://github.com/EnvironmentalDashboard/prefs.git"
+for filename in *.php; do
+  sed -e "s|http://104\.131\.103\.232/oberlin|$DOMAIN_ESC|g" "$filename" > "$filename.tmp" && mv "$filename.tmp" "$filename"
+done
+
 if [ "$REPLY" == "y" ]; then
   cd ..
   mkdir cwd
   cd cwd
   git clone "https://github.com/EnvironmentalDashboard/citywide-dashboard.git"
   rm install.sql
+  for filename in *.php; do
+    sed -e "s|http://104\.131\.103\.232/oberlin|$DOMAIN_ESC|g" "$filename" > "$filename.tmp" && mv "$filename.tmp" "$filename"
+  done
 fi
 
 # Install cron jobs (have NOT tested yet!)
