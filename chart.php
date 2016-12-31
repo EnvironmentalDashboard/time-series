@@ -1,6 +1,6 @@
 <?php
-// error_reporting(-1);
-// ini_set('display_errors', 'On');
+error_reporting(-1);
+ini_set('display_errors', 'On');
 header('Content-Type: image/svg+xml; charset=UTF-8'); // We'll be outputting a SVG
 require '../includes/db.php';
 require '../includes/class.TimeSeries.php';
