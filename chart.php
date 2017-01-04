@@ -146,6 +146,9 @@ text {
 
   <rect width="<?php echo $graph_width; ?>px" height="<?php echo $height - ($height * 0.075); ?>px" x="0" y="<?php echo $height * 0.075; ?>" style="fill:<?php echo $primary_color; ?>;" id="curtain"/><!-- For curtain animation -->
 
+  <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->baseload ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->baseload ?>" stroke-width="2" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
+  <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->peak ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->peak ?>" stroke-width="2" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
+
   <g id="y-axis-left" text-anchor="start">
     <?php
     $chart_min = $graph_offset;

@@ -135,6 +135,11 @@ foreach ($buildings->fetchAll() as $building) {
           ?>
         </select>
       </div>
+      <div>
+        <label>
+          <input type="checkbox" name="ticks" <?php echo (isset($_GET['ticks']) && $_GET['ticks'] === 'on') ? 'checked' : ''; ?>> Show baseload and peak
+        </label>
+      </div>
       <!-- <label class="start-step">
       <p>Enter first a start and then a step for scaling the Y-axis</p>
       <input type="number" min="0" name="start" placeholder="Start" value="<?php echo $_GET['start']; ?>">
@@ -143,7 +148,7 @@ foreach ($buildings->fetchAll() as $building) {
       <!-- <input type="submit"> -->
       <?php
       foreach ($_GET as $key => $value) {
-        if (!in_array($key, array('meter_id', 'meter_id2', 'time', 'start', 'fill1', 'fill2', 'fill3', 'dasharr1', 'dasharr2', 'dasharr3', 'scale'))) {
+        if (!in_array($key, array('meter_id', 'meter_id2', 'time', 'start', 'fill1', 'fill2', 'fill3', 'dasharr1', 'dasharr2', 'dasharr3', 'scale', 'ticks'))) {
           echo "<input type='hidden' name='{$key}' value='{$value}' />\n";
         }
       }
