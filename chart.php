@@ -11,9 +11,10 @@ require 'includes/really-long-switch.php';
 <svg height="<?php echo $height; ?>" width="<?php echo $width; ?>" viewBox="0 0 <?php echo $width; ?> <?php echo $height; ?>" class="chart" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <?php
 // var_dump($from);var_dump($now);exit;
-$main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now); // The main timeseries
-$secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now); // "Second variable" timeseries
-$historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from); // Historical data of main
+$main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
+$secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
+$historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
+
 
 $main_ts->dashed( (!empty($_GET['dasharr1'])) ? true : false );
 $historical_ts->dashed( (!empty($_GET['dasharr2'])) ? true : false );
@@ -55,7 +56,7 @@ else {
 }
 $main_ts->yAxis();
 $historical_ts->yAxis();
-$secondary_ts->yAxis();
+$secondary_ts->yAxis(); // causing weird memory problems?
 
 $main_ts->setTimes();
 $name1 = $main_ts->getName();

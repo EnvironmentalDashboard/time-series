@@ -1,6 +1,7 @@
 <?php
 switch ($time_frame) {
   case 'live':
+    $res = 'live';
     $stroke_width = 2;
     $circle_size = 'r="6" stroke-width="3" fill="' . $primary_color . '" stroke="';
     $from = strtotime(date('Y-m-d H') . ':00:00'); // Start of hour
@@ -29,6 +30,7 @@ switch ($time_frame) {
               </text>';
     break;
   case 'today':
+    $res = 'quarterhour';
     $stroke_width = 2;
     $circle_size = 'r="6" stroke-width="3" fill="' . $primary_color . '" stroke="';
     $from = strtotime(date('Y-m-d') . " 00:00:00"); // Start of day
@@ -53,6 +55,7 @@ switch ($time_frame) {
               </text>';
     break;
   case 'week':
+    $res = 'hour';
     $stroke_width = 2;
     $circle_size = 'r="6" stroke-width="0" stroke="' . $primary_color . '" fill="';
     $from = mktime(0, 0, 0, date("n"), date("j") - date("N")); // Start of the week
@@ -71,6 +74,7 @@ switch ($time_frame) {
               </text>";
     break;
   case 'month':
+    $res = 'hour';
     $stroke_width = 1;
     $circle_size = 'r="3" stroke-width="0" stroke="' . $primary_color . '" fill="';
     $from = strtotime(date('Y-m-') . "01 00:00:00"); // Start of the month
@@ -91,6 +95,7 @@ switch ($time_frame) {
     $dates .= '</text>';
     break;
   case 'year':
+    $res = 'month';
     $stroke_width = 2;
     $circle_size = 'r="6" stroke-width="3" fill="' . $primary_color . '" stroke="';
     $from = strtotime(date('Y') . "-01-01 00:00:00"); // First day of the year
@@ -116,6 +121,6 @@ switch ($time_frame) {
     break;
   default:
     die('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text y="20">Invalid time frame.</text></svg>');
-    break;
+    die();
 }
 ?>
