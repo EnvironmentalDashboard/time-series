@@ -146,8 +146,8 @@ text {
 
   <rect width="<?php echo $graph_width; ?>px" height="<?php echo $height - ($height * 0.075); ?>px" x="0" y="<?php echo $height * 0.075; ?>" style="fill:<?php echo $primary_color; ?>;" id="curtain"/><!-- For curtain animation -->
 
-  <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->baseload ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->baseload ?>" stroke-width="2" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
-  <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->peak ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->peak ?>" stroke-width="2" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
+  <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->baseload ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->baseload ?>" stroke-width="1" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
+  <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->peak ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->peak ?>" stroke-width="1" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
 
   <g id="y-axis-left" text-anchor="start">
     <?php
@@ -183,10 +183,10 @@ text {
   <?php echo $dates; ?>
 
   <!-- Current time -->
-  <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.075; ?>px" x="-9999" y="<?php echo $height * 0.075; ?>" style="fill:<?php echo $font_color; ?>;opacity:0.9" id="current-time-rect" />
+  <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.06; ?>px" x="-9999" y="<?php echo $height * 0.075; ?>" style="fill:<?php echo $font_color; ?>;" id="current-time-rect" />
   <text fill="<?php echo $primary_color; ?>" id="current-time-text" text-anchor="middle"
-        x="-9999" y="<?php echo $height * 0.12; ?>"
-        font-size="13"></text>
+        x="-9999" y="<?php echo $height * 0.115; ?>"
+        font-size="12"></text>
 
   <!-- Main button -->
   <g id="layer-btn" style="cursor: pointer;" class="noselect">
