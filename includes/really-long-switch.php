@@ -74,7 +74,7 @@ switch ($time_frame) {
               </text>";
     break;
   case 'month':
-    $res = 'daily';
+    $res = 'hour';
     $stroke_width = 1;
     $circle_size = 'r="3" stroke-width="0" stroke="' . $primary_color . '" fill="';
     $from = strtotime(date('Y-m-') . "01 00:00:00"); // Start of the month

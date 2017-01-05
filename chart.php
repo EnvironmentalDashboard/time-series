@@ -493,119 +493,127 @@ text {
   // "Play" the data -- when the mouse is idle for 3 seconds, move the dot up the line
   var timeout = null;
   var interval = null;
-  $(document).on('mousemove ready', function() {
+  var interval2 = null;
+  $(document).on('mousemove ready', function() { // when to cancel interval
       clearTimeout(timeout);
       clearInterval(interval);
-      timeout = setTimeout(function() { // Mouse idle for 3 secs
+      clearInterval(interval2);
+      interval2 = setInterval(function() { // As long as the mouse doesnt move, continue to show the movies/move the dot up the line
+        timeout = setTimeout(function() { // Mouse idle for 3 secs
 
-        if ($('#suggestion').attr('display') !== 'none') {
-          $('#suggestion').attr('display', 'none');
-          $('#error-msg').attr('display', '');
-        }
-        if (Math.random() >= 0.5) { // Randomly either play through the data or play movie
-          var tmp = current_points.slice(0);
-          var tmpmin = tmp[0][1];
-          var tmpmax = tmp[0][1];
-          for (var i = tmp.length - 1; i >= 0; i--) {
-            if (tmp[i][1] > tmpmax) {
-              tmpmax = tmp[i][1];
-            }
-            if (tmp[i][1] < tmpmin) {
-              tmpmin = tmp[i][1];
-            }
+          if ($('#suggestion').attr('display') !== 'none') {
+            $('#suggestion').attr('display', 'none');
+            $('#error-msg').attr('display', '');
           }
-          var c1 = 0,
-              c2 = 0,
-              c3 = 0;
-          interval = window.setInterval(function() {
-            if (tmp.length !== 0) {
-              $('#current-circle').attr('cx', tmp[0][0]);
-              $('#current-circle').attr('cy', tmp[0][1]);
-              $('#current-time-rect').attr('x', tmp[0][0] - <?php echo $width * 0.05; ?>);
-              $('#current-time-text').attr('x', tmp[0][0]);
-              $('#current-value').text(raw_data_formatted[c1++]);
-              $('#current-time-text').text(current_times[c2++]);
-              tmp.shift();
-              last_frame = current_frame;
-              current_frame = Math.abs(Math.round(((raw_data[c3++] - min) / (max - min)) * 46) - 46);
-              if (current_frame > last_frame && frames.length < 100) {
-                counter = last_frame;
-                while (current_frame >= counter) {
-                  frames.push(counter);
-                  counter++;
-                }
+          if (Math.random() >= 0.5) { // Randomly either play through the data or play movie
+            $('#current-value-container').attr('display', '');
+            var tmp = current_points.slice(0);
+            var tmpmin = tmp[0][1];
+            var tmpmax = tmp[0][1];
+            for (var i = tmp.length - 1; i >= 0; i--) {
+              if (tmp[i][1] > tmpmax) {
+                tmpmax = tmp[i][1];
               }
-              else if (current_frame < last_frame && frames.length < 100) {
-                counter = last_frame;
-                while (current_frame <= counter) {
-                  frames.push(counter);
-                  counter--;
-                }
+              if (tmp[i][1] < tmpmin) {
+                tmpmin = tmp[i][1];
               }
+            }
+            var c1 = 0,
+                c2 = 0,
+                c3 = 0;
+            interval = window.setInterval(function() {
+              if (tmp.length !== 0) {
+                $('#current-circle').attr('cx', tmp[0][0]);
+                $('#current-circle').attr('cy', tmp[0][1]);
+                $('#current-time-rect').attr('x', tmp[0][0] - <?php echo $width * 0.05; ?>);
+                $('#current-time-text').attr('x', tmp[0][0]);
+                $('#current-value').text(raw_data_formatted[c1++]);
+                $('#current-time-text').text(current_times[c2++]);
+                tmp.shift();
+                last_frame = current_frame;
+                current_frame = Math.abs(Math.round(((raw_data[c3++] - min) / (max - min)) * 46) - 46);
+                if (current_frame > last_frame && frames.length < 100) {
+                  counter = last_frame;
+                  while (current_frame >= counter) {
+                    frames.push(counter);
+                    counter++;
+                  }
+                }
+                else if (current_frame < last_frame && frames.length < 100) {
+                  counter = last_frame;
+                  while (current_frame <= counter) {
+                    frames.push(counter);
+                    counter--;
+                  }
+                }
 
-              // if (raw_data[c1 - 1] === null) {
-              //   $('#current-value-container').attr('display', 'none');
-              // }
-              // else {
-              //   $('#current-value-container').attr('display', ''); 
-              // }
+                // if (raw_data[c1 - 1] === null) {
+                //   $('#current-value-container').attr('display', 'none');
+                // }
+                // else {
+                //   $('#current-value-container').attr('display', ''); 
+                // }
+              }
+            }, 100);
+          } else { // Play the movie instead
+            $('#frame_' + current_frame).attr('display', 'none');
+            playing = false;
+            <?php
+            // Calculate bin
+            $rvGauge = new Gauge($db);
+            $pct = $rvGauge->getRelativeValue($_GET['meter_id']);
+            function pickBin($pct) {
+              if ($pct > 80) {
+                return 'bin5';
+              }
+              if ($pct > 60) {
+                return 'bin4';
+              }
+              if ($pct > 40) {
+                return 'bin3';
+              }
+              if ($pct > 20) {
+                return 'bin2';
+              }
+              else {
+                return 'bin1';
+              }
             }
-          }, 100);
-        } else { // Play the movie instead
-          $('#frame_' + current_frame).attr('display', 'none');
-          playing = false;
-          <?php
-          // Calculate bin
-          $rvGauge = new Gauge($db);
-          $pct = $rvGauge->getRelativeValue($_GET['meter_id']);
-          function pickBin($pct) {
-            if ($pct > 80) {
-              return 'bin5';
+            $bin = pickBin($pct);
+            $gifs = array();
+            // Get gifs with bin > 0
+            foreach ($db->query("SELECT name, length, {$bin} FROM time_series WHERE {$bin} > 0 AND length > 0 ORDER BY {$bin} DESC") as $row) {
+              // Gifs with a higher bin should be randomly shown more
+              for ($i = 0; $i < $row[$bin]; $i++) { 
+                $gifs[] = "{$row['name']}\$SEP\${$row['length']}";
+              }
             }
-            if ($pct > 60) {
-              return 'bin4';
-            }
-            if ($pct > 40) {
-              return 'bin3';
-            }
-            if ($pct > 20) {
-              return 'bin2';
-            }
-            else {
-              return 'bin1';
-            }
+            ?>
+            var gifs = <?php echo json_encode($gifs); ?>;
+            var rand_gif = Math.round(Math.random() * gifs.length);
+            var explode = gifs[rand_gif].split('$SEP$');
+            var rand_len = explode[1];
+            var rand_name = explode[0];
+            // console.log(explode);
+            $('#movie').attr('xlink:href', 'images/' + rand_name + '.gif').attr('display', '');
+            $('#current-value-container').attr('display', 'none');
+            // Get gif lengths: http://gifduration.konstochvanligasaker.se/
+            alreadydone = false;
+            setTimeout(function() {
+              if (!alreadydone) {
+                $('#movie').attr('display', 'none');//.attr('xlink:href', 'images/' + rand_name + '.gif');
+                $('#frame_' + current_frame).attr('display', '');
+                $('#current-value-container').attr('display', '');
+                playing = true;
+              }
+            }, rand_len);
           }
-          $bin = pickBin($pct);
-          $gifs = array();
-          // Get gifs with bin > 0
-          foreach ($db->query("SELECT name, length, {$bin} FROM time_series WHERE {$bin} > 0 AND length > 0 ORDER BY {$bin} DESC") as $row) {
-            // Gifs with a higher bin should be randomly shown more
-            for ($i = 0; $i < $row[$bin]; $i++) { 
-              $gifs[] = "{$row['name']}\$SEP\${$row['length']}";
-            }
-          }
-          ?>
-          var gifs = <?php echo json_encode($gifs); ?>;
-          var rand_gif = Math.round(Math.random() * gifs.length);
-          var explode = gifs[rand_gif].split('$SEP$');
-          var rand_len = explode[1];
-          var rand_name = explode[0];
-          // console.log(explode);
-          $('#movie').attr('xlink:href', 'images/' + rand_name + '.gif').attr('display', '');
-          $('#current-value-container').attr('display', 'none');
-          // Get gif lengths: http://gifduration.konstochvanligasaker.se/
-          alreadydone = false;
-          setTimeout(function() {
-            if (!alreadydone) {
-              $('#movie').attr('display', 'none');//.attr('xlink:href', 'images/' + rand_name + '.gif');
-              $('#frame_' + current_frame).attr('display', '');
-              $('#current-value-container').attr('display', '');
-              playing = true;
-            }
-          }, rand_len);
-        }
-        
-      }, 3000);
+          
+        }, 3000); // mouse has not moved for 3 secs
+      }, 1500); // determines how frequently the movies/other thing will be replayed as long as the mouse doesnt move again
+
+
+
   });
   var last_animated = current_frame;
   setInterval(function(){
