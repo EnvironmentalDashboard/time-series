@@ -610,7 +610,7 @@ text {
           }
           
         }, 3000); // mouse has not moved for 3 secs
-      }, 1500); // determines how frequently the movies/other thing will be replayed as long as the mouse doesnt move again
+      }, 20000); // determines how frequently the movies/other thing will be replayed as long as the mouse doesnt move again
 
 
 
