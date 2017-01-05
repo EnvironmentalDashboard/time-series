@@ -146,8 +146,10 @@ text {
 
   <rect width="<?php echo $graph_width; ?>px" height="<?php echo $height - ($height * 0.075); ?>px" x="0" y="<?php echo $height * 0.075; ?>" style="fill:<?php echo $primary_color; ?>;" id="curtain"/><!-- For curtain animation -->
 
+  <?php if (isset($_GET['ticks']) && $_GET['ticks'] === 'on') { ?>
   <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->baseload ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->baseload ?>" stroke-width="1" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
   <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->peak ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->peak ?>" stroke-width="1" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
+  <?php } ?>
 
   <g id="y-axis-left" text-anchor="start">
     <?php
@@ -268,7 +270,7 @@ text {
     <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.25; ?>" y="<?php echo $height * 0.975; ?>" font-size="16">Today</text>
     <?php } else { ?>
       <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.075; ?>px" x="<?php echo $width * 0.225; ?>" y="<?php echo $height * 0.925; ?>" style="fill:<?php echo $font_color; ?>;" />
-      <text fill="<?php echo $primary_color; ?>" x="<?php echo $width * 0.257; ?>" y="<?php echo $height * 0.975; ?>" font-size="16">Today</text>
+      <text fill="<?php echo $primary_color; ?>" x="<?php echo $width * 0.254; ?>" y="<?php echo $height * 0.975; ?>" font-size="16">Today</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1w); ?>">
