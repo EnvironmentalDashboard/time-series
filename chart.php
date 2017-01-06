@@ -457,6 +457,8 @@ text {
     $('#current-time-text').text(current_times[index5]);
     if (raw_data[index4] === null) {
       $('#error-msg').attr('display', '');
+      $('#frame_0').attr('display', '');
+      $('#current-value').text('--');
     }
     else {
       $('#error-msg').attr('display', 'none');
@@ -493,7 +495,6 @@ text {
   var interval = null;
   var timeout = null;
   var timeout2 = null;
-  var wait = 0;
   $(document).on('mousemove', function() { // when to cancel interval
     clearInterval(interval);
     clearTimeout(timeout2);
@@ -506,14 +507,11 @@ text {
       $('#suggestion').attr('display', 'none');
       $('#error-msg').attr('display', '');
     }
-    play();
-    console.log(wait);
-    timeout2 = setTimeout(idle, wait + 4000);
+    play(idle);
   }
 
-  function play() {
+  function play(callback) {
     if (Math.random() >= 0.5) { // Randomly either play through the data or play movie
-      wait = 15000; // it takes about 15 seconds for the data to be played through
       $('#current-value-container').attr('display', '');
       var tmp = current_points.slice(0);
       var tmpmin = tmp[0][1];
@@ -555,6 +553,8 @@ text {
           }
           if (tmp.length === 0) {
             clearInterval(interval);
+            $('#frame_' + current_frame).attr('display', '');
+            timeout2 = setTimeout(callback, mouse_idle_ms);
           }
 
         }
@@ -598,10 +598,11 @@ text {
       var explode = gifs[rand_gif].split('$SEP$');
       var rand_len = explode[1];
       var rand_name = explode[0];
-      wait = rand_len;
       // console.log(explode);
       $('#movie').attr('xlink:href', 'images/' + rand_name + '.gif').attr('display', '');
-      $('#current-value-container').attr('display', 'none');
+      if (rand_name.indexOf("Story") >= 0 || rand_name.indexOf("Idea") >= 0) {
+        $('#current-value-container').attr('display', 'none');
+      }
       // Get gif lengths: http://gifduration.konstochvanligasaker.se/
       alreadydone = false;
       setTimeout(function() {
@@ -611,6 +612,7 @@ text {
           $('#current-value-container').attr('display', '');
           playing = true;
         }
+        timeout2 = setTimeout(callback, mouse_idle_ms);
       }, rand_len);
     }
   }
