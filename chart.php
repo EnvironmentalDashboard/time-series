@@ -20,9 +20,9 @@ $main_ts->dashed( (!empty($_GET['dasharr1'])) ? true : false );
 $historical_ts->dashed( (!empty($_GET['dasharr2'])) ? true : false );
 $secondary_ts->dashed( (!empty($_GET['dasharr3'])) ? true : false );
 
-$main_ts->fill( (!empty($_GET['fill1'])) ? true : false );
-$historical_ts->fill( (!empty($_GET['fill2'])) ? true : false );
-$secondary_ts->fill( (!empty($_GET['fill3'])) ? true : false );
+$main_ts->fill( (isset($_GET['fill1']) && $_GET['fill1'] === 'off') ? false : true );
+$historical_ts->fill( (isset($_GET['fill2']) && $_GET['fill2'] === 'off') ? false : true );
+$secondary_ts->fill( (isset($_GET['fill3']) && $_GET['fill3'] === 'off') ? false : true );
 
 $current_graph_color = (!empty($_GET['color1'])) ? $_GET['color1'] : '#2ecc71';
 $historical_graph_color = (!empty($_GET['color2'])) ? $_GET['color2'] : '#bdc3c7';
@@ -400,8 +400,6 @@ text {
 
 
 
-
-
   /* MOUSE INTERACTION */
 
   // Find your root SVG element
@@ -491,35 +489,31 @@ text {
   });
 
   // "Play" the data -- when the mouse is idle for 3 seconds, move the dot up the line
-  var timeout = null;
+  const mouse_idle_ms = 3000;
   var interval = null;
-  var interval2 = null;
-  $(document).on('mousemove ready', function() { // when to cancel interval
-    clearTimeout(timeout);
+  var timeout = null;
+  var timeout2 = null;
+  var wait = 0;
+  $(document).on('mousemove', function() { // when to cancel interval
     clearInterval(interval);
-    clearInterval(interval2);
-    timeout = setTimeout(function() { // Mouse idle for 3 secs
-      idle();
-      interval2 = setInterval(idle, 30000);
-    }, 3000);
+    clearTimeout(timeout2);
+    clearTimeout(timeout);
+    timeout = setTimeout(idle, mouse_idle_ms); // Mouse idle for 3 seconds
   });
-  var last_animated = current_frame;
-  setInterval(function(){
-    if (frames.length > 0 && playing) {
-      var shift = frames.shift();
-      $('#frame_' + last_animated).attr('display', 'none');
-      $('#frame_' + shift).attr('display', '');
-      last_animated = shift;
-    }
-  }, 10);
 
   function idle() {
     if ($('#suggestion').attr('display') !== 'none') {
       $('#suggestion').attr('display', 'none');
       $('#error-msg').attr('display', '');
     }
-    var rand = Math.random();
-    if (rand >= 0.5) { // Randomly either play through the data or play movie
+    play();
+    console.log(wait);
+    timeout2 = setTimeout(idle, wait + 4000);
+  }
+
+  function play() {
+    if (Math.random() >= 0.5) { // Randomly either play through the data or play movie
+      wait = 15000; // it takes about 15 seconds for the data to be played through
       $('#current-value-container').attr('display', '');
       var tmp = current_points.slice(0);
       var tmpmin = tmp[0][1];
@@ -532,11 +526,10 @@ text {
           tmpmin = tmp[i][1];
         }
       }
-      var c1 = 0,
-          c2 = 0,
-          c3 = 0;
-      window.interval = window.setInterval(function() {
+      var i = 0, c1 = 0, c2 = 0, c3 = 0;
+      interval = setInterval(function() {
         if (tmp.length !== 0) {
+          i++;
           $('#current-circle').attr('cx', tmp[0][0]);
           $('#current-circle').attr('cy', tmp[0][1]);
           $('#current-time-rect').attr('x', tmp[0][0] - <?php echo $width * 0.05; ?>);
@@ -560,13 +553,10 @@ text {
               counter--;
             }
           }
+          if (tmp.length === 0) {
+            clearInterval(interval);
+          }
 
-          // if (raw_data[c1 - 1] === null) {
-          //   $('#current-value-container').attr('display', 'none');
-          // }
-          // else {
-          //   $('#current-value-container').attr('display', ''); 
-          // }
         }
       }, 200);
     } else { // Play the movie instead
@@ -608,6 +598,7 @@ text {
       var explode = gifs[rand_gif].split('$SEP$');
       var rand_len = explode[1];
       var rand_name = explode[0];
+      wait = rand_len;
       // console.log(explode);
       $('#movie').attr('xlink:href', 'images/' + rand_name + '.gif').attr('display', '');
       $('#current-value-container').attr('display', 'none');
@@ -624,9 +615,19 @@ text {
     }
   }
 
+  var last_animated = current_frame;
+  setInterval(function(){
+    if (frames.length > 0 && playing) {
+      var shift = frames.shift();
+      $('#frame_' + last_animated).attr('display', 'none');
+      $('#frame_' + shift).attr('display', '');
+      last_animated = shift;
+    }
+  }, 10);
+
   <?php
   if ($time_frame === 'live') {
-    echo 'setTimeout(function(){ window.location.reload(); }, 60000);';
+    echo 'setTimeout(function(){ window.location.reload(); }, 120000);';
   }
   ?>
   // ]]>

@@ -66,7 +66,8 @@ foreach ($buildings->fetchAll() as $building) {
           </select>
         </div>
         <label><input style="margin-left: 10px; margin-bottom: 10px" type="checkbox" name="dasharr1" <?php echo (empty($_GET['dasharr1'])) ? '' : 'checked'; ?>> Dashed</label>
-        <label><input type="checkbox" name="fill1" <?php echo (empty($_GET['fill1'])) ? '' : 'checked'; ?>> Filled</label>
+        <input type="hidden" name="fill1" value="off">
+        <label><input type="checkbox" name="fill1" <?php echo (isset($_GET['fill1']) && $_GET['fill1'] === 'off') ? '' : 'checked'; ?>> Filled</label>
       </div>
       <div>
         <label for="meter_id2">Secondary variable</label>
@@ -76,12 +77,14 @@ foreach ($buildings->fetchAll() as $building) {
           </select>
         </div>
         <label><input style="margin-left: 10px; margin-bottom: 10px" type="checkbox" name="dasharr2" <?php echo (empty($_GET['dasharr2'])) ? '' : 'checked'; ?>> Dashed</label>
-        <label><input type="checkbox" name="fill2" <?php echo (empty($_GET['fill2'])) ? '' : 'checked'; ?>> Filled</label>
+        <input type="hidden" name="fill2" value="off">
+        <label><input type="checkbox" name="fill2" <?php echo (isset($_GET['fill1']) && $_GET['fill1'] === 'off') ? '' : 'checked'; ?>> Filled</label>
       </div>
       <div>
         Historical chart<br>
         <label><input style="margin-left: 10px; margin-bottom: 10px" type="checkbox" name="dasharr3" <?php echo (empty($_GET['dasharr3'])) ? '' : 'checked'; ?>> Dashed</label>
-        <label><input type="checkbox" name="fill3" <?php echo (empty($_GET['fill3'])) ? '' : 'checked'; ?>> Filled</label>
+        <input type="hidden" name="fill3" value="off">
+        <label><input type="checkbox" name="fill3" <?php echo (isset($_GET['fill1']) && $_GET['fill1'] === 'off') ? '' : 'checked'; ?>> Filled</label>
       </div>
       <label for="time">Time frame</label>
       <div class="select">
