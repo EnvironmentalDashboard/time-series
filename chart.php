@@ -218,7 +218,7 @@ text {
     echo "<image id='frame_{$i}' xlink:href='images/main_frames/frame_{$i}.gif' height='100%' width='";
     echo $width - $graph_width . "px' x='";
     echo $graph_width . "' ";
-    echo 'display="none"';
+    echo ($i !== 0) ? 'display="none"' : '';
     echo ' y="0" />';
   }
   ?>
@@ -412,6 +412,7 @@ text {
     return pt.matrixTransform(svg.getScreenCTM().inverse());
   }
   // Variable setting
+  var index4;
   var alreadydone;
   var counter;
   var current_points = <?php echo json_encode ($main_ts->circlepoints);//json_encode(array_slice($main_ts->circlepoints, 0, count($main_ts->circlepoints)-1)) ?>;
@@ -442,7 +443,7 @@ text {
     var index1 = Math.round(pct_through * (current_points.length-1)); // Coords for circle (subtract 1 to 0-base for array index)
     var index2 = Math.round(pct_through_whole * (historical_points.length-1)); // Coords for historical circle
     // var index3 = Math.round(pct_through * <?php //echo count($secondary_ts->circlepoints)-1; ?>); // Coords for secondary circle
-    var index4 = Math.round(pct_through * <?php echo count($main_ts->value)-1; ?>); // Coords for current values
+    index4 = Math.round(pct_through * <?php echo count($main_ts->value)-1; ?>); // Coords for current values
     var index5 = Math.round(pct_through * <?php echo count($main_ts->times)-1; ?>); // Current time
     // console.log('pct_through: ' + pct_through + "\nindex1: " + index1);
     $('#current-circle').attr('cx', current_points[index1][0]);
@@ -560,42 +561,30 @@ text {
         }
       }, 200);
     } else { // Play the movie instead
-      $('#frame_' + current_frame).attr('display', 'none');
       playing = false;
       <?php
-      // Calculate bin
-      $rvGauge = new Gauge($db);
-      $pct = $rvGauge->getRelativeValue($_GET['meter_id']);
-      function pickBin($pct) {
-        if ($pct > 80) {
-          return 'bin5';
-        }
-        if ($pct > 60) {
-          return 'bin4';
-        }
-        if ($pct > 40) {
-          return 'bin3';
-        }
-        if ($pct > 20) {
-          return 'bin2';
-        }
-        else {
-          return 'bin1';
-        }
-      }
-      $bin = pickBin($pct);
       $gifs = array();
-      // Get gifs with bin > 0
-      foreach ($db->query("SELECT name, length, {$bin} FROM time_series WHERE {$bin} > 0 AND length > 0 ORDER BY {$bin} DESC") as $row) {
-        // Gifs with a higher bin should be randomly shown more
-        for ($i = 0; $i < $row[$bin]; $i++) { 
-          $gifs[] = "{$row['name']}\$SEP\${$row['length']}";
+      $buffer = array();
+      for ($i = 1; $i <= 5; $i++) { // performance :(
+        foreach ($db->query("SELECT name, length, bin{$i} FROM time_series WHERE bin{$i} > 0 AND length > 0 ORDER BY bin{$i} DESC") as $row) {
+          // Gifs with a higher bin should be randomly shown more
+          for ($j = 0; $j < $row["bin{$i}"]; $j++) { 
+            $buffer[] = "{$row['name']}\$SEP\${$row['length']}";
+          }
+          $gifs[] = $buffer;
+          $buffer = array();
         }
       }
+      echo "var bins = " . json_encode($gifs) . ";\n";
       ?>
-      var gifs = <?php echo json_encode($gifs); ?>;
-      var rand_gif = Math.round(Math.random() * gifs.length);
-      var explode = gifs[rand_gif].split('$SEP$');
+      var val = (raw_data[index4] == null) ? 0 : raw_data[index4];
+      var raw_data_copy_sorted = raw_data.slice().sort();
+      // console.log(raw_data_copy_sorted);
+      var indexof = raw_data_copy_sorted.indexOf(val);
+      var relative_value = ((indexof) / raw_data_copy_sorted.length) * 100; // Get percent (0-100)
+      var bin = bins[pickBin(relative_value)];
+      var rand_gif = Math.round(Math.random() * bin.length);
+      var explode = bin[rand_gif].split('$SEP$');
       var rand_len = explode[1];
       var rand_name = explode[0];
       // console.log(explode);
@@ -615,6 +604,14 @@ text {
         timeout2 = setTimeout(callback, mouse_idle_ms);
       }, rand_len);
     }
+  }
+
+  function pickBin(pct) {
+    if (pct > 80) { return 4; }
+    if (pct > 60) { return 3; }
+    if (pct > 40) { return 2; }
+    if (pct > 20) { return 1; }
+    else { return 0; }
   }
 
   // If mouse has not moved yet
