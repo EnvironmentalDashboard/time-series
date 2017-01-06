@@ -615,6 +615,13 @@ text {
     }
   }
 
+  // If mouse has not moved yet
+  setTimeout(function() {
+    if (timeout === null) {
+      timeout = setTimeout(idle, mouse_idle_ms);
+    }
+  }, 5000);
+
   var last_animated = current_frame;
   setInterval(function(){
     if (frames.length > 0 && playing) {
