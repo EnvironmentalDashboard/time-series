@@ -412,9 +412,10 @@ text {
     return pt.matrixTransform(svg.getScreenCTM().inverse());
   }
   // Variable setting
-  var index4;
+  var index_cv;
   var alreadydone;
   var counter;
+  var movies_played = 0;
   var current_points = <?php echo json_encode ($main_ts->circlepoints);//json_encode(array_slice($main_ts->circlepoints, 0, count($main_ts->circlepoints)-1)) ?>;
   var current_times = <?php echo json_encode($main_ts->times) ?>;
   var historical_points = <?php echo json_encode($historical_ts->circlepoints) ?>;
@@ -443,7 +444,7 @@ text {
     var index1 = Math.round(pct_through * (current_points.length-1)); // Coords for circle (subtract 1 to 0-base for array index)
     var index2 = Math.round(pct_through_whole * (historical_points.length-1)); // Coords for historical circle
     // var index3 = Math.round(pct_through * <?php //echo count($secondary_ts->circlepoints)-1; ?>); // Coords for secondary circle
-    index4 = Math.round(pct_through * <?php echo count($main_ts->value)-1; ?>); // Coords for current values
+    index_cv = Math.round(pct_through * <?php echo count($main_ts->value)-1; ?>); // Coords for current values
     var index5 = Math.round(pct_through * <?php echo count($main_ts->times)-1; ?>); // Current time
     // console.log('pct_through: ' + pct_through + "\nindex1: " + index1);
     $('#current-circle').attr('cx', current_points[index1][0]);
@@ -452,11 +453,11 @@ text {
     $('#historical-circle').attr('cy', historical_points[index2][1]);
     // $('#second-circle').attr('cx', overlay_chart_points[index3][0]);
     // $('#second-circle').attr('cy', overlay_chart_points[index3][1]);
-    $('#current-value').text(raw_data_formatted[index4]);
+    $('#current-value').text(raw_data_formatted[index_cv]);
     $('#current-time-rect').attr('x', current_points[index1][0] - <?php echo $width * 0.05; ?>);
     $('#current-time-text').attr('x', current_points[index1][0]);
     $('#current-time-text').text(current_times[index5]);
-    if (raw_data[index4] === null) {
+    if (raw_data[index_cv] === null) {
       $('#error-msg').attr('display', '');
       $('#frame_0').attr('display', '');
       $('#current-value').text('--');
@@ -467,7 +468,7 @@ text {
 
     // Display the current gif frame
     last_frame = current_frame;
-    current_frame = Math.abs( Math.round( ((raw_data[index4] - min) / (max - min)) * 46 ) - 46 );
+    current_frame = Math.abs( Math.round( ((raw_data[index_cv] - min) / (max - min)) * 46 ) - 46 );
     if (current_frame > last_frame) {
       counter = last_frame;
       while (current_frame >= counter && frames.length < 100) {
@@ -556,6 +557,7 @@ text {
         if (tmp.length === 0) {
           clearInterval(interval);
           $('#frame_' + current_frame).attr('display', '');
+          index_cv = <?php echo count($main_ts->value)-1; ?>;
           timeout2 = setTimeout(play, mouse_idle_ms);
         }
 
@@ -565,66 +567,34 @@ text {
 
   function play_movie() {
     playing = false;
-    <?php
-    $gifs = array();
-    $buffer = array();
-    for ($i = 1; $i <= 5; $i++) { // performance :(
-      foreach ($db->query("SELECT name, length, bin{$i} FROM time_series WHERE bin{$i} > 0 AND length > 0 ORDER BY bin{$i} DESC") as $row) {
-        // Gifs with a higher bin should be randomly shown more
-        for ($j = 0; $j < $row["bin{$i}"]; $j++) { 
-          $buffer[] = "{$row['name']}\$SEP\${$row['length']}";
-        }
-      }
-      $gifs[] = $buffer;
-      $buffer = array();
-    }
-    echo "var bins = " . json_encode($gifs) . ";\n";
-    ?>
-    // console.log(bins);
-    var val = (raw_data[index4] == null) ? 0 : raw_data[index4];
+    var val = (raw_data[index_cv] == null) ? 0 : raw_data[index_cv];
     var raw_data_copy_sorted = raw_data.slice().sort();
     var indexof = raw_data_copy_sorted.indexOf(val);
     var relative_value = ((indexof) / raw_data_copy_sorted.length) * 100; // Get percent (0-100)
     // console.log('relative value: '+relative_value);
-    var bin_num = pickBin(relative_value);
-    var bin = bins[bin_num];
-    console.log(bin);
-    var rand_gif = Math.round(Math.random() * bin.length);
-    var explode = bin[rand_gif].split('$SEP$');
-    var rand_len = explode[1];
-    var rand_name = explode[0];
-    // console.log('explode: '+explode);
-    $('#movie').attr('xlink:href', 'images/' + rand_name + '.gif').attr('display', '');
-    if (rand_name.indexOf("Story") >= 0 || rand_name.indexOf("Idea") >= 0) {
-      $('#current-value-container').attr('display', 'none');
-    }
-    // Get gif lengths: http://gifduration.konstochvanligasaker.se/
-    alreadydone = false;
-    setTimeout(function() {
-      if (!alreadydone) {
-        $('#movie').attr('display', 'none');//.attr('xlink:href', 'images/' + rand_name + '.gif');
-        $('#frame_' + current_frame).attr('display', '');
-        $('#current-value-container').attr('display', '');
-        playing = true;
+    $.get("movie.php", {relative_value: relative_value, count: movies_played++}, function(data) {
+      var split = data.split('$SEP$');
+      var len = split[1];
+      var name = split[0];
+      console.log(name, len);
+      $('#movie').attr('xlink:href', 'images/' + name + '.gif').attr('display', '');
+      if (name.indexOf("Story") >= 0 || name.indexOf("Idea") >= 0) {
+        $('#current-value-container').attr('display', 'none');
       }
-      timeout2 = setTimeout(play, mouse_idle_ms);
-    }, rand_len);
+      alreadydone = false;
+      setTimeout(function() {
+        if (!alreadydone) {
+          $('#movie').attr('display', 'none');
+          $('#frame_' + current_frame).attr('display', '');
+          $('#current-value-container').attr('display', '');
+          playing = true;
+        }
+        timeout2 = setTimeout(play, mouse_idle_ms);
+      }, len);
+    }, 'text');
+    // Get gif lengths: http://gifduration.konstochvanligasaker.se/
   }
 
-  function pickBin(pct) {
-    if (pct > 80) { return 0; }
-    if (pct > 60) { return 1; }
-    if (pct > 40) { return 2; }
-    if (pct > 20) { return 3; }
-    else { return 4; }
-  }
-
-  // If mouse has not moved yet
-  // setTimeout(function() {
-  //   if (timeout === null) {
-  //     timeout = setTimeout(play, mouse_idle_ms);
-  //   }
-  // }, 5000);
   play_data();
 
   var last_animated = current_frame;
