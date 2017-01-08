@@ -4,10 +4,10 @@ error_reporting(-1);
 ini_set('display_errors', 'On');
 date_default_timezone_set('America/New_York');
 if (empty($_GET['meter_id'])) {
-  $_GET['meter_id'] = 244; // some random meter id
+  $_GET['meter_id'] = 326; // some random meter id
 }
 if (empty($_GET['meter_id2'])) {
-  $_GET['meter_id2'] = 249; // some random meter id
+  $_GET['meter_id2'] = 831; // some random meter id
 }
 if (empty($_GET['time'])) {
   $_GET['time'] = 'today';

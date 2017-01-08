@@ -500,126 +500,132 @@ text {
     clearInterval(interval);
     clearTimeout(timeout2);
     clearTimeout(timeout);
-    timeout = setTimeout(idle, mouse_idle_ms); // Mouse idle for 3 seconds
+    timeout = setTimeout(play, mouse_idle_ms); // Mouse idle for 3 seconds
   });
 
-  function idle() {
-    if ($('#suggestion').attr('display') !== 'none') {
-      $('#suggestion').attr('display', 'none');
-      $('#error-msg').attr('display', '');
+  function play() {
+    if (Math.random() >= 0.5) { // Randomly either play through the data or play movie
+      console.log('play_data');
+      play_data();
+    } else {
+      console.log('play_movie');
+      play_movie();
     }
-    play(idle);
   }
 
-  function play(callback) {
-    if (Math.random() >= 0.5) { // Randomly either play through the data or play movie
-      $('#current-value-container').attr('display', '');
-      var tmp = current_points.slice(0);
-      var tmpmin = tmp[0][1];
-      var tmpmax = tmp[0][1];
-      for (var i = tmp.length - 1; i >= 0; i--) {
-        if (tmp[i][1] > tmpmax) {
-          tmpmax = tmp[i][1];
-        }
-        if (tmp[i][1] < tmpmin) {
-          tmpmin = tmp[i][1];
-        }
+  function play_data() {
+    $('#current-value-container').attr('display', '');
+    var tmp = current_points.slice(0);
+    var tmpmin = tmp[0][1];
+    var tmpmax = tmp[0][1];
+    for (var i = tmp.length - 1; i >= 0; i--) {
+      if (tmp[i][1] > tmpmax) {
+        tmpmax = tmp[i][1];
       }
-      var i = 0, c1 = 0, c2 = 0, c3 = 0;
-      interval = setInterval(function() {
-        if (tmp.length !== 0) {
-          i++;
-          $('#current-circle').attr('cx', tmp[0][0]);
-          $('#current-circle').attr('cy', tmp[0][1]);
-          $('#current-time-rect').attr('x', tmp[0][0] - <?php echo $width * 0.05; ?>);
-          $('#current-time-text').attr('x', tmp[0][0]);
-          $('#current-value').text(raw_data_formatted[c1++]);
-          $('#current-time-text').text(current_times[c2++]);
-          tmp.shift();
-          last_frame = current_frame;
-          current_frame = Math.abs(Math.round(((raw_data[c3++] - min) / (max - min)) * 46) - 46);
-          if (current_frame > last_frame && frames.length < 100) {
-            counter = last_frame;
-            while (current_frame >= counter) {
-              frames.push(counter);
-              counter++;
-            }
-          }
-          else if (current_frame < last_frame && frames.length < 100) {
-            counter = last_frame;
-            while (current_frame <= counter) {
-              frames.push(counter);
-              counter--;
-            }
-          }
-          if (tmp.length === 0) {
-            clearInterval(interval);
-            $('#frame_' + current_frame).attr('display', '');
-            timeout2 = setTimeout(callback, mouse_idle_ms);
-          }
-
-        }
-      }, 200);
-    } else { // Play the movie instead
-      playing = false;
-      <?php
-      $gifs = array();
-      $buffer = array();
-      for ($i = 1; $i <= 5; $i++) { // performance :(
-        foreach ($db->query("SELECT name, length, bin{$i} FROM time_series WHERE bin{$i} > 0 AND length > 0 ORDER BY bin{$i} DESC") as $row) {
-          // Gifs with a higher bin should be randomly shown more
-          for ($j = 0; $j < $row["bin{$i}"]; $j++) { 
-            $buffer[] = "{$row['name']}\$SEP\${$row['length']}";
-          }
-          $gifs[] = $buffer;
-          $buffer = array();
-        }
+      if (tmp[i][1] < tmpmin) {
+        tmpmin = tmp[i][1];
       }
-      echo "var bins = " . json_encode($gifs) . ";\n";
-      ?>
-      var val = (raw_data[index4] == null) ? 0 : raw_data[index4];
-      var raw_data_copy_sorted = raw_data.slice().sort();
-      // console.log(raw_data_copy_sorted);
-      var indexof = raw_data_copy_sorted.indexOf(val);
-      var relative_value = ((indexof) / raw_data_copy_sorted.length) * 100; // Get percent (0-100)
-      var bin = bins[pickBin(relative_value)];
-      var rand_gif = Math.round(Math.random() * bin.length);
-      var explode = bin[rand_gif].split('$SEP$');
-      var rand_len = explode[1];
-      var rand_name = explode[0];
-      // console.log(explode);
-      $('#movie').attr('xlink:href', 'images/' + rand_name + '.gif').attr('display', '');
-      if (rand_name.indexOf("Story") >= 0 || rand_name.indexOf("Idea") >= 0) {
-        $('#current-value-container').attr('display', 'none');
-      }
-      // Get gif lengths: http://gifduration.konstochvanligasaker.se/
-      alreadydone = false;
-      setTimeout(function() {
-        if (!alreadydone) {
-          $('#movie').attr('display', 'none');//.attr('xlink:href', 'images/' + rand_name + '.gif');
-          $('#frame_' + current_frame).attr('display', '');
-          $('#current-value-container').attr('display', '');
-          playing = true;
-        }
-        timeout2 = setTimeout(callback, mouse_idle_ms);
-      }, rand_len);
     }
+    var i = 0, c1 = 0, c2 = 0, c3 = 0;
+    interval = setInterval(function() {
+      if (tmp.length !== 0) {
+        i++;
+        $('#current-circle').attr('cx', tmp[0][0]);
+        $('#current-circle').attr('cy', tmp[0][1]);
+        $('#current-time-rect').attr('x', tmp[0][0] - <?php echo $width * 0.05; ?>);
+        $('#current-time-text').attr('x', tmp[0][0]);
+        $('#current-value').text(raw_data_formatted[c1++]);
+        $('#current-time-text').text(current_times[c2++]);
+        tmp.shift();
+        last_frame = current_frame;
+        current_frame = Math.abs(Math.round(((raw_data[c3++] - min) / (max - min)) * 46) - 46);
+        if (current_frame > last_frame && frames.length < 100) {
+          counter = last_frame;
+          while (current_frame >= counter) {
+            frames.push(counter);
+            counter++;
+          }
+        }
+        else if (current_frame < last_frame && frames.length < 100) {
+          counter = last_frame;
+          while (current_frame <= counter) {
+            frames.push(counter);
+            counter--;
+          }
+        }
+        if (tmp.length === 0) {
+          clearInterval(interval);
+          $('#frame_' + current_frame).attr('display', '');
+          timeout2 = setTimeout(play, mouse_idle_ms);
+        }
+
+      }
+    }, 200);
+  }
+
+  function play_movie() {
+    playing = false;
+    <?php
+    $gifs = array();
+    $buffer = array();
+    for ($i = 1; $i <= 5; $i++) { // performance :(
+      foreach ($db->query("SELECT name, length, bin{$i} FROM time_series WHERE bin{$i} > 0 AND length > 0 ORDER BY bin{$i} DESC") as $row) {
+        // Gifs with a higher bin should be randomly shown more
+        for ($j = 0; $j < $row["bin{$i}"]; $j++) { 
+          $buffer[] = "{$row['name']}\$SEP\${$row['length']}";
+        }
+      }
+      $gifs[] = $buffer;
+      $buffer = array();
+    }
+    echo "var bins = " . json_encode($gifs) . ";\n";
+    ?>
+    // console.log(bins);
+    var val = (raw_data[index4] == null) ? 0 : raw_data[index4];
+    var raw_data_copy_sorted = raw_data.slice().sort();
+    var indexof = raw_data_copy_sorted.indexOf(val);
+    var relative_value = ((indexof) / raw_data_copy_sorted.length) * 100; // Get percent (0-100)
+    // console.log('relative value: '+relative_value);
+    var bin_num = pickBin(relative_value);
+    var bin = bins[bin_num];
+    console.log(bin);
+    var rand_gif = Math.round(Math.random() * bin.length);
+    var explode = bin[rand_gif].split('$SEP$');
+    var rand_len = explode[1];
+    var rand_name = explode[0];
+    // console.log('explode: '+explode);
+    $('#movie').attr('xlink:href', 'images/' + rand_name + '.gif').attr('display', '');
+    if (rand_name.indexOf("Story") >= 0 || rand_name.indexOf("Idea") >= 0) {
+      $('#current-value-container').attr('display', 'none');
+    }
+    // Get gif lengths: http://gifduration.konstochvanligasaker.se/
+    alreadydone = false;
+    setTimeout(function() {
+      if (!alreadydone) {
+        $('#movie').attr('display', 'none');//.attr('xlink:href', 'images/' + rand_name + '.gif');
+        $('#frame_' + current_frame).attr('display', '');
+        $('#current-value-container').attr('display', '');
+        playing = true;
+      }
+      timeout2 = setTimeout(play, mouse_idle_ms);
+    }, rand_len);
   }
 
   function pickBin(pct) {
-    if (pct > 80) { return 4; }
-    if (pct > 60) { return 3; }
+    if (pct > 80) { return 0; }
+    if (pct > 60) { return 1; }
     if (pct > 40) { return 2; }
-    if (pct > 20) { return 1; }
-    else { return 0; }
+    if (pct > 20) { return 3; }
+    else { return 4; }
   }
 
   // If mouse has not moved yet
-  setTimeout(function() {
-    if (timeout === null) {
-      timeout = setTimeout(idle, mouse_idle_ms);
-    }
-  }, 5000);
+  // setTimeout(function() {
+  //   if (timeout === null) {
+  //     timeout = setTimeout(play, mouse_idle_ms);
+  //   }
+  // }, 5000);
+  play_data();
 
   var last_animated = current_frame;
   setInterval(function(){
