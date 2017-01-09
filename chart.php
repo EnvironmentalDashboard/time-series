@@ -91,8 +91,8 @@ elseif ($time_frame === 'year' && date('n') <= 6) {
 ?>
 <defs>
   <linearGradient id="shadow">
-    <stop class="stop1" offset="0%"/>
-    <stop class="stop2" offset="100%"/>
+    <stop class="stop1" stop-color="#777" offset="0%"/>
+    <stop class="stop2" stop-color="#777" offset="100%"/>
   </linearGradient>
 </defs>
 <style>
@@ -439,8 +439,8 @@ text {
   $(svg).on('mousemove', function(evt) {
     playing = true;
     var loc = cursorPoint(evt);
-    var pct_through = (loc.x / <?php echo ($graph_width*$pct_through)//-($chart_padding*2); ?>);
-    var pct_through_whole = (loc.x / <?php echo $graph_width//-($chart_padding*2); ?>);
+    var pct_through = (loc.x / <?php echo (($graph_width)*$pct_through); ?>);
+    var pct_through_whole = (loc.x / <?php echo $graph_width; ?>);
     var index1 = Math.round(pct_through * (current_points.length-1)); // Coords for circle (subtract 1 to 0-base for array index)
     var index2 = Math.round(pct_through_whole * (historical_points.length-1)); // Coords for historical circle
     // var index3 = Math.round(pct_through * <?php //echo count($secondary_ts->circlepoints)-1; ?>); // Coords for secondary circle
@@ -498,23 +498,22 @@ text {
   var timeout = null;
   var timeout2 = null;
   $(document).on('mousemove', function() { // when to cancel interval
-    clearInterval(interval);
-    clearTimeout(timeout2);
-    clearTimeout(timeout);
+    clearInterval(interval); interval = null;
+    clearTimeout(timeout2); timeout2 = null;
+    clearTimeout(timeout); timeout = null;
     timeout = setTimeout(play, mouse_idle_ms); // Mouse idle for 3 seconds
   });
 
   function play() {
     if (Math.random() >= 0.5) { // Randomly either play through the data or play movie
-      console.log('play_data');
       play_data();
     } else {
-      console.log('play_movie');
       play_movie();
     }
   }
 
   function play_data() {
+    console.log('play_data');
     $('#current-value-container').attr('display', '');
     var tmp = current_points.slice(0);
     var tmpmin = tmp[0][1];
@@ -558,6 +557,7 @@ text {
           clearInterval(interval);
           $('#frame_' + current_frame).attr('display', '');
           index_cv = <?php echo count($main_ts->value)-1; ?>;
+          clearTimeout(timeout2); timeout2 = null;
           timeout2 = setTimeout(play, mouse_idle_ms);
         }
 
@@ -566,17 +566,18 @@ text {
   }
 
   function play_movie() {
+    console.log('play_movie');
     playing = false;
     var val = (raw_data[index_cv] == null) ? 0 : raw_data[index_cv];
     var raw_data_copy_sorted = raw_data.slice().sort();
     var indexof = raw_data_copy_sorted.indexOf(val);
     var relative_value = ((indexof) / raw_data_copy_sorted.length) * 100; // Get percent (0-100)
-    // console.log('relative value: '+relative_value);
-    $.get("movie.php", {relative_value: relative_value, count: movies_played++}, function(data) {
+    $.get("movie.php", {relative_value: relative_value, count: movies_played}, function(data) {
+      movies_played++;
       var split = data.split('$SEP$');
+      console.log(split)
       var len = split[1];
       var name = split[0];
-      console.log(name, len);
       $('#movie').attr('xlink:href', 'images/' + name + '.gif').attr('display', '');
       if (name.indexOf("Story") >= 0 || name.indexOf("Idea") >= 0) {
         $('#current-value-container').attr('display', 'none');
@@ -589,6 +590,7 @@ text {
           $('#current-value-container').attr('display', '');
           playing = true;
         }
+        clearTimeout(timeout2); timeout2 = null;
         timeout2 = setTimeout(play, mouse_idle_ms);
       }, len);
     }, 'text');
