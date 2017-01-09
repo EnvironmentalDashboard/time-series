@@ -505,7 +505,11 @@ text {
   });
 
   function play() {
-    if (Math.random() >= 0.5) { // Randomly either play through the data or play movie
+    // Make sure there are no timers running
+    clearInterval(interval); interval = null;
+    clearTimeout(timeout2); timeout2 = null;
+    clearTimeout(timeout); timeout = null;
+    if (Math.random() > 0.5) { // Randomly either play through the data or play movie
       play_data();
     } else {
       play_movie();
@@ -553,10 +557,10 @@ text {
             counter--;
           }
         }
-        if (tmp.length === 0) {
-          clearInterval(interval);
+        if (tmp.length === 0) { // We're at the end of the data
+          clearInterval(interval); interval = null;
           $('#frame_' + current_frame).attr('display', '');
-          index_cv = <?php echo count($main_ts->value)-1; ?>;
+          index_cv = <?php echo count($main_ts->value)-1; ?>; // set the indicator ball stuff to the last point
           clearTimeout(timeout2); timeout2 = null;
           timeout2 = setTimeout(play, mouse_idle_ms);
         }
