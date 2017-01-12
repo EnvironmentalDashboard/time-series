@@ -14,7 +14,50 @@ require 'includes/really-long-switch.php';
 $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
 $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
 $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
-
+if ($time_frame === 'today') {
+  $is_weekend = (date('N') >= 6);
+  $time = ($is_weekend) ? strtotime('-21 days') : strtotime('-9 days');
+  $group = ($is_weekend) ? '1,7' : '2,3,4,5,6';
+  $stmt = $db->prepare(
+    'SELECT value, recorded FROM meter_data
+    WHERE meter_id = ? AND value IS NOT NULL
+    AND recorded > ? AND recorded < ? AND resolution = ?
+    -- AND HOUR(FROM_UNIXTIME(recorded)) = HOUR(NOW())
+    AND DAYOFWEEK(FROM_UNIXTIME(recorded)) IN ('.$group.')
+    ORDER BY value ASC');
+  $stmt->execute(array($_GET['meter_id'], $time, time(), 'hour'));
+  $typical_data = $stmt->fetchAll();
+  $result = array();
+  $recorded_vals = $from;
+  $last_data = null;
+  for ($i = 0; $i < 96; $i++) { // 15 min res over day = 96 points
+    $buffer = array();
+    $hour = date('G', $recorded_vals);
+    foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
+      if ($hour === date('G', $value['recorded'])) {
+        $buffer[] = $value['value'];
+      }
+    }
+    $median = array_sum($buffer)/count($buffer);//median($buffer);
+    if ($last_data !== null) { // Interpolate next 45 mins -- 3 data points -- worth of data
+      $diff = ($last_data - $median)/4;
+      $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+$diff);
+      $recorded_vals += 900;
+      $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+($diff*2));
+      $recorded_vals += 900;
+      $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+($diff*3));
+      $recorded_vals += 900;
+      $i += 3;
+    }
+    $result[] = array('recorded' => $recorded_vals, 'value' => $median);
+    $last_data = $median;
+    $recorded_vals += 900;
+  }
+  $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $result);
+  $typical_ts->dashed(false);
+  $typical_ts->fill(true);
+  $typical_ts->color('#f39c12');
+}
 
 $main_ts->dashed( (!empty($_GET['dasharr1'])) ? true : false );
 $historical_ts->dashed( (!empty($_GET['dasharr2'])) ? true : false );
@@ -54,6 +97,7 @@ else {
   $main_ts->setMin($min); $main_ts->setMax($max);
   $historical_ts->setMin($min); $historical_ts->setMax($max);
 }
+if ($time_frame === 'today') { $typical_ts->setMin($min); $typical_ts->setMax($max); }
 $main_ts->yAxis();
 $historical_ts->yAxis();
 $secondary_ts->yAxis(); // causing weird memory problems?
@@ -87,6 +131,18 @@ elseif ($time_frame === 'month' && date('j') <= 15) {
 }
 elseif ($time_frame === 'year' && date('n') <= 6) {
   $show_hist = true;
+}
+function median($arr) {
+  $count = count($arr);
+  $mid = floor(($count-1)/2);
+  if ($count % 2) {
+    $median = $arr[$mid];
+  } else {
+    $low = $arr[$mid];
+    $high = $arr[$mid+1];
+    $median = (($low+$high)/2);
+  }
+  return $median;
 }
 ?>
 <defs>
@@ -128,8 +184,9 @@ text {
   </g>
 
   <!-- Typical chart -->
-  <!-- <g id="typical-chart" style="opacity: 0;">
-  </g> -->
+  <g id="typical-chart" style="opacity: 0;">
+    <?php if ($time_frame === 'today') {$typical_ts->printChart($graph_height, $graph_width, $graph_offset, $historical_ts->yaxis_min, $historical_ts->yaxis_max);} ?>
+  </g>
 
   <!-- Second variable overlay -->
   <g id="second-chart" style="opacity: 0;">
@@ -360,18 +417,18 @@ text {
       $(this).text('Show <?php echo $name2; ?>');
     }
   });
-  // $('#typical').on("click", function() {
-  //   var typ = $('#typical-chart');
-  //   if (typ.css('opacity') === '0') {
-  //     typ.css('opacity', '1');
-  //     curtain('curtain');
-  //     $(this).text('Hide typical');
-  //   }
-  //   else {
-  //     typ.css('opacity', '0');
-  //     $(this).text('Show typical');
-  //   }
-  // });
+  $('#typical').on("click", function() {
+    var typ = $('#typical-chart');
+    if (typ.css('opacity') === '0') {
+      typ.css('opacity', '1');
+      curtain('curtain');
+      $(this).text('Hide typical');
+    }
+    else {
+      typ.css('opacity', '0');
+      $(this).text('Show typical');
+    }
+  });
   // Curtain animation
   function curtain(id) {
     var curtain = $('#' + id);
