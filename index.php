@@ -178,13 +178,16 @@ foreach ($buildings->fetchAll() as $building) {
         </a>
       </div>
       <div class="col-sm-10">
-        <h1 style="width: 90%;">
         <?php
-        if (empty($_GET['name'])) {
-          $stmt = $db->prepare('SELECT name FROM meters WHERE id = ? LIMIT 1');
-          $stmt->execute(array($_GET['meter_id']));
-          echo $title . ' ' . $stmt->fetch()['name'];
-        } else { echo $_GET['name']; }
+        $stmt = $db->prepare('SELECT name FROM meters WHERE id = ? LIMIT 1');
+        $stmt->execute(array($_GET['meter_id']));
+        $name = $stmt->fetch()['name'];
+        $tot_len = strlen($name) + strlen($title);
+        if ($tot_len < 40) {
+          echo "<h1 style='width: 90%;'>{$title} {$name}</h1>";
+        } else {
+          echo "<h1 style='width: 90%; font-size: 50px'>{$title} {$name}</h1>";
+        }
         ?>
         </h1>
         <!-- <p style="text-align: right"><a href="#" class="btn"></a></p> -->

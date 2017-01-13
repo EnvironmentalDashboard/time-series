@@ -14,9 +14,13 @@ require 'includes/really-long-switch.php';
 $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
 $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
 $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
-if ($time_frame === 'today') {
+if ($time_frame === 'today' || $time_frame === 'week') {
   $is_weekend = (date('N') >= 6);
-  $time = ($is_weekend) ? strtotime('-21 days') : strtotime('-9 days');
+  if ($time_frame === 'today') {
+    $time = ($is_weekend) ? strtotime('-21 days') : strtotime('-9 days');
+  } else { // week
+    $time = ($is_weekend) ? strtotime('-2 months') : strtotime('-1 month');
+  }
   $group = ($is_weekend) ? '1,7' : '2,3,4,5,6';
   $stmt = $db->prepare(
     'SELECT value, recorded FROM meter_data
@@ -30,29 +34,49 @@ if ($time_frame === 'today') {
   $result = array();
   $recorded_vals = $from;
   $last_data = null;
-  for ($i = 0; $i < 96; $i++) { // 15 min res over day = 96 points
-    $buffer = array();
-    $hour = date('G', $recorded_vals);
-    foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
-      if ($hour === date('G', $value['recorded'])) {
-        $buffer[] = $value['value'];
+  // echo "\n<!--\n";
+  if ($time_frame === 'today') {
+    for ($i = 0; $i < 96; $i++) { // 15 min res over day = 96 points
+      $buffer = array();
+      $hour = date('G', $recorded_vals);
+      foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
+        if ($hour === date('G', $value['recorded'])) {
+          $buffer[] = $value['value'];
+        }
       }
+      // var_dump($buffer);
+      $median = array_sum($buffer)/count($buffer);//median($buffer);
+      if ($last_data !== null) { // Interpolate next 45 mins -- 3 data points -- worth of data
+        $diff = ($last_data - $median)/4;
+        $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+$diff);
+        $recorded_vals += 900; // 900s = 15min
+        $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+($diff*2));
+        $recorded_vals += 900;
+        $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+($diff*3));
+        $recorded_vals += 900;
+        $i += 3;
+      }
+      $result[] = array('recorded' => $recorded_vals, 'value' => $median);
+      $last_data = $median;
+      $recorded_vals += 900;
     }
-    $median = array_sum($buffer)/count($buffer);//median($buffer);
-    if ($last_data !== null) { // Interpolate next 45 mins -- 3 data points -- worth of data
-      $diff = ($last_data - $median)/4;
-      $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+$diff);
-      $recorded_vals += 900;
-      $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+($diff*2));
-      $recorded_vals += 900;
-      $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+($diff*3));
-      $recorded_vals += 900;
-      $i += 3;
+  } else { // week
+    for ($i = 0; $i < 168; $i++) { // 1 hour res over week = 168 points
+      $buffer = array();
+      $hour = date('G', $recorded_vals);
+      foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
+        if ($hour === date('G', $value['recorded'])) {
+          $buffer[] = $value['value'];
+        }
+      }
+      // var_dump($buffer);
+      $median = array_sum($buffer)/count($buffer);//median($buffer);
+      $result[] = array('recorded' => $recorded_vals, 'value' => $median);
+      $last_data = $median;
+      $recorded_vals += 3600;
     }
-    $result[] = array('recorded' => $recorded_vals, 'value' => $median);
-    $last_data = $median;
-    $recorded_vals += 900;
   }
+  // echo "\n-->\n";
   $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $result);
   $typical_ts->dashed(false);
   $typical_ts->fill(true);
@@ -82,7 +106,7 @@ $secondary_ts->setMin(); $secondary_ts->setMax();
 $main_ts->setUnits();
 $secondary_ts->setUnits();
 if ($secondary_ts->units === $main_ts->units && $main_ts->units !== null) {
-  echo "<!-- Scaling primary + secondary together -->";
+  // echo "<!-- Scaling primary + secondary together -->";
   $min = min($main_ts->min, $secondary_ts->min, $historical_ts->min);
   $max = max($main_ts->max, $secondary_ts->max, $historical_ts->max);
   $main_ts->setMin($min); $main_ts->setMax($max);
@@ -91,16 +115,16 @@ if ($secondary_ts->units === $main_ts->units && $main_ts->units !== null) {
 }
 // If the units are not equal only scale the primary and historical charts to eachother
 else {
-  echo "<!-- Scaling primary + secondary seperately -->";
+  // echo "<!-- Scaling primary + secondary seperately -->";
   $min = min($main_ts->min, $historical_ts->min);
   $max = max($main_ts->max, $historical_ts->max);
   $main_ts->setMin($min); $main_ts->setMax($max);
   $historical_ts->setMin($min); $historical_ts->setMax($max);
 }
-if ($time_frame === 'today') { $typical_ts->setMin($min); $typical_ts->setMax($max); }
+if ($time_frame === 'today' || $time_frame === 'week') { $typical_ts->setMin($min); $typical_ts->setMax($max); }
 $main_ts->yAxis();
 $historical_ts->yAxis();
-$secondary_ts->yAxis(); // causing weird memory problems?
+$secondary_ts->yAxis();
 
 $main_ts->setTimes();
 $name1 = $main_ts->getName();
@@ -184,8 +208,8 @@ text {
   </g>
 
   <!-- Typical chart -->
-  <g id="typical-chart" style="opacity: 0;">
-    <?php if ($time_frame === 'today') {$typical_ts->printChart($graph_height, $graph_width, $graph_offset, $historical_ts->yaxis_min, $historical_ts->yaxis_max);} ?>
+  <g id="typical-chart" style="opacity: 1;">
+    <?php if ($time_frame === 'today' || $time_frame === 'week') {$typical_ts->printChart($graph_height, $graph_width, $graph_offset, $historical_ts->yaxis_min, $historical_ts->yaxis_max);} ?>
   </g>
 
   <!-- Second variable overlay -->
@@ -308,6 +332,11 @@ text {
         &#160;&#160;&#160;
         <tspan dy="8" style='font-size: 40px;fill: <?php echo $var2_graph_color; ?>'>&#9632;</tspan>
         <tspan dy="-8"><?php echo $name2; ?></tspan>
+        <?php if ($time_frame === 'today' || $time_frame === 'week') { ?>
+          &#160;&#160;&#160;
+          <tspan dy="8" style='font-size: 40px;fill: #f39c12'>&#9632;</tspan>
+          <tspan dy="-8">Typical usage</tspan>
+        <?php } ?>
         </text>
 
   <!-- Bottom bar -->
