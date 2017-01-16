@@ -682,6 +682,15 @@ text {
     var raw_data_copy_sorted = raw_data.slice().sort();
     var indexof = raw_data_copy_sorted.indexOf(val);
     var relative_value = ((indexof) / raw_data_copy_sorted.length) * 100; // Get percent (0-100)
+    <?php
+    if ($main_ts->units === 'Kilowatts') {
+      $charachter = 'squirrel';
+    } else if ($main_ts->units === 'Gallons / hour' || $main_ts->units === 'Liters / hour' || $main_ts->units === 'Liters') {
+      $charachter = 'fish';
+    } else {
+      $charachter = 'both';
+    }
+    ?>
     $.get("movie.php", {relative_value: relative_value, count: movies_played}, function(data) {
       movies_played++;
       var split = data.split('$SEP$');
