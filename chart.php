@@ -4,7 +4,6 @@ ini_set('display_errors', 'On');
 header('Content-Type: image/svg+xml; charset=UTF-8'); // We'll be outputting a SVG
 require '../includes/db.php';
 require '../includes/class.TimeSeries.php';
-require '../includes/class.Gauge.php';
 require 'includes/vars.php'; // Inluding in seperate file to keep this file clean
 require 'includes/really-long-switch.php';
 ?>
@@ -274,7 +273,7 @@ text {
   <!-- Main button -->
   <g id="layer-btn" style="cursor: pointer;" class="noselect">
     <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.075; ?>px" x="0" y="0" fill="<?php echo $primary_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="0.5" style="stroke-dasharray:0,<?php echo ($width * 0.1) . ',' . (($width*0.1) + ($height * 0.075)) . ',' . ($height * 0.075); ?>" />
-    <text x="1.5%" y="5%" font-size="15" fill="<?php echo $font_color; ?>">LAYER ON</text>
+    <text x="1%" y="5%" font-size="13" id="show-less" fill="<?php echo $font_color; ?>">SHOW MORE</text>
   </g>
   <g id="dropdown" style="opacity: 0;">
     <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo $height * 0.185; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
@@ -321,11 +320,9 @@ text {
         <tspan dy="-8">Previous <?php
         if ($time_frame === 'live') {
           echo 'hour';
-        }
-        elseif ($time_frame === 'today') {
+        } elseif ($time_frame === 'today') {
           echo 'day';
-        }
-        else {
+        } else {
           echo $time_frame;
         }
         ?></tspan>
@@ -395,9 +392,11 @@ text {
     var dropdown = $('#dropdown');
     if (dropdown.css('opacity') === '0') {
       dropdown.css('opacity', '1');
+      $('#show-less').text('SHOW LESS')
     }
     else {
       dropdown.css('opacity', '0');
+      $('#show-less').text('SHOW MORE')
     }
   });
   $('#historical').on("click", function() {
@@ -498,17 +497,17 @@ text {
     return pt.matrixTransform(svg.getScreenCTM().inverse());
   }
   // Variable setting
-  var index_cv;
+  var index_rn;
   var alreadydone;
   var counter;
   var movies_played = 0;
-  var current_points = <?php echo json_encode ($main_ts->circlepoints);//json_encode(array_slice($main_ts->circlepoints, 0, count($main_ts->circlepoints)-1)) ?>;
+  var current_points = <?php echo json_encode($main_ts->circlepoints); ?>;
   var current_times = <?php echo json_encode($main_ts->times) ?>;
   var historical_points = <?php echo json_encode($historical_ts->circlepoints) ?>;
-  // var overlay_chart_points = <?php //echo json_encode($secondary_ts->circlepoints) ?>;
+  var relativized_points = <?php echo ($time_frame === 'today' || $time_frame === 'week') ? json_encode($typical_ts->circlepoints) : 'null'; ?>;
   var raw_data = <?php echo json_encode($main_ts->value); ?>;
   var raw_data_formatted = <?php echo json_encode(array_map('my_nf', $main_ts->value));
-      function my_nf($n) { return number_format($n, (!empty($_GET['rounding'])) ? $_GET['rounding'] : 0); } ?>;
+      function my_nf($n) { if ($n < 10) {$default = 2;} else {$default = 0;} return number_format($n, (!empty($_GET['rounding'])) ? $_GET['rounding'] : $default); } ?>;
   var min = <?php echo json_encode($main_ts->min) ?>;
   var max = <?php echo json_encode($main_ts->max) ?>;
   var playing = true;
@@ -516,6 +515,21 @@ text {
   var current_frame = 0;
   var last_frame = 0;
   var movie = $('#movie');
+
+  var diff_min = Number.MAX_VALUE;
+  var diff_max = 0;
+  for (var i = current_points.length - 1; i >= 0; i--) {
+    var d = current_points[i][1] - relativized_points[i][1]; // can use same index for both b/c they're the same resolution
+    if (d > diff_max) {
+      diff_max = d;
+    }
+    if (d < diff_min) {
+      diff_min = d;
+    }
+  }
+  console.log(diff_min, diff_max);
+  console.log(current_points);
+  console.log(relativized_points);
 
   $(svg).one('mousemove', function() {
     $('#suggestion').attr('display', 'none');
@@ -527,23 +541,17 @@ text {
     var loc = cursorPoint(evt);
     var pct_through = (loc.x / <?php echo (($graph_width)*$pct_through); ?>);
     var pct_through_whole = (loc.x / <?php echo $graph_width; ?>);
-    var index1 = Math.round(pct_through * (current_points.length-1)); // Coords for circle (subtract 1 to 0-base for array index)
+    index_rn = Math.round(pct_through * (current_points.length-1)); // Coords for circle (subtract 1 to 0-base for array index)
     var index2 = Math.round(pct_through_whole * (historical_points.length-1)); // Coords for historical circle
-    // var index3 = Math.round(pct_through * <?php //echo count($secondary_ts->circlepoints)-1; ?>); // Coords for secondary circle
-    index_cv = Math.round(pct_through * <?php echo count($main_ts->value)-1; ?>); // Coords for current values
-    var index5 = Math.round(pct_through * <?php echo count($main_ts->times)-1; ?>); // Current time
-    // console.log('pct_through: ' + pct_through + "\nindex1: " + index1);
-    $('#current-circle').attr('cx', current_points[index1][0]);
-    $('#current-circle').attr('cy', current_points[index1][1]);
+    $('#current-circle').attr('cx', current_points[index_rn][0]);
+    $('#current-circle').attr('cy', current_points[index_rn][1]);
     $('#historical-circle').attr('cx', historical_points[index2][0]);
     $('#historical-circle').attr('cy', historical_points[index2][1]);
-    // $('#second-circle').attr('cx', overlay_chart_points[index3][0]);
-    // $('#second-circle').attr('cy', overlay_chart_points[index3][1]);
-    $('#current-value').text(raw_data_formatted[index_cv]);
-    $('#current-time-rect').attr('x', current_points[index1][0] - <?php echo $width * 0.05; ?>);
-    $('#current-time-text').attr('x', current_points[index1][0]);
-    $('#current-time-text').text(current_times[index5]);
-    if (raw_data[index_cv] === null) {
+    $('#current-value').text(raw_data_formatted[index_rn]);
+    $('#current-time-rect').attr('x', current_points[index_rn][0] - <?php echo $width * 0.05; ?>);
+    $('#current-time-text').attr('x', current_points[index_rn][0]);
+    $('#current-time-text').text(current_times[index_rn]);
+    if (raw_data[index_rn] === null) {
       $('#error-msg').attr('display', '');
       $('#frame_0').attr('display', '');
       $('#current-value').text('--');
@@ -551,10 +559,15 @@ text {
     else {
       $('#error-msg').attr('display', 'none');
     }
-
     // Display the current gif frame
     last_frame = current_frame;
-    current_frame = Math.abs( Math.round( ((raw_data[index_cv] - min) / (max - min)) * 46 ) - 46 );
+    <?php if ($time_frame === 'today' || $time_frame === 'week') { ?>
+      var diff = current_points[index_rn][1] - relativized_points[index_rn][1];
+      current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0);
+      console.log(diff, current_frame);
+    <?php } else { ?> 
+      current_frame = Math.abs( Math.round( ((raw_data[index_rn] - min) / (max - min)) * 46 ) - 46 );
+    <?php } ?>
     if (current_frame > last_frame) {
       counter = last_frame;
       while (current_frame >= counter && frames.length < 100) {
@@ -577,7 +590,7 @@ text {
       alreadydone = true;
     }
   });
-
+  
   // "Play" the data -- when the mouse is idle for 3 seconds, move the dot up the line
   const mouse_idle_ms = 3000;
   var interval = null;
@@ -628,7 +641,14 @@ text {
         $('#current-time-text').text(current_times[c2++]);
         tmp.shift();
         last_frame = current_frame;
-        current_frame = Math.abs(Math.round(((raw_data[c3++] - min) / (max - min)) * 46) - 46);
+        <?php if ($time_frame === 'today' || $time_frame === 'week') { ?>
+          var diff = current_points[c3][1] - relativized_points[c3][1];
+          current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0);
+          console.log(diff, current_frame);
+          c3++;
+        <?php } else { ?> 
+          current_frame = Math.abs(Math.round(((raw_data[c3++] - min) / (max - min)) * 46) - 46);
+        <?php } ?>
         if (current_frame > last_frame && frames.length < 100) {
           counter = last_frame;
           while (current_frame >= counter) {
@@ -646,7 +666,7 @@ text {
         if (tmp.length === 0) { // We're at the end of the data
           clearInterval(interval); interval = null;
           $('#frame_' + current_frame).attr('display', '');
-          index_cv = <?php echo count($main_ts->value)-1; ?>; // set the indicator ball stuff to the last point
+          index_rn = <?php echo count($main_ts->value)-1; ?>; // set the indicator ball stuff to the last point
           clearTimeout(timeout2); timeout2 = null;
           timeout2 = setTimeout(play, mouse_idle_ms);
         }
@@ -658,7 +678,7 @@ text {
   function play_movie() {
     console.log('play_movie');
     playing = false;
-    var val = (raw_data[index_cv] == null) ? 0 : raw_data[index_cv];
+    var val = (raw_data[index_rn] == null) ? 0 : raw_data[index_rn];
     var raw_data_copy_sorted = raw_data.slice().sort();
     var indexof = raw_data_copy_sorted.indexOf(val);
     var relative_value = ((indexof) / raw_data_copy_sorted.length) * 100; // Get percent (0-100)
