@@ -13,7 +13,8 @@ require 'includes/really-long-switch.php';
 $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
 $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
 $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
-if ($time_frame === 'today' || $time_frame === 'week') {
+$typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
+if ($typical_time_frame) {
   $is_weekend = (date('N') >= 6);
   if ($time_frame === 'today') {
     $time = ($is_weekend) ? strtotime('-21 days') : strtotime('-9 days');
@@ -119,7 +120,7 @@ else {
   $main_ts->setMin($min); $main_ts->setMax($max);
   $historical_ts->setMin($min); $historical_ts->setMax($max);
 }
-if ($time_frame === 'today' || $time_frame === 'week') { $typical_ts->setMin($min); $typical_ts->setMax($max); }
+if ($typical_time_frame) { $typical_ts->setMin($min); $typical_ts->setMax($max); }
 $main_ts->yAxis();
 $historical_ts->yAxis();
 $secondary_ts->yAxis();
@@ -201,7 +202,7 @@ text {
 
   <!-- Typical chart -->
   <g id="typical-chart" style="opacity: 1;">
-    <?php if ($time_frame === 'today' || $time_frame === 'week') {$typical_ts->printChart($graph_height, $graph_width, $graph_offset, $historical_ts->yaxis_min, $historical_ts->yaxis_max);} ?>
+    <?php if ($typical_time_frame) {$typical_ts->printChart($graph_height, $graph_width, $graph_offset, $historical_ts->yaxis_min, $historical_ts->yaxis_max);} ?>
     <circle cx="-10" cy="0" id="typical-circle" <?php echo $circle_size . '#f39c12' . '"'; ?> />
   </g>
 
@@ -265,11 +266,11 @@ text {
 
   <!-- Main button -->
   <g id="layer-btn" style="cursor: pointer;" class="noselect">
-    <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.075; ?>px" x="0" y="0" fill="<?php echo '#ECEFF1';//$primary_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="0.5" style="stroke-dasharray:0,<?php echo ($width * 0.1) . ',' . (($width*0.1) + ($height * 0.075)) . ',' . ($height * 0.075); ?>" />
-    <text x="1%" y="5%" font-size="13" id="show-less" fill="<?php echo $font_color; ?>" style="font-weight: 400">SHOW MORE</text>
+    <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.075; ?>px" x="0" y="0" fill="<?php echo '#2196F3';//$primary_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="0.5" style="stroke-dasharray:0,<?php echo ($width * 0.1) . ',' . (($width*0.1) + ($height * 0.075)) . ',' . ($height * 0.075); ?>" />
+    <text x="1%" y="5%" font-size="13" id="show-less" fill="#ECEFF1" style="font-weight: 400">SHOW MORE</text>
   </g>
   <g id="dropdown" style="opacity: 0;">
-    <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo $height * 0.185; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
+    <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo ($typical_time_frame) ? $height * 0.185 : $height * 0.12; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
     <text style="cursor:pointer" id="historical" x="1.25%" y="<?php echo ($height * 0.075) + 15; ?>" font-size="12" fill="<?php echo $primary_color; ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
       if ($time_frame === 'live') { echo 'hour'; }
       elseif ($time_frame === 'today') { echo 'day'; }
@@ -277,8 +278,10 @@ text {
       ?></text>
     <line x1="0" y1="<?php echo ($height * 0.075) + 25; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 25; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
     <text style="cursor:pointer" id="second" x="1.25%" y="<?php echo ($height * 0.075) + 40; ?>" font-size="12" fill="<?php echo $primary_color; ?>">Show <?php echo $name2; ?></text>
+    <?php if ($typical_time_frame) { ?>
     <line x1="0" y1="<?php echo ($height * 0.075) + 50; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 50; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
     <text style="cursor:pointer" id="typical" x="1.25%" y="<?php echo ($height * 0.075) + 65; ?>" font-size="12" fill="<?php echo $primary_color; ?>">Show typical</text>
+    <?php } ?>
   </g>
 
   <!-- Sidebar -->
@@ -296,9 +299,11 @@ text {
   }
   ?>
   <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
-  <rect height='60' width='<?php echo $width - $graph_width - 30 ?>px' x="<?php echo $graph_width + 15 ?>" y="<?php echo $graph_height - 30 ?>" fill="#ECEFF1" />
   <text id="current-value-container" text-anchor="middle" fill="<?php echo $primary_color; ?>" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.2; ?>" font-size="20"><tspan id="current-value" font-size="50"></tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em"><?php echo $main_ts->units; ?></tspan></text>
+  <?php if ($typical_time_frame) { ?>
+  <rect height='60' width='<?php echo $width - $graph_width - 30 ?>px' x="<?php echo $graph_width + 15 ?>" y="<?php echo $graph_height - 30 ?>" fill="#ECEFF1" />
   <text id="accum-label" text-anchor="middle" fill="#333" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.8; ?>" font-size="15"><tspan id="accum-label-value" font-size="30">0</tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em" id="accum-label-units">Kilowatt-hours so far today</tspan></text>
+  <?php } ?>
   <rect width="20px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
 
   <!-- Topbar -->
@@ -311,6 +316,11 @@ text {
         <tspan dy="8" style='font-size: 40px;fill: <?php echo $current_graph_color; ?>'>&#9632;</tspan>
         <tspan dy="-8"><?php echo $name1; ?></tspan>
         &#160;&#160;&#160;
+        <?php if ($typical_time_frame) { ?>
+          <tspan dy="8" style='font-size: 40px;fill: #f39c12'>&#9632;</tspan>
+          <tspan dy="-8">Typical Use</tspan>
+          &#160;&#160;&#160;
+        <?php } ?>
         <tspan dy="8" style='font-size: 40px;fill: <?php echo $historical_graph_color; ?>'>&#9632;</tspan>
         <tspan dy="-8">Previous <?php
         if ($time_frame === 'live') {
@@ -324,11 +334,6 @@ text {
         &#160;&#160;&#160;
         <tspan dy="8" style='font-size: 40px;fill: <?php echo $var2_graph_color; ?>'>&#9632;</tspan>
         <tspan dy="-8"><?php echo $name2; ?></tspan>
-        <?php if ($time_frame === 'today' || $time_frame === 'week') { ?>
-          &#160;&#160;&#160;
-          <tspan dy="8" style='font-size: 40px;fill: #f39c12'>&#9632;</tspan>
-          <tspan dy="-8">Typical use</tspan>
-        <?php } ?>
         </text>
 
   <!-- Bottom bar -->
@@ -569,7 +574,7 @@ text {
   var current_times = <?php echo json_encode($main_ts->times) ?>;
   var current_timestamps = <?php echo json_encode($main_ts->recorded) ?>;
   var historical_points = <?php echo json_encode($historical_ts->circlepoints) ?>;
-  var relativized_points = <?php echo ($time_frame === 'today' || $time_frame === 'week') ? json_encode($typical_ts->circlepoints) : 'null'; ?>;
+  var relativized_points = <?php echo ($typical_time_frame) ? json_encode($typical_ts->circlepoints) : 'null'; ?>;
   var raw_data = <?php echo json_encode($main_ts->value); ?>;
   var raw_data_formatted = <?php echo json_encode(array_map('my_nf', $main_ts->value));
       function my_nf($n) { if ($n < 10) {$default = 2;} else {$default = 0;} return number_format($n, (!empty($_GET['rounding'])) ? $_GET['rounding'] : $default); } ?>;
@@ -580,7 +585,7 @@ text {
   var current_frame = 0;
   var last_frame = 0;
   var movie = $('#movie');
-
+  <?php if ($typical_time_frame) { ?>
   var diff_min = Number.MAX_VALUE;
   var diff_max = 0;
   for (var i = current_points.length - 1; i >= 0; i--) {
@@ -592,6 +597,7 @@ text {
       diff_min = d;
     }
   }
+  <?php } ?>
 
   $(svg).one('mousemove', function() {
     $('#suggestion').attr('display', 'none');
@@ -607,7 +613,7 @@ text {
     var index2 = Math.round(pct_through_whole * (historical_points.length-1)); // Coords for historical circle
     $('#current-circle').attr('cx', current_points[index_rn][0]);
     $('#current-circle').attr('cy', current_points[index_rn][1]);
-    <?php if ($time_frame === 'today' || $time_frame === 'week') { ?>
+    <?php if ($typical_time_frame) { ?>
       $('#typical-circle').attr('cx', relativized_points[index_rn][0]);
       $('#typical-circle').attr('cy', relativized_points[index_rn][1]);
     <?php } else { ?>
@@ -618,12 +624,14 @@ text {
     $('#current-time-rect').attr('x', current_points[index_rn][0] - <?php echo $width * 0.05; ?>);
     $('#current-time-text').attr('x', current_points[index_rn][0]);
     $('#current-time-text').text(current_times[index_rn]);
+    <?php if ($typical_time_frame) { ?>
     var elapsed = (current_timestamps[index_rn]-current_timestamps[0]);
     var kw = 0;
     for (var i = index_rn; i >= 0; i--) {
       kw += raw_data[i];
     }
     accumulation(elapsed, kw);
+    <?php } ?>
     if (raw_data[index_rn] === null) {
       $('#error-msg').attr('display', '');
       $('#frame_0').attr('display', '');
@@ -634,7 +642,7 @@ text {
     }
     // Display the current gif frame
     last_frame = current_frame;
-    <?php if ($time_frame === 'today' || $time_frame === 'week') { ?>
+    <?php if ($typical_time_frame) { ?>
       var diff = current_points[index_rn][1] - relativized_points[index_rn][1];
       current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0);
     <?php } else { ?> 
@@ -663,7 +671,7 @@ text {
     }
   });
   
-  // "Play" the data -- when the mouse is idle for 3 seconds, move the dot up the line
+  // "Play" the data -- when the mouse is idle for 4.5 seconds, move the dot up the line
   const mouse_idle_ms = 4500;
   var interval = null;
   var timeout = null;
@@ -708,7 +716,7 @@ text {
         i++;
         $('#current-circle').attr('cx', tmp[0][0]);
         $('#current-circle').attr('cy', tmp[0][1]);
-        <?php if ($time_frame === 'today' || $time_frame === 'week') { ?>
+        <?php if ($typical_time_frame) { ?>
           $('#typical-circle').attr('cx', typ_tmp[0][0]);
           $('#typical-circle').attr('cy', typ_tmp[0][1]);
           typ_tmp.shift();
@@ -719,7 +727,7 @@ text {
         $('#current-time-text').text(current_times[c2++]);
         tmp.shift();
         last_frame = current_frame;
-        <?php if ($time_frame === 'today' || $time_frame === 'week') { ?>
+        <?php if ($typical_time_frame) { ?>
           var diff = current_points[c3][1] - relativized_points[c3][1];
           current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0);
           kw += raw_data[c3];
@@ -803,9 +811,9 @@ text {
       $('#accum-label-value').text(Math.round(kwh).toLocaleString()); // kWh = time elapsed in hours * kilowatts so far
     }
     else if (accum_btn.attr('id') === 'co2') {
-      $('#accum-label-value').text(Math.round(kwh*1.22).toLocaleString()); // pounds of co2 per kwh = https://www.eia.gov/tools/faqs/faq.cfm?id=74&t=11
+      $('#accum-label-value').text(Math.round(kwh*1.22).toLocaleString()); // pounds of co2 per kwh https://www.eia.gov/tools/faqs/faq.cfm?id=74&t=11
     } else { // money
-      $('#accum-label-value').text('$'+Math.round(kwh*0.12).toLocaleString()); // average cost of kwh = http://www.npr.org/sections/money/2011/10/27/141766341/the-price-of-electricity-in-your-state
+      $('#accum-label-value').text('$'+Math.round(kwh*0.11).toLocaleString()); // average cost of kwh http://www.npr.org/sections/money/2011/10/27/141766341/the-price-of-electricity-in-your-state
     }
   }
 
