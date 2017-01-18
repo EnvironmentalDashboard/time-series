@@ -40,7 +40,7 @@ switch ($time_frame) {
     $dates = "<text fill='{$interval_color}' x='1' y='" . $height * 0.13 . "'
               font-size='13' font-family='{$font_family}'>
               <tspan x='{$chart_padding}' text-anchor='start'>12am</tspan>";
-    $dates.= '<tspan text-anchor="middle" x="' . (($graph_width * (1/14))+$chart_padding) . '">2am</tspan>
+    $dates.= '<tspan text-anchor="middle" x="' . (($graph_width * (1/14))+$chart_padding+10) . '">2am</tspan>
               <tspan text-anchor="middle" x="' . (($graph_width * (2/14))+$chart_padding) . '">4am</tspan>
               <tspan text-anchor="middle" x="' . (($graph_width * (3/14))+$chart_padding) . '">6am</tspan>
               <tspan text-anchor="middle" x="' . (($graph_width * (4/14))+$chart_padding) . '">8am</tspan>
@@ -50,7 +50,7 @@ switch ($time_frame) {
               <tspan text-anchor="middle" x="' . (($graph_width * (8/14))+$chart_padding) . '">4pm</tspan>
               <tspan text-anchor="middle" x="' . (($graph_width * (9/14))+$chart_padding) . '">6pm</tspan>
               <tspan text-anchor="middle" x="' . (($graph_width * (10/14))+$chart_padding) . '">8pm</tspan>
-              <tspan text-anchor="middle" x="' . (($graph_width * (11/14))+$chart_padding) . '">10pm</tspan>
+              <tspan text-anchor="middle" x="' . (($graph_width * (11/14))+$chart_padding-10) . '">10pm</tspan>
               <tspan text-anchor="end" x="' . (($graph_width * (12/14))+$chart_padding) . '">12am</tspan>
               </text>';
     break;
@@ -65,12 +65,12 @@ switch ($time_frame) {
     $dates = "<text fill=\"{$interval_color}\" x=\"1\" y='" . $height * 0.13 . "'
               font-size=\"17\" font-family=\"{$font_family}\">
               <tspan text-anchor=\"start\" x=\"{$chart_padding}\">Sun</tspan>
-              <tspan text-anchor=\"middle\" x=\"" . (($graph_width * (1/6))+$chart_padding) . "\">Mon</tspan>
-              <tspan text-anchor=\"middle\" x=\"" . (($graph_width * (2/6))+$chart_padding) . "\">Tue</tspan>
-              <tspan text-anchor=\"middle\" x=\"" . (($graph_width * (3/6))+$chart_padding) . "\">Wed</tspan>
-              <tspan text-anchor=\"middle\" x=\"" . (($graph_width * (4/6))+$chart_padding) . "\">Thu</tspan>
-              <tspan text-anchor=\"middle\" x=\"" . (($graph_width * (5/6))+$chart_padding) . "\">Fri</tspan>
-              <tspan text-anchor=\"end\" x=\"" . (($graph_width * (6/6))+$chart_padding) . "\">Sat</tspan>
+              <tspan text-anchor=\"start\" x=\"" . (($graph_width * (1/7))+$chart_padding) . "\">Mon</tspan>
+              <tspan text-anchor=\"start\" x=\"" . (($graph_width * (2/7))+$chart_padding) . "\">Tue</tspan>
+              <tspan text-anchor=\"start\" x=\"" . (($graph_width * (3/7))+$chart_padding) . "\">Wed</tspan>
+              <tspan text-anchor=\"start\" x=\"" . (($graph_width * (4/7))+$chart_padding) . "\">Thu</tspan>
+              <tspan text-anchor=\"start\" x=\"" . (($graph_width * (5/7))+$chart_padding) . "\">Fri</tspan>
+              <tspan text-anchor=\"end\" x=\"" . (($graph_width * (6/7))+$chart_padding) . "\">Sat</tspan>
               </text>";
     break;
   case 'month':
