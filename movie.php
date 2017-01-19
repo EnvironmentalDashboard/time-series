@@ -6,7 +6,7 @@ $count = $_GET['count'];
 if ($count < 1) {
   $keyword = 'Point';
 } else if ($count < 3) {
-  $keyword = 'Emot';
+  $keyword = 'Emo';
 } else {
   $keyword = ''; // Empty string means any name
 }

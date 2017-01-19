@@ -127,7 +127,7 @@ foreach ($buildings->fetchAll() as $building) {
           }
           else {
             for ($i = round($max, -1); $i >= 0-round($max, -1); $i--) { 
-              if ($_GET['start'] == $i && !empty($_GET['start'])) {
+              if (!empty($_GET['start']) && $_GET['start'] == $i) {
                 echo "<option value='{$i}' selected='selected'>{$i}</option>";
               }
               else {

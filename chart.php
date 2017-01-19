@@ -13,30 +13,25 @@ require 'includes/really-long-switch.php';
 $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
 $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
 $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
+$meter = new Meter($db);
 $typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
+
 if ($typical_time_frame) {
-  $is_weekend = (date('N') >= 6);
-  if ($time_frame === 'today') {
-    $time = ($is_weekend) ? strtotime('-21 days') : strtotime('-9 days');
-  } else { // week
-    $time = ($is_weekend) ? strtotime('-2 months') : strtotime('-1 month');
-  }
-  $group = ($is_weekend) ? '1,7' : '2,3,4,5,6';
-  $stmt = $db->prepare(
-    'SELECT value, recorded FROM meter_data
-    WHERE meter_id = ? AND value IS NOT NULL
-    AND recorded > ? AND recorded < ? AND resolution = ?
-    -- AND HOUR(FROM_UNIXTIME(recorded)) = HOUR(NOW())
-    AND DAYOFWEEK(FROM_UNIXTIME(recorded)) IN ('.$group.')
-    ORDER BY value ASC');
-  $stmt->execute(array($_GET['meter_id'], $time, time(), 'hour'));
-  $typical_data = $stmt->fetchAll();
+  $stmt = $db->query('SELECT grouping, npoints FROM meters WHERE id = '.intval($_GET['meter_id']));
+  $settings = $stmt->fetch();
   $result = array();
   $recorded_vals = $from;
   $last_data = null;
-  // echo "\n<!--\n";
-  if ($time_frame === 'today') {
-    for ($i = 0; $i < 96; $i++) { // 15 min res over day = 96 points
+  if ($time_frame === 'today') { // Get the typical data for today
+    $group = implode(',', $meter->currentGrouping($settings['grouping']));
+    $stmt = $db->prepare(
+    'SELECT value, recorded FROM meter_data
+    WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
+    AND DAYOFWEEK(FROM_UNIXTIME(recorded)) IN ('.$group.')
+    ORDER BY recorded DESC LIMIT ' . intval($settings['npoints']*24));
+    $stmt->execute(array($_GET['meter_id'], 'hour'));
+    $typical_data = $stmt->fetchAll();
+    for ($i = 0; $i < 95; $i++) { // 15 min res over day = 96 points
       $buffer = array();
       $hour = date('G', $recorded_vals);
       foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
@@ -44,7 +39,6 @@ if ($typical_time_frame) {
           $buffer[] = $value['value'];
         }
       }
-      // var_dump($buffer);
       $median = array_sum($buffer)/count($buffer);//median($buffer);
       if ($last_data !== null) { // Interpolate next 45 mins -- 3 data points -- worth of data
         $diff = ($last_data - $median)/4;
@@ -61,22 +55,29 @@ if ($typical_time_frame) {
       $recorded_vals += 900;
     }
   } else { // week
-    for ($i = 0; $i < 168; $i++) { // 1 hour res over week = 168 points
+    $group = $meter->grouping($settings['grouping']);
+    $stmt = $db->prepare(
+    'SELECT value, recorded FROM meter_data
+    WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
+    ORDER BY value ASC');
+    $stmt->execute(array($_GET['meter_id'], 'hour'));
+    $typical_data = $stmt->fetchAll();
+    for ($i = 0; $i < 167; $i++) { // 1 hour res over week = 168 points
       $buffer = array();
       $hour = date('G', $recorded_vals);
+      $day = date('N', $recorded_vals);
+      $days = $group[recursive_array_search($day, $group)];
       foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
-        if ($hour === date('G', $value['recorded'])) {
+        if ($hour === date('G', $value['recorded']) && in_array(date('N', $value['recorded']), $days)) {
           $buffer[] = $value['value'];
         }
       }
-      // var_dump($buffer);
       $median = array_sum($buffer)/count($buffer);//median($buffer);
       $result[] = array('recorded' => $recorded_vals, 'value' => $median);
       $last_data = $median;
       $recorded_vals += 3600;
     }
   }
-  // echo "\n-->\n";
   $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $result);
   $typical_ts->dashed(false);
   $typical_ts->fill(false);
@@ -154,6 +155,15 @@ function median($arr) {
     $median = (($low+$high)/2);
   }
   return $median;
+}
+function recursive_array_search($needle,$haystack) {
+  foreach($haystack as $key=>$value) {
+    $current_key=$key;
+    if($needle===$value || (is_array($value) && recursive_array_search($needle,$value) !== false)) {
+      return $current_key;
+    }
+  }
+  return false;
 }
 ?>
 <defs>
@@ -267,7 +277,7 @@ text {
   <!-- Main button -->
   <g id="layer-btn" style="cursor: pointer;" class="noselect">
     <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.075; ?>px" x="0" y="0" fill="<?php echo '#2196F3';//$primary_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="0.5" style="stroke-dasharray:0,<?php echo ($width * 0.1) . ',' . (($width*0.1) + ($height * 0.075)) . ',' . ($height * 0.075); ?>" />
-    <text x="1%" y="5%" font-size="13" id="show-less" fill="#ECEFF1" style="font-weight: 400">SHOW MORE</text>
+    <text x="1.2%" y="5%" font-size="12" id="show-less" fill="#ECEFF1" style="font-weight: 400">SHOW MORE</text>
   </g>
   <g id="dropdown" style="opacity: 0;">
     <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo ($typical_time_frame) ? $height * 0.185 : $height * 0.12; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
@@ -300,9 +310,9 @@ text {
   ?>
   <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
   <text id="current-value-container" text-anchor="middle" fill="<?php echo $primary_color; ?>" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.2; ?>" font-size="20"><tspan id="current-value" font-size="50"></tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em"><?php echo $main_ts->units; ?></tspan></text>
-  <?php if ($typical_time_frame) { ?>
+  <?php if ($main_ts->units === 'Kilowatts') { ?>
   <rect height='60' width='<?php echo $width - $graph_width - 30 ?>px' x="<?php echo $graph_width + 15 ?>" y="<?php echo $graph_height - 30 ?>" fill="#ECEFF1" />
-  <text id="accum-label" text-anchor="middle" fill="#333" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.8; ?>" font-size="15"><tspan id="accum-label-value" font-size="30">0</tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em" id="accum-label-units">Kilowatt-hours so far today</tspan></text>
+  <text id="accum-label" text-anchor="middle" fill="#333" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.8; ?>" font-size="15"><tspan id="accum-label-value" font-size="30">0</tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em" id="accum-label-units">Kilowatt-hours <?php echo $so_far; ?></tspan></text>
   <?php } ?>
   <rect width="20px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
 
@@ -419,13 +429,15 @@ text {
     $('#kwh-active').css('display', '');
     accum_btn = $('#kwh');
     active_accum_btn = $('#kwh-active');
-    $('#accum-label-units').text('Kilowatt-hours so far today');
+    $('#accum-label-units').text('Kilowatt-hours <?php echo $so_far; ?>');
     var elapsed = (current_timestamps[current_timestamps.length-1]-current_timestamps[0])/3600;
-    var kwh = 0;
+    var kw = 0;
+    var kw_count = 0;
     for (var i = current_timestamps.length-1; i >= 0; i--) {
-      kwh += raw_data[i];
+      kw += raw_data[i];
+      kw_count++;
     }
-    $('#accum-label-value').text(Math.round(elapsed*kwh).toLocaleString());
+    $('#accum-label-value').text(Math.round(elapsed*(kw/kw_count)).toLocaleString());
   });
   $('#co2').on('click', function() {
     active_accum_btn.css('display', 'none');
@@ -434,13 +446,15 @@ text {
     $('#co2-active').css('display', '');
     accum_btn = $('#co2');
     active_accum_btn = $('#co2-active');
-    $('#accum-label-units').text('Pounds of CO2 so far today');
+    $('#accum-label-units').text('Pounds of CO2 <?php echo $so_far; ?>');
     var elapsed = (current_timestamps[current_timestamps.length-1]-current_timestamps[0])/3600;
-    var kwh = 0;
+    var kw = 0;
+    var kw_count = 0;
     for (var i = current_timestamps.length-1; i >= 0; i--) {
-      kwh += raw_data[i];
+      kw += raw_data[i];
+      kw_count++;
     }
-    $('#accum-label-value').text(Math.round((elapsed*kwh)*1.22).toLocaleString());
+    $('#accum-label-value').text(Math.round((elapsed*(kw/kw_count))*1.22).toLocaleString());
   });
   $('#money').on('click', function() {
     active_accum_btn.css('display', 'none');
@@ -449,13 +463,15 @@ text {
     $('#money-active').css('display', '');
     accum_btn = $('#money');
     active_accum_btn = $('#money-active');
-    $('#accum-label-units').text('Dollars spent so far today');
+    $('#accum-label-units').text('Dollars spent <?php echo $so_far; ?>');
     var elapsed = (current_timestamps[current_timestamps.length-1]-current_timestamps[0])/3600;
-    var kwh = 0;
+    var kw = 0;
+    var kw_count = 0;
     for (var i = current_timestamps.length-1; i >= 0; i--) {
-      kwh += raw_data[i];
+      kw += raw_data[i];
+      kw_count++;
     }
-    $('#accum-label-value').text('$'+Math.round((elapsed*kwh)*0.12).toLocaleString());
+    $('#accum-label-value').text('$'+Math.round((elapsed*(kw/kw_count))*0.12).toLocaleString());
   });
   $('#layer-btn').on("click", function() {
     var dropdown = $('#dropdown');
@@ -574,7 +590,7 @@ text {
   var current_times = <?php echo json_encode($main_ts->times) ?>;
   var current_timestamps = <?php echo json_encode($main_ts->recorded) ?>;
   var historical_points = <?php echo json_encode($historical_ts->circlepoints) ?>;
-  var relativized_points = <?php echo ($typical_time_frame) ? json_encode($typical_ts->circlepoints) : 'null'; ?>;
+  var relativized_points = <?php echo ($typical_time_frame) ? json_encode($typical_ts->circlepoints) : json_encode($historical_ts->circlepoints); ?>;
   var raw_data = <?php echo json_encode($main_ts->value); ?>;
   var raw_data_formatted = <?php echo json_encode(array_map('my_nf', $main_ts->value));
       function my_nf($n) { if ($n < 10) {$default = 2;} else {$default = 0;} return number_format($n, (!empty($_GET['rounding'])) ? $_GET['rounding'] : $default); } ?>;
@@ -585,7 +601,6 @@ text {
   var current_frame = 0;
   var last_frame = 0;
   var movie = $('#movie');
-  <?php if ($typical_time_frame) { ?>
   var diff_min = Number.MAX_VALUE;
   var diff_max = 0;
   for (var i = current_points.length - 1; i >= 0; i--) {
@@ -597,25 +612,25 @@ text {
       diff_min = d;
     }
   }
-  <?php } ?>
-
   $(svg).one('mousemove', function() {
     $('#suggestion').attr('display', 'none');
     $('#error-msg').attr('display', '');
   });
-
   $(svg).on('mousemove', function(evt) {
     playing = true;
     var loc = cursorPoint(evt);
     var pct_through = (loc.x / <?php echo (($graph_width)*$pct_through); ?>);
     var pct_through_whole = (loc.x / <?php echo $graph_width; ?>);
+    if (pct_through > 1) {
+      return;
+    }
     index_rn = Math.round(pct_through * (current_points.length-1)); // Coords for circle (subtract 1 to 0-base for array index)
     var index2 = Math.round(pct_through_whole * (historical_points.length-1)); // Coords for historical circle
     $('#current-circle').attr('cx', current_points[index_rn][0]);
     $('#current-circle').attr('cy', current_points[index_rn][1]);
     <?php if ($typical_time_frame) { ?>
-      $('#typical-circle').attr('cx', relativized_points[index_rn][0]);
-      $('#typical-circle').attr('cy', relativized_points[index_rn][1]);
+      $('#typical-circle').attr('cx', relativized_points[index2][0]);
+      $('#typical-circle').attr('cy', relativized_points[index2][1]);
     <?php } else { ?>
       $('#historical-circle').attr('cx', historical_points[index2][0]);
       $('#historical-circle').attr('cy', historical_points[index2][1]);
@@ -624,14 +639,14 @@ text {
     $('#current-time-rect').attr('x', current_points[index_rn][0] - <?php echo $width * 0.05; ?>);
     $('#current-time-text').attr('x', current_points[index_rn][0]);
     $('#current-time-text').text(current_times[index_rn]);
-    <?php if ($typical_time_frame) { ?>
     var elapsed = (current_timestamps[index_rn]-current_timestamps[0]);
     var kw = 0;
+    var kw_count = 0;
     for (var i = index_rn; i >= 0; i--) {
       kw += raw_data[i];
+      kw_count++;
     }
-    accumulation(elapsed, kw);
-    <?php } ?>
+    accumulation(elapsed, kw/kw_count);
     if (raw_data[index_rn] === null) {
       $('#error-msg').attr('display', '');
       $('#frame_0').attr('display', '');
@@ -642,12 +657,9 @@ text {
     }
     // Display the current gif frame
     last_frame = current_frame;
-    <?php if ($typical_time_frame) { ?>
-      var diff = current_points[index_rn][1] - relativized_points[index_rn][1];
-      current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0);
-    <?php } else { ?> 
-      current_frame = Math.abs( Math.round( ((raw_data[index_rn] - min) / (max - min)) * 46 ) - 46 );
-    <?php } ?>
+    var diff = current_points[index_rn][1] - relativized_points[index_rn][1];
+    current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0);
+    current_frame = Math.abs( Math.round( ((raw_data[index_rn] - min) / (max - min)) * 46 ) - 46 );
     if (current_frame > last_frame) {
       counter = last_frame;
       while (current_frame >= counter && frames.length < 100) {
@@ -717,26 +729,25 @@ text {
         $('#current-circle').attr('cx', tmp[0][0]);
         $('#current-circle').attr('cy', tmp[0][1]);
         <?php if ($typical_time_frame) { ?>
-          $('#typical-circle').attr('cx', typ_tmp[0][0]);
-          $('#typical-circle').attr('cy', typ_tmp[0][1]);
-          typ_tmp.shift();
-        <?php }?>
+        $('#typical-circle').attr('cx', typ_tmp[0][0]);
+        $('#typical-circle').attr('cy', typ_tmp[0][1]);
+        <?php } else { ?>
+        $('#historical-circle').attr('cx', typ_tmp[0][0]);
+        $('#historical-circle').attr('cy', typ_tmp[0][1]);
+        <?php } ?>
+        typ_tmp.shift();
         $('#current-time-rect').attr('x', tmp[0][0] - <?php echo $width * 0.05; ?>);
         $('#current-time-text').attr('x', tmp[0][0]);
         $('#current-value').text(raw_data_formatted[c1++]);
         $('#current-time-text').text(current_times[c2++]);
         tmp.shift();
         last_frame = current_frame;
-        <?php if ($typical_time_frame) { ?>
-          var diff = current_points[c3][1] - relativized_points[c3][1];
-          current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0);
-          kw += raw_data[c3];
-          elapsed += current_timestamps[1]-current_timestamps[0];
-          accumulation(elapsed, kw);
-          c3++;
-        <?php } else { ?> 
-          current_frame = Math.abs(Math.round(((raw_data[c3++] - min) / (max - min)) * 46) - 46);
-        <?php } ?>
+        var diff = current_points[c3][1] - relativized_points[c3][1];
+        current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0); // there are 46 frames
+        kw += raw_data[c3];
+        elapsed += current_timestamps[1]-current_timestamps[0];
+        accumulation(elapsed, kw/(c3+1));
+        c3++;
         if (current_frame > last_frame && frames.length < 100) {
           counter = last_frame;
           while (current_frame >= counter) {
@@ -804,9 +815,10 @@ text {
     // Get gif lengths: http://gifduration.konstochvanligasaker.se/
   }
 
-  function accumulation(time_sofar, kw_sofar) {
-    var kwh = (time_sofar/3600)*kw_sofar;
-    // console.log('time elapsed in hours: '+(time_sofar/3600)+"\nkw so far: "+ kw_sofar+"\nkwh: "+kwh);
+  function accumulation(time_sofar, avg_kw) {
+    <?php if ($main_ts->units === 'Kilowatts') { ?>
+    var kwh = (time_sofar/3600)*avg_kw;
+    console.log('time elapsed in hours: '+(time_sofar/3600)+"\navg_kw: "+ avg_kw+"\nkwh: "+kwh);
     if (accum_btn.attr('id') === 'kwh') {
       $('#accum-label-value').text(Math.round(kwh).toLocaleString()); // kWh = time elapsed in hours * kilowatts so far
     }
@@ -815,6 +827,7 @@ text {
     } else { // money
       $('#accum-label-value').text('$'+Math.round(kwh*0.11).toLocaleString()); // average cost of kwh http://www.npr.org/sections/money/2011/10/27/141766341/the-price-of-electricity-in-your-state
     }
+    <?php } ?>
   }
 
   play_data(); // start by playing data

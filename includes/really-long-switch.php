@@ -1,6 +1,7 @@
 <?php
 switch ($time_frame) {
   case 'live':
+    $so_far = 'this hour';
     $res = 'live';
     $stroke_width = 2;
     $circle_size = 'r="6" stroke-width="3" fill="' . $primary_color . '" stroke="';
@@ -30,6 +31,7 @@ switch ($time_frame) {
               </text>';
     break;
   case 'today':
+    $so_far = 'today';
     $res = 'quarterhour';
     $stroke_width = 2;
     $circle_size = 'r="6" stroke-width="3" fill="' . $primary_color . '" stroke="';
@@ -55,6 +57,7 @@ switch ($time_frame) {
               </text>';
     break;
   case 'week':
+    $so_far = 'this week';
     $res = 'hour';
     $stroke_width = 2;
     $circle_size = 'r="6" stroke-width="0" stroke="' . $primary_color . '" fill="';
@@ -74,6 +77,7 @@ switch ($time_frame) {
               </text>";
     break;
   case 'month':
+    $so_far = 'this month';
     $res = 'daily';
     $stroke_width = 1;
     $circle_size = 'r="3" stroke-width="0" stroke="' . $primary_color . '" fill="';
@@ -95,6 +99,7 @@ switch ($time_frame) {
     $dates .= '</text>';
     break;
   case 'year':
+    $so_far = 'this year';
     $res = 'month';
     $stroke_width = 2;
     $circle_size = 'r="6" stroke-width="3" fill="' . $primary_color . '" stroke="';
