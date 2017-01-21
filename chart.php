@@ -4,7 +4,7 @@ ini_set('display_errors', 'On');
 header('Content-Type: image/svg+xml; charset=UTF-8'); // We'll be outputting a SVG
 require '../includes/db.php';
 require '../includes/class.TimeSeries.php';
-require 'includes/vars.php'; // Inluding in seperate file to keep this file clean
+require 'includes/vars.php'; // Including in seperate file to keep this file clean
 require 'includes/really-long-switch.php';
 ?>
 <svg height="<?php echo $height; ?>" width="<?php echo $width; ?>" viewBox="0 0 <?php echo $width; ?> <?php echo $height; ?>" class="chart" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -31,7 +31,7 @@ if ($typical_time_frame) {
     ORDER BY recorded DESC LIMIT ' . intval($settings['npoints']*24));
     $stmt->execute(array($_GET['meter_id'], 'hour'));
     $typical_data = $stmt->fetchAll();
-    for ($i = 0; $i < 95; $i++) { // 15 min res over day = 96 points
+    for ($i = 0; $i < 96; $i++) { // 15 min res over day = 96 points
       $buffer = array();
       $hour = date('G', $recorded_vals);
       foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
@@ -59,14 +59,14 @@ if ($typical_time_frame) {
     $stmt = $db->prepare(
     'SELECT value, recorded FROM meter_data
     WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
-    ORDER BY value ASC');
+    ORDER BY DAYOFWEEK(FROM_UNIXTIME(recorded)) ASC');
     $stmt->execute(array($_GET['meter_id'], 'hour'));
     $typical_data = $stmt->fetchAll();
-    for ($i = 0; $i < 167; $i++) { // 1 hour res over week = 168 points
+    for ($i = 0; $i < 168; $i++) { // 1 hour res over week = 168 points
       $buffer = array();
       $hour = date('G', $recorded_vals);
       $day = date('N', $recorded_vals);
-      $days = $group[recursive_array_search($day, $group)];
+      $days = $group[recursive_array_search($day, $group)]; // Get group of days which contains the current day
       foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
         if ($hour === date('G', $value['recorded']) && in_array(date('N', $value['recorded']), $days)) {
           $buffer[] = $value['value'];
@@ -74,7 +74,6 @@ if ($typical_time_frame) {
       }
       $median = array_sum($buffer)/count($buffer);//median($buffer);
       $result[] = array('recorded' => $recorded_vals, 'value' => $median);
-      $last_data = $median;
       $recorded_vals += 3600;
     }
   }
@@ -300,12 +299,24 @@ text {
   <!-- <image display="none" id="error" xlink:href='images/error.svg' height="120px" width="150px" y="50" x="<?php //echo $graph_width + (($width - $graph_width)/4) ?>" /> -->
   <text text-anchor="middle" x="<?php echo $graph_width + (($width - $graph_width)/2) ?>" y="200" font-size="15" width="<?php echo $width - ($graph_width+20); ?>px" display="none" id="error-msg">Data are not available for this point</text>
   <?php
-  for ($i = 0; $i <= 46; $i++) { 
-    echo "<image id='frame_{$i}' xlink:href='images/main_frames/frame_{$i}.gif' height='100%' width='";
-    echo $width - $graph_width . "px' x='";
-    echo $graph_width . "' ";
-    echo ($i !== 0) ? 'display="none"' : '';
-    echo ' y="0" />';
+  if ($main_ts->units === 'Gallons / hour' || $main_ts->units === 'Liters / hour' || $main_ts->units === 'Liters') {
+    $number_of_frames = 59;
+    for ($i = 0; $i <= $number_of_frames; $i++) { 
+      echo "<image id='frame_{$i}' xlink:href='images/second_frames/frame_{$i}.gif' height='100%' width='";
+      echo $width - $graph_width . "px' x='";
+      echo $graph_width . "' ";
+      echo ($i !== 0) ? 'display="none"' : '';
+      echo ' y="0" />';
+    }
+  } else {
+    $number_of_frames = 46;
+    for ($i = 0; $i <= $number_of_frames; $i++) { 
+      echo "<image id='frame_{$i}' xlink:href='images/main_frames/frame_{$i}.gif' height='100%' width='";
+      echo $width - $graph_width . "px' x='";
+      echo $graph_width . "' ";
+      echo ($i !== 0) ? 'display="none"' : '';
+      echo ' y="0" />';
+    }
   }
   ?>
   <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
@@ -658,8 +669,8 @@ text {
     // Display the current gif frame
     last_frame = current_frame;
     var diff = current_points[index_rn][1] - relativized_points[index_rn][1];
-    current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0);
-    current_frame = Math.abs( Math.round( ((raw_data[index_rn] - min) / (max - min)) * 46 ) - 46 );
+    current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (<?php echo $number_of_frames ?> - 0) + 0);
+    current_frame = Math.abs( Math.round( ((raw_data[index_rn] - min) / (max - min)) * <?php echo $number_of_frames; ?> ) - <?php echo $number_of_frames; ?> );
     if (current_frame > last_frame) {
       counter = last_frame;
       while (current_frame >= counter && frames.length < 100) {
@@ -683,8 +694,8 @@ text {
     }
   });
   
-  // "Play" the data -- when the mouse is idle for 4.5 seconds, move the dot up the line
-  const mouse_idle_ms = 4500;
+  // "Play" the data -- when the mouse is idle for 5 seconds, move the dot up the line
+  const mouse_idle_ms = 5000;
   var interval = null;
   var timeout = null;
   var timeout2 = null;
@@ -700,7 +711,7 @@ text {
     clearInterval(interval); interval = null;
     clearTimeout(timeout2); timeout2 = null;
     clearTimeout(timeout); timeout = null;
-    if (Math.random() > 0.5) { // Randomly either play through the data or play movie
+    if (Math.random() > 0.6) { // Randomly either play through the data or play movie
       play_data();
     } else {
       play_movie();
@@ -710,75 +721,61 @@ text {
   function play_data() {
     console.log('play_data');
     $('#current-value-container').attr('display', '');
-    var typ_tmp = relativized_points.slice(0);
-    var tmp = current_points.slice(0);
-    var tmpmin = tmp[0][1];
-    var tmpmax = tmp[0][1];
-    for (var i = tmp.length - 1; i >= 0; i--) {
-      if (tmp[i][1] > tmpmax) {
-        tmpmax = tmp[i][1];
-      }
-      if (tmp[i][1] < tmpmin) {
-        tmpmin = tmp[i][1];
-      }
-    }
-    var i = 0, c1 = 0, c2 = 0, c3 = 0, kw = 0, elapsed = 0;
+    var i = 0, kw = 0, elapsed = 0;
     interval = setInterval(function() {
-      if (tmp.length !== 0) {
-        i++;
-        $('#current-circle').attr('cx', tmp[0][0]);
-        $('#current-circle').attr('cy', tmp[0][1]);
-        <?php if ($typical_time_frame) { ?>
-        $('#typical-circle').attr('cx', typ_tmp[0][0]);
-        $('#typical-circle').attr('cy', typ_tmp[0][1]);
-        <?php } else { ?>
-        $('#historical-circle').attr('cx', typ_tmp[0][0]);
-        $('#historical-circle').attr('cy', typ_tmp[0][1]);
-        <?php } ?>
-        typ_tmp.shift();
-        $('#current-time-rect').attr('x', tmp[0][0] - <?php echo $width * 0.05; ?>);
-        $('#current-time-text').attr('x', tmp[0][0]);
-        $('#current-value').text(raw_data_formatted[c1++]);
-        $('#current-time-text').text(current_times[c2++]);
-        tmp.shift();
-        last_frame = current_frame;
-        var diff = current_points[c3][1] - relativized_points[c3][1];
-        current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (46 - 0) + 0); // there are 46 frames
-        kw += raw_data[c3];
-        elapsed += current_timestamps[1]-current_timestamps[0];
-        accumulation(elapsed, kw/(c3+1));
-        c3++;
-        if (current_frame > last_frame && frames.length < 100) {
-          counter = last_frame;
-          while (current_frame >= counter) {
-            frames.push(counter);
-            counter++;
-          }
+      var pct_through = i/(current_points.length-1);
+      var shift_i = Math.round(pct_through * (relativized_points.length*<?php echo $pct_through; ?>));
+      $('#current-circle').attr('cx', current_points[i][0]);
+      $('#current-circle').attr('cy', current_points[i][1]);
+      <?php if ($typical_time_frame) { ?>
+      $('#typical-circle').attr('cx', relativized_points[shift_i][0]);
+      $('#typical-circle').attr('cy', relativized_points[shift_i][1]);
+      <?php } else { ?>
+      $('#historical-circle').attr('cx', relativized_points[shift_i][0]);
+      $('#historical-circle').attr('cy', relativized_points[shift_i][1]);
+      <?php } ?>
+      $('#current-time-rect').attr('x', current_points[i][0] - <?php echo $width * 0.05; ?>);
+      $('#current-time-text').attr('x', current_points[i][0]);
+      $('#current-value').text(raw_data_formatted[i]);
+      $('#current-time-text').text(current_times[i]);
+      last_frame = current_frame;
+      var diff = current_points[i][1] - relativized_points[i][1];
+      current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (<?php echo $number_of_frames ?> - 0) + 0); // there are $number_of_frames frames
+      kw += raw_data[i];
+      elapsed += current_timestamps[1]-current_timestamps[0];
+      accumulation(elapsed, kw/(i+1));
+      i++;
+      if (current_frame > last_frame && frames.length < 100) {
+        counter = last_frame;
+        while (current_frame >= counter) {
+          frames.push(counter);
+          counter++;
         }
-        else if (current_frame < last_frame && frames.length < 100) {
-          counter = last_frame;
-          while (current_frame <= counter) {
-            frames.push(counter);
-            counter--;
-          }
+      }
+      else if (current_frame < last_frame && frames.length < 100) {
+        counter = last_frame;
+        while (current_frame <= counter) {
+          frames.push(counter);
+          counter--;
         }
-        if (tmp.length === 0) { // We're at the end of the data
-          clearInterval(interval); interval = null;
-          $('#frame_' + current_frame).attr('display', '');
-          index_rn = <?php echo count($main_ts->value)-1; ?>; // set the indicator ball stuff to the last point
-          clearTimeout(timeout2); timeout2 = null;
-          timeout2 = setTimeout(play, mouse_idle_ms);
-        }
-
+      }
+      if (i == current_points.length-1) {
+        clearInterval(interval); interval = null;
+        $('#frame_' + current_frame).attr('display', '');
+        index_rn = <?php echo count($main_ts->value)-1; ?>; // set the indicator ball stuff to the last point
+        clearTimeout(timeout2); timeout2 = null;
+        timeout2 = setTimeout(play, mouse_idle_ms);
       }
     }, 200);
   }
+
+  function sortNumber(a,b) { return a - b; }
 
   function play_movie() {
     console.log('play_movie');
     playing = false;
     var val = (raw_data[index_rn] == null) ? 0 : raw_data[index_rn];
-    var raw_data_copy_sorted = raw_data.slice().sort();
+    var raw_data_copy_sorted = raw_data.slice().sort(sortNumber);
     var indexof = raw_data_copy_sorted.indexOf(val);
     var relative_value = ((indexof) / raw_data_copy_sorted.length) * 100; // Get percent (0-100)
     <?php
@@ -790,6 +787,7 @@ text {
       $charachter = 'both';
     }
     ?>
+    // console.log('relative_value: '+relative_value);
     $.get("movie.php", {relative_value: relative_value, count: movies_played, charachter: <?php echo json_encode($charachter) ?>}, function(data) {
       movies_played++;
       var split = data.split('$SEP$');

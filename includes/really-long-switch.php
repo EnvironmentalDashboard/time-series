@@ -80,7 +80,7 @@ switch ($time_frame) {
     $so_far = 'this month';
     $res = 'daily';
     $stroke_width = 1;
-    $circle_size = 'r="3" stroke-width="0" stroke="' . $primary_color . '" fill="';
+    $circle_size = 'r="6" stroke-width="3" fill="' . $primary_color . '" stroke="';
     $from = strtotime(date('Y-m-') . "01 00:00:00"); // Start of the month
     $to = strtotime(date('Y-m-t') . " 24:00:00"); // End of the month
     $secs_in_month = $to - $from; // Different months have diff # days/diff seconds
