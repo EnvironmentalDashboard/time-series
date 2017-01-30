@@ -159,9 +159,11 @@ foreach ($buildings->fetchAll() as $building) {
       <input type="submit" class="btn" value="Update chart" style="margin-left: 10px; margin-top: 10px">
     </form>
   </div>
+
+
   <div class="container-fluid">
     <div class="row">
-      <div class="col-sm-2">
+      <div class="col-xs-2">
         <a href="#" class="thumbnail" style="width: 100%">
           <img src="<?php
           $stmt = $db->prepare('SELECT buildings.custom_img, buildings.name FROM buildings WHERE buildings.id IN (SELECT meters.building_id FROM meters WHERE meters.id = ?) LIMIT 1');
@@ -177,7 +179,7 @@ foreach ($buildings->fetchAll() as $building) {
           ?>" alt="<?php echo $title; ?>">
         </a>
       </div>
-      <div class="col-sm-10">
+      <div class="col-xs-10">
         <?php
         $stmt = $db->prepare('SELECT name FROM meters WHERE id = ? LIMIT 1');
         $stmt->execute(array($_GET['meter_id']));
