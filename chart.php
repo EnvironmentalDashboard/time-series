@@ -322,8 +322,8 @@ text {
   <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
   <text id="current-value-container" text-anchor="middle" fill="<?php echo $primary_color; ?>" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.2; ?>" font-size="20"><tspan id="current-value" font-size="50"></tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em"><?php echo $main_ts->units; ?></tspan></text>
   <?php if ($main_ts->units === 'Kilowatts') { ?>
-  <rect height='60' width='<?php echo $width - $graph_width - 30 ?>px' x="<?php echo $graph_width + 15 ?>" y="<?php echo $graph_height - 30 ?>" fill="#ECEFF1" />
-  <text id="accum-label" text-anchor="middle" fill="#333" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.8; ?>" font-size="15"><tspan id="accum-label-value" font-size="30">0</tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em" id="accum-label-units">Kilowatt-hours <?php echo $so_far; ?></tspan></text>
+  <!-- <rect height='60' width='<?php echo $width - $graph_width - 30 ?>px' x="<?php echo $graph_width + 15 ?>" y="<?php echo $graph_height - 30 ?>" fill="#ECEFF1" /> -->
+  <text id="accum-label" text-anchor="middle" fill="#333" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.8; ?>" font-size="15"><tspan id="accum-label-value" font-size="30" style="font-weight: 800">0</tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em" id="accum-label-units">Kilowatt-hours <?php echo $so_far; ?></tspan></text>
   <?php } ?>
   <rect width="20px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
 
@@ -692,6 +692,8 @@ text {
       $('#current-value-container').attr('display', '');
       alreadydone = true;
     }
+
+    $('#accum-label').css('display', '');
   });
   
   // "Play" the data -- when the mouse is idle for 5 seconds, move the dot up the line
@@ -720,6 +722,7 @@ text {
 
   function play_data() {
     console.log('play_data');
+    $('#accum-label').css('display', '');
     $('#current-value-container').attr('display', '');
     var i = 0, kw = 0, elapsed = 0;
     interval = setInterval(function() {
@@ -789,6 +792,7 @@ text {
     ?>
     // console.log('relative_value: '+relative_value);
     $.get("movie.php", {relative_value: relative_value, count: movies_played, charachter: <?php echo json_encode($charachter) ?>}, function(data) {
+      $('#accum-label').css('display', 'none');
       movies_played++;
       var split = data.split('$SEP$');
       console.log(split)
