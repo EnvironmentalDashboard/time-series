@@ -19,18 +19,31 @@ $typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
 
 if ($typical_time_frame) {
   // See if a configuration for the relative data exists in the db, and if not, have a default
-  $stmt = $db->query('SELECT grouping, npoints FROM meters WHERE id = '.intval($_GET['meter_id']));
-  $settings = $stmt->fetch();
+  $stmt = $db->prepare('SELECT grouping FROM relative_values WHERE meter_id = ? LIMIT 1');
+  $stmt->execute(array($_GET['meter_id']));
+  $json = $stmt->fetch();
+  if (strlen($json) > 0) {
+    $json = json_decode($json, true);
+  } else {
+    $json = json_decode('[{"days":[1,2,3,4,5],"npoints":8},{"days":[1,7],"npoints":5}]', true);
+  }
+  $day_of_week = date('w') + 1;
+  foreach ($json as $grouping) {
+    if (in_array($day_of_week, $grouping['days'])) {
+      $days = $grouping['days'];
+      $npoints = (array_key_exists('npoints', $grouping) ? $grouping['npoints'] : 5);
+      break;
+    }
+  }
   $result = array();
   $recorded_vals = $from;
   $last_data = null;
   if ($time_frame === 'today') { // Get the typical data for today
-    $group = implode(',', $meter->currentGrouping($settings['grouping']));
     $stmt = $db->prepare(
     'SELECT value, recorded FROM meter_data
     WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
-    AND DAYOFWEEK(FROM_UNIXTIME(recorded)) IN ('.$group.')
-    ORDER BY recorded DESC LIMIT ' . intval($settings['npoints']*24));
+    AND DAYOFWEEK(FROM_UNIXTIME(recorded)) IN ('.implode(',', $days).')
+    ORDER BY recorded DESC LIMIT ' . intval($npoints*24));
     $stmt->execute(array($_GET['meter_id'], 'hour'));
     $typical_data = $stmt->fetchAll();
     for ($i = 0; $i < 96; $i++) { // 15 min res over day = 96 points
@@ -57,7 +70,6 @@ if ($typical_time_frame) {
       $recorded_vals += 900;
     }
   } else { // week
-    $group = $meter->grouping($settings['grouping']);
     $stmt = $db->prepare(
     'SELECT value, recorded FROM meter_data
     WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
@@ -67,10 +79,9 @@ if ($typical_time_frame) {
     for ($i = 0; $i < 168; $i++) { // 1 hour res over week = 168 points
       $buffer = array();
       $hour = date('G', $recorded_vals);
-      $day = date('N', $recorded_vals);
-      $days = $group[recursive_array_search($day, $group)]; // Get group of days which contains the current day
+      $day = date('w', $recorded_vals)+1;
       foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
-        if ($hour === date('G', $value['recorded']) && in_array(date('N', $value['recorded']), $days)) {
+        if ($hour === date('G', $value['recorded']) && in_array(date('w', $value['recorded'])+1, $days)) {
           $buffer[] = $value['value'];
         }
       }
@@ -165,15 +176,6 @@ function median($arr) {
     $median = (($low+$high)/2);
   }
   return $median;
-}
-function recursive_array_search($needle,$haystack) {
-  foreach($haystack as $key=>$value) {
-    $current_key=$key;
-    if($needle===$value || (is_array($value) && recursive_array_search($needle,$value) !== false)) {
-      return $current_key;
-    }
-  }
-  return false;
 }
 ?>
 <defs>

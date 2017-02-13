@@ -34,9 +34,10 @@ ini_set('display_errors', 'On');
     .card {
       height: 400px;
       width: 100%;
-      margin-bottom: 10px;
+      margin-bottom: 30px;
       background: #fff;
       padding: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
     }
     .card img {
       width: 100%;
@@ -63,6 +64,7 @@ ini_set('display_errors', 'On');
       border-radius: 3px;
       font-size: 1.5rem;
       padding: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
     }
     input:focus {
       outline: none;
@@ -84,6 +86,7 @@ ini_set('display_errors', 'On');
       text-align: center;
       cursor: pointer;
       padding-top: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
     }
     .active {
       background: #95a5a6;
@@ -140,6 +143,7 @@ ini_set('display_errors', 'On');
       </div>
     </div>
   </div>
+  <div id="bg" style="display: none;height: 100%;width: 100%;position: absolute;top: 0;left: 0;right: 0;bottom: 0;background: #fff"></div>
   <img src="images/close.svg" alt="" height="50" width="50" id="close-timeseries" style="display: none;cursor: pointer;position: fixed;top: 0;right: 0;">
   <object id="object" type="image/svg+xml" data=""></object>
   <script
@@ -197,10 +201,12 @@ ini_set('display_errors', 'On');
       var meter_id = $(this).data('meterid');
       $('#object').attr('data', 'http://104.131.103.232/oberlin/time-series/chart.php?meter_id='+meter_id+'&meter_id2=' + meter_id).css('display', 'initial');
       $('#close-timeseries').css('display', 'initial');
+      $('#bg').css('display', 'block');
     });
     $('#close-timeseries').on('click', function() {
       $('#close-timeseries').css('display', 'none');
       $('#object').css('display', 'none');
+      $('#bg').css('display', 'none');
     });
   </script>
 </body>
