@@ -1,7 +1,7 @@
 <?php
 $log = array(); // For debugging
 $now = time();
-$time_frame = (!empty($_GET['time'])) ? $_GET['time'] : 'live'; // Which button on the bottom is selected
+$time_frame = (!empty($_GET['time'])) ? $_GET['time'] : 'today'; // Which button on the bottom is selected
 // Colors, fonts, sizing, etc
 $primary_color = '#fff';//'#f5f5f5';//'#fafafa';//'#ecf0f1';
 $secondary_color = '#2ecc71';

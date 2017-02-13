@@ -1,5 +1,6 @@
 <?php
 require '../includes/db.php';
+require '../includes/class.TimeSeries.php';
 error_reporting(-1);
 ini_set('display_errors', 'On');
 ?>
@@ -9,7 +10,8 @@ ini_set('display_errors', 'On');
   <meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
   <link rel="stylesheet" href="css/bootstrap.grid.css">
-  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"> -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
   <title>Building Navigation</title>
   <style>
     body {
@@ -18,25 +20,37 @@ ini_set('display_errors', 'On');
       color: #2c3e50;
       font-family: 'Roboto', Helvetica, sans-serif;
     }
+    #object {
+      width: 100%;
+      height: auto;
+      display: block;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      box-shadow: 0px 0px 15px 5px rgba(0,0,0,0.5);
+      display: none;
+    }
     .card {
-      height: 450px;
-      /*width: calc(33.333% - 10px);*/
+      height: 400px;
       width: 100%;
       margin-bottom: 10px;
       background: #fff;
       padding: 10px;
-      /*display: inline-block;*/
-      /*margin-right: 10px;*/
-      /*float: left;*/
-      /*position: relative;*/
     }
     .card img {
       width: 100%;
     }
-    .card p {
-      position: absolute;
-      bottom: 0px;
-      overflow: scroll;
+    .side1, .side2 {
+      display: flex;
+      flex-direction: column;
+      height: 390px;
+      background: #fff;
+    }
+    .align-bottom {
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-top: auto;
     }
     h1, h2, h3 {
       margin-top: 5px;
@@ -91,40 +105,62 @@ ini_set('display_errors', 'On');
       </div>
       <div class="col-sm-9 col-sm-pull-3">
         <div class="row">
-        <?php foreach($db->query('SELECT id, name, building_type, custom_img FROM buildings WHERE
+        <?php
+        foreach($db->query('SELECT id, name, building_type, custom_img FROM buildings WHERE
                                 custom_img IS NOT NULL AND id IN
                                 (SELECT building_id FROM meters WHERE num_using > 0 OR for_orb > 0)
-                                ORDER BY building_type ASC, name') as $building) { ?>
-        <div class="col-sm-4">
-        <div class="card" data-title="<?php echo $building['name'] ?>" data-buildingtype="<?php echo $building['building_type'] ?>">
-          <img src="<?php echo $building['custom_img'] ?>" alt="<?php echo $building['name'] ?>">
-          <h1><?php echo $building['name'] ?></h1>
-          <h3 class="text-muted"><?php echo $building['building_type'] ?></h3>
-          <p style="max-height: 75px;overflow:scroll;">
-            <?php
-            $skip = true;
-            foreach ($db->query('SELECT id, name FROM meters WHERE building_id = '.intval($building['id']).' AND (num_using > 0 OR for_orb > 0)') as $meter) {
-              if ($skip) {
-                $skip = false;
-              } else { echo '| '; }
-              echo "<a href='http://104.131.103.232/oberlin/time-series/index.php?meter_id={$meter['id']}&meter_id2={$meter['id']}'>{$meter['name']}</a> ";
-            } ?>
-          </p>
-        </div>
+                                ORDER BY building_type ASC, name') as $building) {
+          $stmt = $db->prepare('SELECT id, name FROM meters WHERE building_id = ? AND (num_using > 0 OR for_orb > 0)');
+          $stmt->execute(array($building['id']));
+          $meters = $stmt->fetchAll();
+        ?>
+        <div class="col-sm-4 card-col" data-title="<?php echo $building['name'] ?>" data-buildingtype="<?php echo $building['building_type'] ?>">
+          <div class="card animated fadeInDown">
+            <div class="side1" id="side1<?php echo $building['id']; ?>">
+              <img src="<?php echo $building['custom_img'] ?>" alt="<?php echo $building['name'] ?>">
+              <h1><?php echo $building['name'] ?></h1>
+              <h3 class="text-muted"><?php echo $building['building_type'] ?></h3>
+              <p class="more-meters align-bottom" data-side1="side1<?php echo $building['id'] ?>" data-side2="side2<?php echo $building['id'] ?>">View <?php echo count($meters) ?> meters <i class="fa fa-long-arrow-right"></i></p>
+            </div>
+            <div class="side2 hidden" id="side2<?php echo $building['id']; ?>">
+              <h3>Meters</h3>
+              <p>
+                <?php
+                foreach ($meters as $meter) {
+                  // echo "<a href='http://104.131.103.232/oberlin/time-series/index.php?meter_id={$meter['id']}&meter_id2={$meter['id']}'>{$meter['name']}</a>";
+                  echo "<a href='#' data-meterid='{$meter['id']}' class='show-timeseries'>{$meter['name']}</a><br>";
+                } ?>
+              </p>
+              <p class="align-bottom fewer-meters" data-side1="side1<?php echo $building['id'] ?>" data-side2="side2<?php echo $building['id'] ?>"><i class="fa fa-long-arrow-left"></i> Back</p>
+            </div>
+          </div>
         </div>
         <?php } ?>
         </div>
       </div>
     </div>
   </div>
+  <img src="images/close.svg" alt="" height="50" width="50" id="close-timeseries" style="display: none;cursor: pointer;position: fixed;top: 0;right: 0;">
+  <object id="object" type="image/svg+xml" data=""></object>
   <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
   crossorigin="anonymous"></script>
   <script>
+    $.fn.extend({
+      animateCss: function (animationName) {
+        var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
+        this.addClass('animated ' + animationName).one(animationEnd, function() {
+          $(this).removeClass('animated ' + animationName);
+          // if (animationName === 'fadeOut') {
+          //   $(this).addClass('hidden');
+          // }
+        });
+      }
+    });
     $('#search').on('input', function() {
       var query = $('#search').val().toLowerCase();
-      $('.card').each(function() {
+      $('.card-col').each(function() {
         var content = $(this).data('title') + ' ' + $(this).data('buildingtype');
         if (content.toLowerCase().indexOf(query) === -1) {
           $(this).addClass('hidden');
@@ -137,13 +173,34 @@ ini_set('display_errors', 'On');
       $('.filter-btn').removeClass('active');
       $(this).addClass('active');
       var buildingtype = $(this).data('buildingtype');
-      $('.card').each(function() {
+      $('.card-col').each(function() {
         if ($(this).data('buildingtype') == buildingtype) {
           $(this).removeClass('hidden');
         } else {
           $(this).addClass('hidden');
         }
       });
+    });
+    $('.more-meters').on('click', function() {
+      var side1 = $('#' + $(this).data('side1'));
+      var side2 = $('#' + $(this).data('side2'));
+      side1.addClass('hidden');//.animateCss('fadeOut');
+      side2.removeClass('hidden').animateCss('zoomIn');
+    });
+    $('.fewer-meters').on('click', function() {
+      var side1 = $('#' + $(this).data('side1'));
+      var side2 = $('#' + $(this).data('side2'));
+      side2.addClass('hidden');
+      side1.removeClass('hidden').animateCss('zoomIn');
+    })
+    $('.show-timeseries').on('click', function() {
+      var meter_id = $(this).data('meterid');
+      $('#object').attr('data', 'http://104.131.103.232/oberlin/time-series/chart.php?meter_id='+meter_id+'&meter_id2=' + meter_id).css('display', 'initial');
+      $('#close-timeseries').css('display', 'initial');
+    });
+    $('#close-timeseries').on('click', function() {
+      $('#close-timeseries').css('display', 'none');
+      $('#object').css('display', 'none');
     });
   </script>
 </body>

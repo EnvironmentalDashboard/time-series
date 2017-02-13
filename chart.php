@@ -11,12 +11,14 @@ require 'includes/really-long-switch.php';
 <?php
 // var_dump($from);var_dump($now);exit;
 $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
-$secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
+$secondary_ts_set = ($_GET['meter_id'] !== $_GET['meter_id2']);
+$secondary_ts = ($secondary_ts_set) ? new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res) : null; // "Second variable" timeseries
 $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
 $meter = new Meter($db);
 $typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
 
 if ($typical_time_frame) {
+  // See if a configuration for the relative data exists in the db, and if not, have a default
   $stmt = $db->query('SELECT grouping, npoints FROM meters WHERE id = '.intval($_GET['meter_id']));
   $settings = $stmt->fetch();
   $result = array();
@@ -85,26 +87,26 @@ if ($typical_time_frame) {
 
 $main_ts->dashed( (!empty($_GET['dasharr1'])) ? true : false );
 $historical_ts->dashed( (!empty($_GET['dasharr2'])) ? true : false );
-$secondary_ts->dashed( (!empty($_GET['dasharr3'])) ? true : false );
-
 $main_ts->fill( (isset($_GET['fill1']) && $_GET['fill1'] === 'off') ? false : true );
 $historical_ts->fill( (isset($_GET['fill2']) && $_GET['fill2'] === 'off') ? false : true );
-$secondary_ts->fill( (isset($_GET['fill3']) && $_GET['fill3'] === 'off') ? false : true );
-
 $current_graph_color = (!empty($_GET['color1'])) ? $_GET['color1'] : '#2ecc71';
 $historical_graph_color = (!empty($_GET['color2'])) ? $_GET['color2'] : '#bdc3c7';
-$var2_graph_color = (!empty($_GET['color3'])) ? $_GET['color3'] : '#33A7FF';
 $main_ts->color($current_graph_color);
 $historical_ts->color($historical_graph_color);
-$secondary_ts->color($var2_graph_color);
+if ($secondary_ts_set) {
+  $var2_graph_color = (!empty($_GET['color3'])) ? $_GET['color3'] : '#33A7FF';
+  $secondary_ts->color($var2_graph_color);
+  $secondary_ts->fill( (isset($_GET['fill3']) && $_GET['fill3'] === 'off') ? false : true );
+  $secondary_ts->dashed( (!empty($_GET['dasharr3'])) ? true : false );
+  $secondary_ts->setMin(); $secondary_ts->setMax();
+  $secondary_ts->setUnits();
+}
 
 $main_ts->setMin(); $main_ts->setMax();
 $historical_ts->setMin(); $historical_ts->setMax();
-$secondary_ts->setMin(); $secondary_ts->setMax();
 // If the units of both timeseries are the same, scale the charts to each other
 $main_ts->setUnits();
-$secondary_ts->setUnits();
-if ($secondary_ts->units === $main_ts->units && $main_ts->units !== null) {
+if ($secondary_ts_set && ($secondary_ts->units === $main_ts->units && $main_ts->units !== null)) {
   // echo "<!-- Scaling primary + secondary together -->";
   $min = min($main_ts->min, $secondary_ts->min, $historical_ts->min);
   $max = max($main_ts->max, $secondary_ts->max, $historical_ts->max);
@@ -120,18 +122,27 @@ else {
   $main_ts->setMin($min); $main_ts->setMax($max);
   $historical_ts->setMin($min); $historical_ts->setMax($max);
 }
-if ($typical_time_frame) { $typical_ts->setMin($min); $typical_ts->setMax($max); }
+if ($typical_time_frame) {
+  $typical_ts->setMin($min);
+  $typical_ts->setMax($max);
+}
+$name1 = $main_ts->getName();
+if ($secondary_ts_set) {
+  $secondary_ts->yAxis();
+  $name2 = $secondary_ts->getName();
+  $name = $name1 . 'vs. ' . $name2;
+} else {
+  $name = $name1;
+}
 $main_ts->yAxis();
 $historical_ts->yAxis();
-$secondary_ts->yAxis();
-
 $main_ts->setTimes();
-$name1 = $main_ts->getName();
-$name2 = $secondary_ts->getName();
-$name = (!empty($_GET['name'])) ? $_GET['name'] : $name2 . ' vs. ' . $name1;
 // URLs for buttons on bottom
 $curr_url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 parse_str(parse_url($curr_url, PHP_URL_QUERY), $tmp);
+if (!isset($tmp['time'])) { // todo: fix
+  $tmp['time'] = 'today';
+}
 $url1h = str_replace('time=' . rawurlencode($tmp['time']), 'time=live', $curr_url);
 $url1d = str_replace('time=' . rawurlencode($tmp['time']), 'time=today', $curr_url);
 $url1w = str_replace('time=' . rawurlencode($tmp['time']), 'time=week', $curr_url);
@@ -217,7 +228,7 @@ text {
 
   <!-- Second variable overlay -->
   <g id="second-chart" style="opacity: 0;">
-    <?php $secondary_ts->printChart($graph_height, $graph_width * $pct_through, $graph_offset, $secondary_ts->yaxis_min, $secondary_ts->yaxis_max); ?>
+    <?php if ($secondary_ts_set) {$secondary_ts->printChart($graph_height, $graph_width * $pct_through, $graph_offset, $secondary_ts->yaxis_min, $secondary_ts->yaxis_max);} ?>
   </g>
 
   <!-- Current data -->
@@ -233,6 +244,9 @@ text {
   <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->baseload ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->baseload ?>" stroke-width="1" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
   <line x1="<?php echo $chart_padding ?>" y1="<?php echo $main_ts->peak ?>" x2="<?php echo $graph_width - $chart_padding ?>" y2="<?php echo $main_ts->peak ?>" stroke-width="1" stroke="<?php echo $font_color ?>" stroke-dasharray="10,5"/>
   <?php } ?>
+
+  <!-- padding at bottom of chart -->
+  <rect width="<?php echo $graph_width ?>" height="20px" x="0" y="<?php echo $height * 0.9; ?>" style="fill:#fff;" />
 
   <g id="y-axis-left" text-anchor="start">
     <?php
@@ -279,17 +293,19 @@ text {
     <text x="1.2%" y="5%" font-size="12" id="show-less" fill="#ECEFF1" style="font-weight: 400">SHOW MORE</text>
   </g>
   <g id="dropdown" style="opacity: 0;">
-    <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo ($typical_time_frame) ? $height * 0.185 : $height * 0.12; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
+    <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo ($secondary_ts_set) ? $height * 0.185 : $height * 0.12; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
     <text style="cursor:pointer" id="historical" x="1.25%" y="<?php echo ($height * 0.075) + 15; ?>" font-size="12" fill="<?php echo $primary_color; ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
       if ($time_frame === 'live') { echo 'hour'; }
       elseif ($time_frame === 'today') { echo 'day'; }
       else { echo $time_frame; }
       ?></text>
     <line x1="0" y1="<?php echo ($height * 0.075) + 25; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 25; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
-    <text style="cursor:pointer" id="second" x="1.25%" y="<?php echo ($height * 0.075) + 40; ?>" font-size="12" fill="<?php echo $primary_color; ?>">Show <?php echo $name2; ?></text>
-    <?php if ($typical_time_frame) { ?>
+    <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="1.25%" y="<?php echo ($height * 0.075) + 40; ?>" font-size="12" fill="<?php echo $primary_color; ?>">
+      <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
+    </text>
+    <?php if ($secondary_ts_set) { ?>
     <line x1="0" y1="<?php echo ($height * 0.075) + 50; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 50; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
-    <text style="cursor:pointer" id="typical" x="1.25%" y="<?php echo ($height * 0.075) + 65; ?>" font-size="12" fill="<?php echo $primary_color; ?>">Show typical</text>
+    <text style="cursor:pointer" id="second" x="1.25%" y="<?php echo ($height * 0.075) + 65; ?>" font-size="12" fill="<?php echo $primary_color; ?>">Show <?php echo $name2; ?></text>
     <?php } ?>
   </g>
 
@@ -334,28 +350,36 @@ text {
   <text fill="<?php echo $font_color; ?>" id="legend"
         x="<?php echo ($width * 0.12); ?>" y="<?php echo $height * 0.049; ?>"
         font-size="13" style="font-weight: 400">
-        <tspan dy="8" style='font-size: 40px;fill: <?php echo $current_graph_color; ?>'>&#9632;</tspan>
-        <tspan dy="-8"><?php echo $name1; ?></tspan>
+    <tspan dy="8" style='font-size: 40px;fill: <?php echo $current_graph_color; ?>'>&#9632;</tspan>
+    <tspan dy="-8"><?php echo $name1; ?></tspan>
+    &#160;&#160;&#160;
+    <?php if ($typical_time_frame) { ?>
+      <tspan id="typical-use-legend">
+        <tspan dy="8" style='font-size: 40px;fill: #f39c12'>&#9632;</tspan>
+        <tspan dy="-8">Typical Use</tspan>
         &#160;&#160;&#160;
-        <?php if ($typical_time_frame) { ?>
-          <tspan dy="8" style='font-size: 40px;fill: #f39c12'>&#9632;</tspan>
-          <tspan dy="-8">Typical Use</tspan>
-          &#160;&#160;&#160;
-        <?php } ?>
-        <tspan dy="8" style='font-size: 40px;fill: <?php echo $historical_graph_color; ?>'>&#9632;</tspan>
-        <tspan dy="-8">Previous <?php
-        if ($time_frame === 'live') {
-          echo 'Hour';
-        } elseif ($time_frame === 'today') {
-          echo 'Day';
-        } else {
-          echo ucwords($time_frame);
-        }
-        ?></tspan>
-        &#160;&#160;&#160;
-        <tspan dy="8" style='font-size: 40px;fill: <?php echo $var2_graph_color; ?>'>&#9632;</tspan>
-        <tspan dy="-8"><?php echo $name2; ?></tspan>
-        </text>
+      </tspan>
+    <?php } ?>
+    <tspan id="historical-use-legend" style="display: none;">
+      <tspan dy="8" style='font-size: 40px;fill: <?php echo $historical_graph_color; ?>'>&#9632;</tspan>
+      <tspan dy="-8">Previous <?php
+      if ($time_frame === 'live') {
+        echo 'Hour';
+      } elseif ($time_frame === 'today') {
+        echo 'Day';
+      } else {
+        echo ucwords($time_frame);
+      }
+      ?></tspan>
+    </tspan>
+    <?php if ($secondary_ts_set) { ?>
+    <tspan id="secondary-chart-legend" style="display: none;">
+      &#160;&#160;&#160;
+      <tspan dy="8" style='font-size: 40px;fill: <?php echo $var2_graph_color; ?>'>&#9632;</tspan>
+      <tspan dy="-8"><?php echo $name2; ?></tspan>
+    </tspan>
+    <?php } ?>
+  </text>
 
   <!-- Bottom bar -->
   <rect width="100%" height="<?php echo $height * 0.075; ?>px" x="0" y="<?php echo $height * 0.925; ?>" style="fill:<?php echo '#ECEFF1';//$primary_color; ?>;" />
@@ -499,6 +523,7 @@ text {
     var historical = $('#historical-chart');
     if (historical.css('opacity') === '0') {
       historical.css('opacity', '1');
+      $('#historical-use-legend').css('display', 'initial');
       curtain('curtain');
       $(this).text('Hide previous <?php
       if ($time_frame === 'live') {
@@ -514,6 +539,7 @@ text {
     }
     else {
       historical.css('opacity', '0');
+      $('#historical-use-legend').css('display', 'none');
       $(this).text('Show previous <?php
       if ($time_frame === 'live') {
         echo 'hour';
@@ -527,28 +553,34 @@ text {
       ?>');
     }
   });
+  <?php if ($secondary_ts_set) { ?>
   $('#second').on("click", function() {
     var second = $('#second-chart');
     if (second.css('opacity') === '0') {
+      $('#secondary-chart-legend').css('display', 'initial');
       $('#y-axis-right').css('opacity', '1');
       second.css('opacity', '1');
       curtain('curtain');
       $(this).text('Hide <?php echo $name2; ?>');
     }
     else {
+      $('#secondary-chart-legend').css('display', 'none');
       $('#y-axis-right').css('opacity', '0');
       second.css('opacity', '0');
       $(this).text('Show <?php echo $name2; ?>');
     }
   });
+  <?php } ?>
   $('#typical').on("click", function() {
     var typ = $('#typical-chart');
     if (typ.css('opacity') === '0') {
+      $('#typical-use-legend').css('display', 'initial');
       typ.css('opacity', '1');
       curtain('curtain');
       $(this).text('Hide typical');
     }
     else {
+      $('#typical-use-legend').css('display', 'none');
       typ.css('opacity', '0');
       $(this).text('Show typical');
     }
@@ -820,7 +852,7 @@ text {
   function accumulation(time_sofar, avg_kw) {
     <?php if ($main_ts->units === 'Kilowatts') { ?>
     var kwh = (time_sofar/3600)*avg_kw;
-    console.log('time elapsed in hours: '+(time_sofar/3600)+"\navg_kw: "+ avg_kw+"\nkwh: "+kwh);
+    // console.log('time elapsed in hours: '+(time_sofar/3600)+"\navg_kw: "+ avg_kw+"\nkwh: "+kwh);
     if (accum_btn.attr('id') === 'kwh') {
       $('#accum-label-value').text(Math.round(kwh).toLocaleString()); // kWh = time elapsed in hours * kilowatts so far
     }
