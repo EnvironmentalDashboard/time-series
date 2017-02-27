@@ -197,7 +197,7 @@ foreach ($buildings->fetchAll() as $building) {
       </div>
     </div>
   </div>
-  <object id="object" type="image/svg+xml" data="http://104.131.103.232/oberlin/time-series/chart.php?<?php echo http_build_query($_GET); ?>"></object>
+  <object id="object" type="image/svg+xml" data="chart.php?<?php echo http_build_query($_GET); ?>"></object>
   <script>
     function show_modal() {
       document.getElementById("modal").style.display = 'block';

@@ -199,7 +199,7 @@ ini_set('display_errors', 'On');
     })
     $('.show-timeseries').on('click', function() {
       var meter_id = $(this).data('meterid');
-      $('#object').attr('data', 'http://104.131.103.232/oberlin/time-series/chart.php?meter_id='+meter_id+'&meter_id2=' + meter_id).css('display', 'initial');
+      $('#object').attr('data', 'chart.php?meter_id='+meter_id+'&meter_id2=' + meter_id).css('display', 'initial');
       $('#close-timeseries').css('display', 'initial');
       $('#bg').css('display', 'block');
     });

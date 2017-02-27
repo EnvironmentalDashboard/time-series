@@ -21,7 +21,7 @@ if ($typical_time_frame) {
   // See if a configuration for the relative data exists in the db, and if not, have a default
   $stmt = $db->prepare('SELECT relative_values.grouping FROM relative_values INNER JOIN meters ON meters.id = ? LIMIT 1');
   $stmt->execute(array($_GET['meter_id']));
-  $json = $stmt->fetch();
+  $json = $stmt->fetchColumn();
   if (strlen($json) > 0) {
     $json = json_decode($json, true);
   } else {
@@ -248,7 +248,7 @@ text {
   <?php } ?>
 
   <!-- padding at bottom of chart -->
-  <rect width="<?php echo $graph_width ?>" height="20px" x="0" y="<?php echo $height * 0.9; ?>" style="fill:#fff;" />
+  <rect width="<?php echo $graph_width ?>" height="30px" x="0" y="<?php echo $height * 0.88; ?>" style="fill:#fff;" />
 
   <g id="y-axis-left" text-anchor="start">
     <?php
@@ -263,7 +263,7 @@ text {
       $chart_max -= $interval;
     }
     ?>
-    <text x="5" y="<?php echo $graph_height + $graph_offset + 10; ?>" font-size="10" fill="<?php echo $font_color; ?>"><?php echo $main_ts->units; ?></text>
+    <text x="5" y="<?php echo $graph_height + $graph_offset + 20; ?>" font-size="10" fill="<?php echo $font_color; ?>"><?php echo $main_ts->units; ?></text>
   </g>
   <?php if (isset($secondary_ts->yaxis)) { ?>
   <g id="y-axis-right" text-anchor="end" style="opacity: 0">
@@ -276,7 +276,7 @@ text {
       $chart_max -= $interval;
     }
     ?>
-    <text x="<?php echo $graph_width - 5; ?>" y="<?php echo $graph_height + $graph_offset + 10; ?>" font-size="10" fill="<?php echo $font_color; ?>"><?php echo $secondary_ts->units; ?></text>
+    <text x="<?php echo $graph_width - 5; ?>" y="<?php echo $graph_height + $graph_offset + 20; ?>" font-size="10" fill="<?php echo $font_color; ?>"><?php echo $secondary_ts->units; ?></text>
   </g>
   <?php } ?>
 
@@ -284,15 +284,15 @@ text {
   <?php echo $dates; ?>
 
   <!-- Current time -->
-  <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.06; ?>px" x="-9999" y="<?php echo $height * 0.075; ?>" style="fill:<?php echo $font_color; ?>;" id="current-time-rect" />
+  <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.06; ?>px" x="-9999" y="<?php echo $height * 0.878//0.075; ?>" style="fill:<?php echo $font_color; ?>;" id="current-time-rect" />
   <text fill="<?php echo $primary_color; ?>" id="current-time-text" text-anchor="middle"
-        x="-9999" y="<?php echo $height * 0.115; ?>"
+        x="-9999" y="<?php echo $height * 0.91//0.115; ?>"
         font-size="12"></text>
 
   <!-- Main button -->
   <g id="layer-btn" style="cursor: pointer;" class="noselect">
     <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.075; ?>px" x="0" y="0" fill="<?php echo '#2196F3';//$primary_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="0.5" style="stroke-dasharray:0,<?php echo ($width * 0.1) . ',' . (($width*0.1) + ($height * 0.075)) . ',' . ($height * 0.075); ?>" />
-    <text x="2.5%" y="5%" font-size="13" fill="#ECEFF1" style="font-weight: 400">Options</text>
+    <text x="2.2%" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Options</text>
   </g>
   <g id="dropdown" style="opacity: 0;">
     <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo ($secondary_ts_set) ? $height * 0.185 : $height * 0.12; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
@@ -391,40 +391,40 @@ text {
     <?php if ($time_frame !== 'live') { ?>
     <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.15; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.12; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3" />
-      <text fill="#ffffff" x="<?php echo $width * 0.155; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
+      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.12; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3" /> -->
+      <text fill="#2196F3" x="<?php echo $width * 0.155; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1d); ?>">
     <?php if ($time_frame !== 'today') { ?>
     <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.255; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Today</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.222; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" />
-      <text fill="#ffffff" x="<?php echo $width * 0.255; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Today</text>
+      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.222; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
+      <text fill="#2196F3" x="<?php echo $width * 0.255; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Today</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1w); ?>">
     <?php if ($time_frame !== 'week') { ?>
     <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.322; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" />
-      <text fill="#ffffff" x="<?php echo $width * 0.355; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
+      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.322; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
+      <text fill="#2196F3" x="<?php echo $width * 0.355; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1m); ?>">
     <?php if ($time_frame !== 'month') { ?>
     <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.45; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Month</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.425; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" />
-      <text fill="#ffffff" x="<?php echo $width * 0.455; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Month</text>
+      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.425; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
+      <text fill="#2196F3" x="<?php echo $width * 0.455; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Month</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1y); ?>">
     <?php if ($time_frame !== 'year') { ?>
     <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.55; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.518; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" />
-      <text fill="#ffffff" x="<?php echo $width * 0.555; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
+      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.518; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
+      <text fill="#2196F3" x="<?php echo $width * 0.555; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } ?>
   </a>
   <!-- accum_btnulation selection -->
@@ -433,22 +433,22 @@ text {
     <text fill="<?php echo $font_color; ?>" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
   </g>
   <g id="kwh-active">
-    <rect width="<?php echo $width * 0.05; ?>px" height="30" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" />
-    <text fill="#ffffff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+    <!-- <rect width="<?php echo $width * 0.05; ?>px" height="30" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
+    <text fill="#2196F3" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
   </g>
   <g id="co2">
     <text fill="<?php echo $font_color; ?>" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="co2-active" style="display: none">
-    <rect width="<?php echo $width * 0.05; ?>px" height="30" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" />
-    <text fill="#ffffff" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
+    <!-- <rect width="<?php echo $width * 0.05; ?>px" height="30" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
+    <text fill="#2196F3" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="money">
     <text fill="<?php echo $font_color; ?>" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <g id="money-active" style="display: none">
-    <rect width="<?php echo $width * 0.04; ?>px" height="30" x="<?php echo $graph_width + 160; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" />
-    <text fill="#ffffff" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+    <!-- <rect width="<?php echo $width * 0.04; ?>px" height="30" x="<?php echo $graph_width + 160; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
+    <text fill="#2196F3" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <?php } ?>
 

@@ -14,6 +14,7 @@ $graph_width = $width * 0.745; // for 1000x400
 //$graph_height = $height * 0.6;
 //$graph_offset = $height * 0.3; // Controls how much space is between the minimium value of the time series and the bottom of the image
 $graph_height = $height * 0.8;
-$graph_offset = $height * 0.09;
+// $graph_offset = $height * 0.09;
+$graph_offset = $height * 0.07;
 $chart_padding = 40;
 ?>
