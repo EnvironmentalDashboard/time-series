@@ -14,7 +14,7 @@ if (empty($_GET['time'])) {
 }
 $dropdown_html1 = '';
 $dropdown_html2 = '';
-$buildings = $db->query('SELECT * FROM buildings ORDER BY name ASC');
+$buildings = $db->query("SELECT * FROM buildings WHERE user_id = {$user_id} ORDER BY name ASC");
 foreach ($buildings->fetchAll() as $building) {
   $stmt = $db->prepare('SELECT id, name FROM meters WHERE building_id = ? AND (num_using > 0 OR for_orb = 1) ORDER BY name');
   $stmt->execute(array($building['id']));
@@ -166,7 +166,7 @@ foreach ($buildings->fetchAll() as $building) {
       <div class="col-xs-2">
         <a href="#" class="thumbnail" style="width: 100%">
           <img src="<?php
-          $stmt = $db->prepare('SELECT buildings.custom_img, buildings.name FROM buildings WHERE buildings.id IN (SELECT meters.building_id FROM meters WHERE meters.id = ?) LIMIT 1');
+          $stmt = $db->prepare("SELECT buildings.custom_img, buildings.name FROM buildings WHERE user_id = {$user_id} AND buildings.id IN (SELECT meters.building_id FROM meters WHERE meters.id = ?) LIMIT 1");
           $stmt->execute(array($_GET['meter_id']));
           $result = $stmt->fetch();
           $title = $result['name'];

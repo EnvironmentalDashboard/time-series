@@ -100,8 +100,7 @@ ini_set('display_errors', 'On');
       <div class="col-sm-3 col-sm-push-9">
         <input type="text" id="search" placeholder="Search">
         <ul>
-          <?php foreach($db->query('SELECT DISTINCT building_type FROM buildings WHERE
-          custom_img IS NOT NULL AND id IN (SELECT building_id FROM meters WHERE num_using > 0 OR for_orb > 0) ORDER BY building_type ASC') as $building) { ?>
+          <?php foreach($db->query('SELECT DISTINCT building_type FROM buildings WHERE user_id = {$user_id} AND custom_img IS NOT NULL AND id IN (SELECT building_id FROM meters WHERE num_using > 0 OR for_orb > 0) ORDER BY building_type ASC') as $building) { ?>
           <li class="filter-btn" data-buildingtype="<?php echo $building['building_type']; ?>"><?php echo $building['building_type']; ?></li>
           <?php } ?>
         </ul>
@@ -109,10 +108,7 @@ ini_set('display_errors', 'On');
       <div class="col-sm-9 col-sm-pull-3">
         <div class="row">
         <?php
-        foreach($db->query('SELECT id, name, building_type, custom_img FROM buildings WHERE
-                                custom_img IS NOT NULL AND id IN
-                                (SELECT building_id FROM meters WHERE num_using > 0 OR for_orb > 0)
-                                ORDER BY building_type ASC, name') as $building) {
+        foreach($db->query('SELECT id, name, building_type, custom_img FROM buildings WHERE user_id = {$user_id} AND custom_img IS NOT NULL AND id IN (SELECT building_id FROM meters WHERE num_using > 0 OR for_orb > 0) ORDER BY building_type ASC, name') as $building) {
           $stmt = $db->prepare('SELECT id, name FROM meters WHERE building_id = ? AND (num_using > 0 OR for_orb > 0)');
           $stmt->execute(array($building['id']));
           $meters = $stmt->fetchAll();
