@@ -337,6 +337,8 @@ text {
     }
   }
   ?>
+  <rect id='fishbgbg' style="fill: #3498db" height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none"/>
+  <image id='fishbg' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
   <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
   <text id="current-value-container" text-anchor="middle" fill="<?php echo $primary_color; ?>" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.2; ?>" font-size="20"><tspan id="current-value" font-size="50"></tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em"><?php echo $main_ts->units; ?></tspan></text>
   <?php if ($main_ts->units === 'Kilowatts') { ?>
@@ -389,66 +391,74 @@ text {
   <line x1="0" y1="<?php echo $height - ($height * 0.075); ?>" x2="<?php echo $width; ?>px" y2="<?php echo $height - ($height * 0.075); ?>" stroke-width="0.5" stroke="<?php echo $font_color; ?>"/>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1h); ?>">
     <?php if ($time_frame !== 'live') { ?>
-    <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.15; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <text fill="#fff" x="<?php echo $width * 0.2; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } else { ?>
-      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.12; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3" /> -->
-      <text fill="#2196F3" x="<?php echo $width * 0.155; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3" />
+      <text fill="#fff" x="<?php echo $width * 0.2; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1d); ?>">
     <?php if ($time_frame !== 'today') { ?>
-    <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.255; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Today</text>
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.26; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $width * 0.285; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Today</text>
     <?php } else { ?>
-      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.222; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
-      <text fill="#2196F3" x="<?php echo $width * 0.255; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Today</text>
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.26; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+      <text fill="#fff" x="<?php echo $width * 0.285; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Today</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1w); ?>">
     <?php if ($time_frame !== 'week') { ?>
-    <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $width * 0.37; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
     <?php } else { ?>
-      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.322; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
-      <text fill="#2196F3" x="<?php echo $width * 0.355; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+      <text fill="#fff" x="<?php echo $width * 0.37; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1m); ?>">
     <?php if ($time_frame !== 'month') { ?>
-    <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.45; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Month</text>
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.432; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $width * 0.458; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Month</text>
     <?php } else { ?>
-      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.425; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
-      <text fill="#2196F3" x="<?php echo $width * 0.455; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Month</text>
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.432; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+      <text fill="#fff" x="<?php echo $width * 0.458; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Month</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1y); ?>">
     <?php if ($time_frame !== 'year') { ?>
-    <text fill="<?php echo $font_color; ?>" x="<?php echo $width * 0.55; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.518; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $width * 0.55; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } else { ?>
-      <!-- <rect width="<?php echo $width * 0.1; ?>px" height="30" x="<?php echo $width * 0.518; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
-      <text fill="#2196F3" x="<?php echo $width * 0.555; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.518; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+      <text fill="#fff" x="<?php echo $width * 0.555; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } ?>
   </a>
   <!-- accum_btnulation selection -->
   <?php if ($main_ts->units === 'Kilowatts') { ?>
   <g id="kwh" style="display: none">
-    <text fill="<?php echo $font_color; ?>" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
   </g>
   <g id="kwh-active">
-    <!-- <rect width="<?php echo $width * 0.05; ?>px" height="30" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
-    <text fill="#2196F3" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
   </g>
   <g id="co2">
-    <text fill="<?php echo $font_color; ?>" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="co2-active" style="display: none">
-    <!-- <rect width="<?php echo $width * 0.05; ?>px" height="30" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
-    <text fill="#2196F3" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="money">
-    <text fill="<?php echo $font_color; ?>" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 160; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <g id="money-active" style="display: none">
-    <!-- <rect width="<?php echo $width * 0.04; ?>px" height="30" x="<?php echo $graph_width + 160; ?>" y="<?php echo $height * 0.925; ?>" style="fill:#2196F3;" /> -->
-    <text fill="#2196F3" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 160; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <?php } ?>
 
@@ -722,6 +732,8 @@ text {
     if (movie.attr('display') != 'none') {
       movie.attr('display', 'none');
       $('#current-value-container').attr('display', '');
+      $("#fishbgbg").attr('display', 'none');
+      $("#fishbg").attr('display', 'none');
       alreadydone = true;
     }
 
@@ -830,6 +842,13 @@ text {
       console.log(split)
       var len = split[1];
       var name = split[0];
+      var fishbg = split[2];
+      if (fishbg != 'none') {
+        $("#fishbg").attr('xlink:href', 'images/' + fishbg + '.gif').attr('display', '');
+        $("#fishbgbg").attr('display', '');
+      } else {
+        $("#fishbg").attr('display', 'none');
+      }
       $('#movie').attr('xlink:href', 'images/' + name + '.gif').attr('display', '');
       if (name.indexOf("Story") >= 0 || name.indexOf("Idea") >= 0) {
         $('#current-value-container').attr('display', 'none');
@@ -840,6 +859,8 @@ text {
           $('#movie').attr('display', 'none');
           $('#frame_' + current_frame).attr('display', '');
           $('#current-value-container').attr('display', '');
+          $("#fishbgbg").attr('display', 'none');
+          $("#fishbg").attr('display', 'none');
           playing = true;
         }
         clearTimeout(timeout2); timeout2 = null;

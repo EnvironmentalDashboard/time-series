@@ -17,15 +17,20 @@ if ($_GET['charachter'] === 'squirrel') {
 } else {
   $keyword2 = '';
 }
-if ($rv > 80) { $bin = 'bin1'; }
-else if ($rc > 60) { $bin = 'bin2'; }
-else if ($rc > 40) { $bin = 'bin3'; }
-else if ($rc > 20) { $bin = 'bin4'; }
-else { $bin = 'bin5'; }
-$stmt = $db->prepare("SELECT name, length FROM time_series WHERE length > 0 AND {$bin} > 0 AND user_id = ? AND name LIKE ? AND name LIKE ? ORDER BY {$bin} * rand() DESC LIMIT 1");
+if ($rv > 80) { $bin = 'bin1'; $bg_name = 'bg3'; }
+else if ($rv > 60) { $bin = 'bin2'; $bg_name = 'bg2'; }
+else if ($rv > 40) { $bin = 'bin3'; $bg_name = 'bg2'; }
+else if ($rv > 20) { $bin = 'bin4'; $bg_name = 'bg1'; }
+else { $bin = 'bin5'; $bg_name = 'bg1'; }
+$stmt = $db->prepare("SELECT name, length FROM time_series WHERE length > 0 AND {$bin} > 0 AND user_id = ? AND name LIKE ? AND name LIKE ? ORDER BY {$bin} * rand() * rand() * rand() * rand() * rand() * rand() DESC LIMIT 1"); // Multiply by random numbers to reduce the influence of the bin but still use it for weighting the randomness
 $stmt->execute(array($user_id, "%{$keyword}%", "%{$keyword2}%"));
 $result = $stmt->fetch();
-if (empty($result)) {
+if ($_GET['charachter'] === 'fish') {
+  array_push($result, $bg_name);
+} else {
+  array_push($result, 'none');
+}
+if (empty($result)) { // choose a random default
   echo 'SQ_Fill_NeutralActionsEyeroll$SEP$18160';
 }
 else {

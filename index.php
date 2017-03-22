@@ -16,7 +16,7 @@ $dropdown_html1 = '';
 $dropdown_html2 = '';
 $buildings = $db->query("SELECT * FROM buildings WHERE user_id = {$user_id} ORDER BY name ASC");
 foreach ($buildings->fetchAll() as $building) {
-  $stmt = $db->prepare('SELECT id, name FROM meters WHERE building_id = ? AND (num_using > 0 OR for_orb = 1) ORDER BY name');
+  $stmt = $db->prepare('SELECT id, name FROM meters WHERE building_id = ? AND (gauges_using > 0 OR for_orb > 0 OR orb_server > 0 OR timeseries_using > 0) ORDER BY name');
   $stmt->execute(array($building['id']));
   $once = true;
   foreach($stmt->fetchAll() as $meter) {
@@ -174,7 +174,7 @@ foreach ($buildings->fetchAll() as $building) {
             echo $result['custom_img'];
           }
           else {
-            echo 'http://scontent.cdninstagram.com/t51.2885-15/s480x480/e35/13181517_224391237942680_681505699_n.jpg?ig_cache_key=MTI1Mzc3OTE0MjkwNDk0NDk5MA%3D%3D.2';
+            echo 'http://placehold.it/200x200';
           }
           ?>" alt="<?php echo $title; ?>">
         </a>
