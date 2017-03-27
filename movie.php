@@ -31,7 +31,7 @@ if ($_GET['charachter'] === 'fish') {
   array_push($result, 'none');
 }
 if (empty($result)) { // choose a random default
-  echo 'SQ_Fill_NeutralActionsEyeroll$SEP$18160';
+  echo 'SQ_Fill_NeutralActionsEyeroll$SEP$18160$SEP$none';
 }
 else {
   echo implode('$SEP$', $result);

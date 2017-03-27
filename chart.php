@@ -54,7 +54,7 @@ if ($typical_time_frame) {
           $buffer[] = $value['value'];
         }
       }
-      $median = array_sum($buffer)/count($buffer);//median($buffer);
+      $median = median($buffer);
       if ($last_data !== null) { // Interpolate next 45 mins -- 3 data points -- worth of data
         $diff = ($last_data - $median)/4;
         $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+$diff);
@@ -85,7 +85,7 @@ if ($typical_time_frame) {
           $buffer[] = $value['value'];
         }
       }
-      $median = array_sum($buffer)/count($buffer);//median($buffer);
+      $median = median($buffer);
       $result[] = array('recorded' => $recorded_vals, 'value' => $median);
       $recorded_vals += 3600;
     }
@@ -289,28 +289,6 @@ text {
         x="-9999" y="<?php echo $height * 0.91//0.115; ?>"
         font-size="12"></text>
 
-  <!-- Main button -->
-  <g id="layer-btn" style="cursor: pointer;" class="noselect">
-    <rect width="<?php echo $width * 0.1; ?>px" height="<?php echo $height * 0.075; ?>px" x="0" y="0" fill="<?php echo '#2196F3';//$primary_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="0.5" style="stroke-dasharray:0,<?php echo ($width * 0.1) . ',' . (($width*0.1) + ($height * 0.075)) . ',' . ($height * 0.075); ?>" />
-    <text x="2.2%" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Options</text>
-  </g>
-  <g id="dropdown" style="opacity: 0;">
-    <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo ($secondary_ts_set) ? $height * 0.185 : $height * 0.12; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
-    <text style="cursor:pointer" id="historical" x="1.25%" y="<?php echo ($height * 0.075) + 15; ?>" font-size="12" fill="<?php echo $primary_color; ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
-      if ($time_frame === 'live') { echo 'hour'; }
-      elseif ($time_frame === 'today') { echo 'day'; }
-      else { echo $time_frame; }
-      ?></text>
-    <line x1="0" y1="<?php echo ($height * 0.075) + 25; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 25; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
-    <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="1.25%" y="<?php echo ($height * 0.075) + 40; ?>" font-size="12" fill="<?php echo $primary_color; ?>">
-      <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
-    </text>
-    <?php if ($secondary_ts_set) { ?>
-    <line x1="0" y1="<?php echo ($height * 0.075) + 50; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 50; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
-    <text style="cursor:pointer" id="second" x="1.25%" y="<?php echo ($height * 0.075) + 65; ?>" font-size="12" fill="<?php echo $primary_color; ?>">Show <?php echo $name2; ?></text>
-    <?php } ?>
-  </g>
-
   <!-- Sidebar -->
   <rect width="<?php echo $width - $graph_width; ?>px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" style="fill:<?php echo $primary_color; ?>;" />
   <text id="suggestion" text-anchor="middle" x="<?php echo $graph_width + (($width - $graph_width)/2) ?>" y="200" font-size="18" width="<?php echo $width - ($graph_width+20); ?>px">Move your mouse over the data</text>
@@ -348,9 +326,8 @@ text {
   <rect width="20px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
 
   <!-- Topbar -->
-  <rect width="<?php echo $width * 0.9; ?>px" height="<?php echo $height * 0.075; ?>px" x="<?php echo $width * 0.1; ?>" y="0" style="fill:<?php echo '#ECEFF1';//$primary_color; ?>;stroke:<?php echo $font_color; ?>;
-               stroke-dasharray:0,<?php echo (($width * 0.9) + ($height * 0.075)) . ',' . ($width * 0.9) . ',' . ($height * 0.075); ?>;" stroke-width="0.5" />
-  <!-- <line x1="0" y1="0" x2="<?php echo $width; ?>px" y2="0" stroke-width="0.5" stroke="<?php echo $font_color; ?>"/> -->
+  <rect width="100%" height="<?php echo $height * 0.075; ?>px" x="0" y="0" style="fill:<?php echo '#ECEFF1';//$primary_color; ?>;stroke:<?php echo $font_color; ?>;" stroke-width="0.5" />
+  <line x1="0" y1="<?php echo $height * 0.075; ?>px" x2="<?php echo $width; ?>px" y2="<?php echo $height * 0.075; ?>px" stroke-width="0.25" stroke="<?php echo $font_color; ?>"/>
   <text fill="<?php echo $font_color; ?>" id="legend"
         x="<?php echo ($width * 0.12); ?>" y="<?php echo $height * 0.049; ?>"
         font-size="13" style="font-weight: 400">
@@ -384,6 +361,28 @@ text {
     </tspan>
     <?php } ?>
   </text>
+
+  <!-- Main button -->
+  <g id="layer-btn" style="cursor: pointer;" class="noselect">
+    <rect width="<?php echo $width * 0.09; ?>px" height="<?php echo $height * 0.06; ?>px" x="5" y="3" fill="<?php echo $font_color; ?>" stroke="<?php echo '#fff'; ?>" stroke-width="0.5" style="stroke-dasharray:0,<?php echo ($width * 0.1) . ',' . (($width*0.1) + ($height * 0.075)) . ',' . ($height * 0.075); ?>" />
+    <text x="2.2%" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Options</text>
+  </g>
+  <g id="dropdown" style="opacity: 0;">
+    <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo ($secondary_ts_set) ? $height * 0.185 : $height * 0.12; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
+    <text style="cursor:pointer" id="historical" x="1.25%" y="<?php echo ($height * 0.075) + 15; ?>" font-size="12" fill="<?php echo $primary_color; ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
+      if ($time_frame === 'live') { echo 'hour'; }
+      elseif ($time_frame === 'today') { echo 'day'; }
+      else { echo $time_frame; }
+      ?></text>
+    <line x1="0" y1="<?php echo ($height * 0.075) + 25; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 25; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
+    <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="1.25%" y="<?php echo ($height * 0.075) + 40; ?>" font-size="12" fill="<?php echo $primary_color; ?>">
+      <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
+    </text>
+    <?php if ($secondary_ts_set) { ?>
+    <line x1="0" y1="<?php echo ($height * 0.075) + 50; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 50; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
+    <text style="cursor:pointer" id="second" x="1.25%" y="<?php echo ($height * 0.075) + 65; ?>" font-size="12" fill="<?php echo $primary_color; ?>">Show <?php echo $name2; ?></text>
+    <?php } ?>
+  </g>
 
   <!-- Bottom bar -->
   <rect width="100%" height="<?php echo $height * 0.075; ?>px" x="0" y="<?php echo $height * 0.925; ?>" style="fill:<?php echo '#ECEFF1';//$primary_color; ?>;" />
@@ -678,13 +677,14 @@ text {
       return;
     }
     index_rn = Math.round(pct_through * (current_points.length-1)); // Coords for circle (subtract 1 to 0-base for array index)
-    var index2 = Math.round(pct_through_whole * (historical_points.length-1)); // Coords for historical circle
     $('#current-circle').attr('cx', current_points[index_rn][0]);
     $('#current-circle').attr('cy', current_points[index_rn][1]);
     <?php if ($typical_time_frame) { ?>
+      var index2 = Math.round(pct_through_whole * (relativized_points.length-1)); // Coords for typical circle
       $('#typical-circle').attr('cx', relativized_points[index2][0]);
       $('#typical-circle').attr('cy', relativized_points[index2][1]);
     <?php } else { ?>
+      var index2 = Math.round(pct_through_whole * (historical_points.length-1)); // Coords for historical circle
       $('#historical-circle').attr('cx', historical_points[index2][0]);
       $('#historical-circle').attr('cy', historical_points[index2][1]);
     <?php } ?>
@@ -692,6 +692,7 @@ text {
     $('#current-time-rect').attr('x', current_points[index_rn][0] - <?php echo $width * 0.05; ?>);
     $('#current-time-text').attr('x', current_points[index_rn][0]);
     $('#current-time-text').text(current_times[index_rn]);
+    console.log(index_rn, index2);
     var elapsed = (current_timestamps[index_rn]-current_timestamps[0]);
     var kw = 0;
     var kw_count = 0;
@@ -843,11 +844,9 @@ text {
       var len = split[1];
       var name = split[0];
       var fishbg = split[2];
-      if (fishbg != 'none') {
+      $("#fishbgbg").attr('display', '');
+      if (fishbg != 'none') { // The fish animation is layered on top of the 
         $("#fishbg").attr('xlink:href', 'images/' + fishbg + '.gif').attr('display', '');
-        $("#fishbgbg").attr('display', '');
-      } else {
-        $("#fishbg").attr('display', 'none');
       }
       $('#movie').attr('xlink:href', 'images/' + name + '.gif').attr('display', '');
       if (name.indexOf("Story") >= 0 || name.indexOf("Idea") >= 0) {
