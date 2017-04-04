@@ -692,7 +692,7 @@ text {
     $('#current-time-rect').attr('x', current_points[index_rn][0] - <?php echo $width * 0.05; ?>);
     $('#current-time-text').attr('x', current_points[index_rn][0]);
     $('#current-time-text').text(current_times[index_rn]);
-    console.log(index_rn, index2);
+    // console.log(index_rn, index2);
     var elapsed = (current_timestamps[index_rn]-current_timestamps[0]);
     var kw = 0;
     var kw_count = 0;
@@ -711,9 +711,8 @@ text {
     }
     // Display the current gif frame
     last_frame = current_frame;
-    var diff = current_points[index_rn][1] - relativized_points[index_rn][1];
-    current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (<?php echo $number_of_frames ?> - 0) + 0);
-    current_frame = Math.abs( Math.round( ((raw_data[index_rn] - min) / (max - min)) * <?php echo $number_of_frames; ?> ) - <?php echo $number_of_frames; ?> );
+    var diff = current_points[index_rn][1] - relativized_points[index2][1];
+    current_frame = Math.round(((diff - diff_min) * (<?php echo $number_of_frames ?>)) / (diff_max - diff_min));
     if (current_frame > last_frame) {
       counter = last_frame;
       while (current_frame >= counter && frames.length < 100) {
@@ -788,7 +787,7 @@ text {
       $('#current-time-text').text(current_times[i]);
       last_frame = current_frame;
       var diff = current_points[i][1] - relativized_points[i][1];
-      current_frame = Math.round(( (diff - diff_min) / (diff_max - diff_min) ) * (<?php echo $number_of_frames ?> - 0) + 0); // there are $number_of_frames frames
+      current_frame = Math.round(((diff - diff_min) * (<?php echo $number_of_frames ?>)) / (diff_max - diff_min));
       kw += raw_data[i];
       elapsed += current_timestamps[1]-current_timestamps[0];
       accumulation(elapsed, kw/(i+1));
@@ -835,7 +834,6 @@ text {
       $charachter = 'both';
     }
     ?>
-    // console.log('relative_value: '+relative_value);
     $.get("movie.php", {relative_value: relative_value, count: movies_played, charachter: <?php echo json_encode($charachter) ?>}, function(data) {
       $('#accum-label').css('display', 'none');
       movies_played++;
