@@ -149,7 +149,7 @@ $main_ts->yAxis();
 $historical_ts->yAxis();
 $main_ts->setTimes();
 // URLs for buttons on bottom
-$curr_url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+$curr_url = "//$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 parse_str(parse_url($curr_url, PHP_URL_QUERY), $tmp);
 if (!isset($tmp['time'])) { // todo: fix
   $tmp['time'] = 'today';
@@ -391,10 +391,10 @@ text {
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1h); ?>">
     <?php if ($time_frame !== 'live') { ?>
     <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
-    <text fill="#fff" x="<?php echo $width * 0.2; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
+    <text fill="#fff" x="<?php echo $width * 0.205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } else { ?>
       <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3" />
-      <text fill="#fff" x="<?php echo $width * 0.2; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
+      <text fill="#fff" x="<?php echo $width * 0.205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1d); ?>">
@@ -621,7 +621,6 @@ text {
 
 
 
-
   /* MOUSE INTERACTION */
 
   // Find your root SVG element
@@ -655,8 +654,10 @@ text {
   var movie = $('#movie');
   var diff_min = Number.MAX_VALUE;
   var diff_max = 0;
-  for (var i = current_points.length - 1; i >= 0; i--) {
-    var d = current_points[i][1] - relativized_points[i][1]; // can use same index for both b/c they're the same resolution
+  // TODO: Fix this
+  var shorter_arr = Math.min(current_points.length, relativized_points.length) - 1;
+  for (; shorter_arr >= 0; shorter_arr--) {
+    var d = current_points[shorter_arr][1] - relativized_points[shorter_arr][1];
     if (d > diff_max) {
       diff_max = d;
     }

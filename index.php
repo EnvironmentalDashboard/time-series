@@ -161,6 +161,7 @@ foreach ($buildings->fetchAll() as $building) {
   </div>
 
 
+  <?php if (!isset($_GET['webpage']) || $_GET['webpage'] !== 'notitle') { ?>
   <div class="container-fluid">
     <div class="row">
       <div class="col-xs-2">
@@ -191,12 +192,12 @@ foreach ($buildings->fetchAll() as $building) {
           echo "<h1 style='width: 90%; font-size: 50px'>{$title} {$name}</h1>";
         }
         ?>
-        </h1>
         <!-- <p style="text-align: right"><a href="#" class="btn"></a></p> -->
-        <img src="images/pencil-square-o.svg" height="40px" width="40px" alt="Edit icon" style="position:absolute;top:5px;right:5px;cursor:pointer;" onclick="show_modal()">
+        <!-- <img src="images/pencil-square-o.svg" height="40px" width="40px" alt="Edit icon" style="position:absolute;top:5px;right:5px;cursor:pointer;" onclick="show_modal()"> -->
       </div>
     </div>
   </div>
+  <?php } ?>
   <object id="object" type="image/svg+xml" data="chart.php?<?php echo http_build_query($_GET); ?>"></object>
   <script>
     function show_modal() {
