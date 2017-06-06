@@ -101,7 +101,6 @@ ini_set('display_errors', 'On');
         <input type="text" id="search" placeholder="Search">
         <ul>
           <?php foreach($db->query('SELECT DISTINCT building_type FROM buildings WHERE user_id = {$user_id} AND custom_img IS NOT NULL AND id IN (SELECT building_id FROM meters WHERE gauges_using > 0 OR for_orb > 0 OR orb_server > 0 OR timeseries_using > 0) ORDER BY building_type ASC') as $building) { ?>
-          <li class="all" data-buildingtype="All" ></li>
           <li class="filter-btn" data-buildingtype="<?php echo $building['building_type']; ?>"><?php echo $building['building_type']; ?></li>
           <?php } ?>
         </ul>
@@ -168,11 +167,6 @@ ini_set('display_errors', 'On');
         } else {
           $(this).removeClass('hidden');
         }
-      });
-    });
-    $('.all').on('click', function()){
-      $('.card-col').each(function() {
-        $(this).removeClass('hidden');
       });
     });
     $('.filter-btn').on('click', function() {
