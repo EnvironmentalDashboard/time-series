@@ -12,37 +12,37 @@ if (empty($_GET['meter_id2'])) {
 if (empty($_GET['time'])) {
   $_GET['time'] = 'today';
 }
-$dropdown_html1 = '';
-$dropdown_html2 = '';
-$buildings = $db->query("SELECT * FROM buildings WHERE user_id = {$user_id} ORDER BY name ASC");
-foreach ($buildings->fetchAll() as $building) {
-  $stmt = $db->prepare('SELECT id, name FROM meters WHERE building_id = ? AND (gauges_using > 0 OR for_orb > 0 OR orb_server > 0 OR timeseries_using > 0) ORDER BY name');
-  $stmt->execute(array($building['id']));
-  $once = true;
-  foreach($stmt->fetchAll() as $meter) {
-    if ($once) {
-      $once = false;
-      $dropdown_html1 .= "<optgroup label='{$building['name']}'>";
-      $dropdown_html2 .= "<optgroup label='{$building['name']}'>";
-    }
-    if ($meter['id'] == $_GET['meter_id']) {
-      $dropdown_html1 .= "<option value='{$meter['id']}' selected='selected'>{$meter['name']}</option>";
-    }
-    else {
-      $dropdown_html1 .= "<option value='{$meter['id']}'>{$meter['name']}</option>";
-    }
-    if ($meter['id'] == $_GET['meter_id2']) {
-      $dropdown_html2 .= "<option value='{$meter['id']}' selected='selected'>{$meter['name']}</option>";
-    }
-    else {
-      $dropdown_html2 .= "<option value='{$meter['id']}'>{$meter['name']}</option>";
-    }
-  }
-  if (!$once) {
-    $dropdown_html1 .= '</optgroup>';
-    $dropdown_html2 .= '</optgroup>';
-  }
-}
+// $dropdown_html1 = '';
+// $dropdown_html2 = '';
+// $buildings = $db->query("SELECT * FROM buildings WHERE user_id = {$user_id} ORDER BY name ASC");
+// foreach ($buildings->fetchAll() as $building) {
+//   $stmt = $db->prepare('SELECT id, name FROM meters WHERE building_id = ? AND (gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0) OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\') ORDER BY name');
+//   $stmt->execute(array($building['id']));
+//   $once = true;
+//   foreach($stmt->fetchAll() as $meter) {
+//     if ($once) {
+//       $once = false;
+//       $dropdown_html1 .= "<optgroup label='{$building['name']}'>";
+//       $dropdown_html2 .= "<optgroup label='{$building['name']}'>";
+//     }
+//     if ($meter['id'] == $_GET['meter_id']) {
+//       $dropdown_html1 .= "<option value='{$meter['id']}' selected='selected'>{$meter['name']}</option>";
+//     }
+//     else {
+//       $dropdown_html1 .= "<option value='{$meter['id']}'>{$meter['name']}</option>";
+//     }
+//     if ($meter['id'] == $_GET['meter_id2']) {
+//       $dropdown_html2 .= "<option value='{$meter['id']}' selected='selected'>{$meter['name']}</option>";
+//     }
+//     else {
+//       $dropdown_html2 .= "<option value='{$meter['id']}'>{$meter['name']}</option>";
+//     }
+//   }
+//   if (!$once) {
+//     $dropdown_html1 .= '</optgroup>';
+//     $dropdown_html2 .= '</optgroup>';
+//   }
+// }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,10 +50,11 @@ foreach ($buildings->fetchAll() as $building) {
   <meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
   <link rel="stylesheet" href="css/bootstrap.grid.css">
-  <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="css/style.css">
   <title>Time Series</title>
 </head>
 <body>
+  <?php /*
   <div id="modal">
     <img src="images/close.svg" height="30px" width="30px" alt="Close icon" class="close" onclick="hide_modal()">
     <h2>Customize time series</h2>
@@ -143,12 +144,6 @@ foreach ($buildings->fetchAll() as $building) {
           <input type="checkbox" name="ticks" <?php echo (isset($_GET['ticks']) && $_GET['ticks'] === 'on') ? 'checked' : ''; ?>> Show baseload and peak
         </label>
       </div>
-      <!-- <label class="start-step">
-      <p>Enter first a start and then a step for scaling the Y-axis</p>
-      <input type="number" min="0" name="start" placeholder="Start" value="<?php echo $_GET['start']; ?>">
-      <input type="number" min="0" name="step" placeholder="Step" value="<?php echo $_GET['step']; ?>">
-      </label> -->
-      <!-- <input type="submit"> -->
       <?php
       foreach ($_GET as $key => $value) {
         if (!in_array($key, array('meter_id', 'meter_id2', 'time', 'start', 'fill1', 'fill2', 'fill3', 'dasharr1', 'dasharr2', 'dasharr3', 'scale', 'ticks'))) {
@@ -159,11 +154,17 @@ foreach ($buildings->fetchAll() as $building) {
       <input type="submit" class="btn" value="Update chart" style="margin-left: 10px; margin-top: 10px">
     </form>
   </div>
+  */ ?>
 
 
-  <?php if (!isset($_GET['webpage']) || $_GET['webpage'] !== 'notitle') { ?>
+  <?php if (!isset($_GET['webpage']) || $_GET['webpage'] !== 'notitle') { // if webpage==notitle, nothing is shown
+  ?>
   <div class="container-fluid">
     <div class="row">
+      <?php 
+      if (!isset($_GET['webpage']) || $_GET['webpage'] !== 'title') { // if webpage==title, hide img
+        $colclass = 'col-xs-10';
+      ?>
       <div class="col-xs-2">
         <a href="#" class="thumbnail" style="width: 100%">
           <img src="<?php
@@ -180,17 +181,32 @@ foreach ($buildings->fetchAll() as $building) {
           ?>" alt="<?php echo $title; ?>">
         </a>
       </div>
-      <div class="col-xs-10">
+      <?php
+      } else {
+        $colclass = 'col-xs-12';
+      }
+      ?>
+      <div class="<?php echo $colclass; ?>">
         <?php
-        $stmt = $db->prepare('SELECT name FROM meters WHERE id = ? LIMIT 1');
-        $stmt->execute(array($_GET['meter_id']));
-        $name = $stmt->fetch()['name'];
-        $tot_len = strlen($name) + strlen($title);
-        if ($tot_len < 40) {
-          echo "<h1 style='width: 90%;'>{$title} {$name}</h1>";
+        $iflabel = (isset($_GET['label']) && $_GET['label'] != null);
+        if ($iflabel) {
+          $tot_len = strlen($_GET['label']);
+          $full_title = $_GET['label'];
         } else {
-          echo "<h1 style='width: 90%; font-size: 50px'>{$title} {$name}</h1>";
+          $stmt = $db->prepare('SELECT name FROM meters WHERE id = ? LIMIT 1');
+          $stmt->execute(array($_GET['meter_id']));
+          $full_title = $title . ' ' . $stmt->fetch()['name'];
+          $tot_len = strlen($full_title);
         }
+        if (isset($_GET['title_size']) && $_GET['title_size'] != null) {
+          $title_size = "font-size: {$_GET['title_size']};";
+        }
+        elseif ($tot_len < 40) {
+          $title_size = '';
+        } else {
+          $title_size = 'font-size: 50px;';
+        }
+        echo "<h1 style='width: 90%;{$title_size}'>{$full_title}</h1>";
         ?>
         <!-- <p style="text-align: right"><a href="#" class="btn"></a></p> -->
         <!-- <img src="images/pencil-square-o.svg" height="40px" width="40px" alt="Edit icon" style="position:absolute;top:5px;right:5px;cursor:pointer;" onclick="show_modal()"> -->

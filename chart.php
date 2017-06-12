@@ -9,6 +9,15 @@ require 'includes/really-long-switch.php';
 ?>
 <svg height="<?php echo $height; ?>" width="<?php echo $width; ?>" viewBox="0 0 <?php echo $width; ?> <?php echo $height; ?>" class="chart" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <?php
+if (isset($_GET['timeseriesconfig'])) {
+  $stmt = $db->prepare('SELECT * FROM time_series_configs WHERE id = ?');
+  $stmt->execute(array($_GET['timeseriesconfig']));
+  $timeseriesconfigs = $stmt->fetch();
+  foreach ($timeseriesconfigs as $key => $value) {
+    $_GET[$key] = $value;
+  }
+  var_dump($_GET);
+}
 // var_dump($from);var_dump($now);exit;
 $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
 $secondary_ts_set = ($_GET['meter_id'] !== $_GET['meter_id2']);
@@ -30,8 +39,8 @@ if ($typical_time_frame) {
   $day_of_week = date('w') + 1;
   foreach ($json as $grouping) {
     if (in_array($day_of_week, $grouping['days'])) {
-      $days = $grouping['days'];
-      $npoints = (array_key_exists('npoints', $grouping) ? $grouping['npoints'] : 5);
+      $days = $grouping['days']; // The array that has the current day in it
+      $npoints = (array_key_exists('npoints', $grouping) ? $grouping['npoints'] : 5); // you can only use npoints
       break;
     }
   }
@@ -111,6 +120,7 @@ if ($secondary_ts_set) {
   $secondary_ts->dashed( (isset($_GET['dasharr3']) && $_GET['dasharr3'] === 'on') ? true : false );
   $secondary_ts->setMin(); $secondary_ts->setMax();
   $secondary_ts->setUnits();
+  $secondary_ts->setMin(); $secondary_ts->setMax();
 }
 
 $main_ts->setMin(); $main_ts->setMax();
@@ -341,7 +351,7 @@ text {
         &#160;&#160;&#160;
       </tspan>
     <?php } ?>
-    <tspan id="historical-use-legend" style="display: none;">
+    <tspan id="historical-use-legend">
       <tspan dy="8" style='font-size: 40px;fill: <?php echo $historical_graph_color; ?>'>&#9632;</tspan>
       <tspan dy="-8">Previous <?php
       if ($time_frame === 'live') {
@@ -409,10 +419,10 @@ text {
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1w); ?>">
     <?php if ($time_frame !== 'week') { ?>
     <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
-    <text fill="#fff" x="<?php echo $width * 0.37; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
+    <text fill="#fff" x="<?php echo $width * 0.374; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
     <?php } else { ?>
       <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
-      <text fill="#fff" x="<?php echo $width * 0.37; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
+      <text fill="#fff" x="<?php echo $width * 0.374; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1m); ?>">
@@ -429,7 +439,7 @@ text {
     <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.518; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
     <text fill="#fff" x="<?php echo $width * 0.55; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.518; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.522; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
       <text fill="#fff" x="<?php echo $width * 0.555; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } ?>
   </a>
@@ -652,19 +662,47 @@ text {
   var current_frame = 0;
   var last_frame = 0;
   var movie = $('#movie');
-  var diff_min = Number.MAX_VALUE;
-  var diff_max = 0;
-  // TODO: Fix this
-  var shorter_arr = Math.min(current_points.length, relativized_points.length) - 1;
-  for (; shorter_arr >= 0; shorter_arr--) {
-    var d = current_points[shorter_arr][1] - relativized_points[shorter_arr][1];
-    if (d > diff_max) {
-      diff_max = d;
+  <?php
+    // Create an array the same size as the $main_ts->circlepoints that stores the squirrel/fish `current_frame` (do command-f for 'current_frame = ')
+    $charachter_moods = array();
+    if ($typical_time_frame) {
+      $relativized_points = $typical_ts->circlepoints;
+      $count2 = count($typical_ts->circlepoints);
+    } else {
+      $relativized_points = $historical_ts->circlepoints;
+      $count2 = count($historical_ts->circlepoints);
     }
-    if (d < diff_min) {
-      diff_min = d;
+    $count1 = count($main_ts->circlepoints);
+    $diff_min = PHP_INT_MAX;
+    $diff_max = PHP_INT_MIN;
+    for ($i=0; $i < (($count1 > $count2) ? $count2 : $count1) ; $i++) {
+      $d = $main_ts->circlepoints[$i][1] - $relativized_points[$i][1];
+      $charachter_moods[] = $d;
+      if ($d > $diff_max) {
+        $diff_max = $d;
+      }
+      if ($d < $diff_min) {
+        $diff_min = $d;
+      }
     }
-  }
+    for ($i=0; $i < count($charachter_moods); $i++) { 
+      $charachter_moods[$i] = round($main_ts->convertRange($charachter_moods[$i], $diff_min, $diff_max, 0, $number_of_frames));
+    }
+    echo "var charachter_moods = " . json_encode($charachter_moods) . ";\n";
+  ?>
+  // var diff_min = Number.MAX_VALUE;
+  // var diff_max = 0;
+  // // Need to find the min/max difference between the current and relativized data for scaling
+  // var shorter_arr = Math.min(current_points.length, relativized_points.length) - 1;
+  // for (; shorter_arr >= 0; shorter_arr--) {
+  //   var d = current_points[shorter_arr][1] - relativized_points[shorter_arr][1];
+  //   if (d > diff_max) {
+  //     diff_max = d;
+  //   }
+  //   if (d < diff_min) {
+  //     diff_min = d;
+  //   }
+  // }
   $(svg).one('mousemove', function() {
     $('#suggestion').attr('display', 'none');
     $('#error-msg').attr('display', '');
@@ -712,8 +750,7 @@ text {
     }
     // Display the current gif frame
     last_frame = current_frame;
-    var diff = current_points[index_rn][1] - relativized_points[index2][1];
-    current_frame = Math.round(((diff - diff_min) * (<?php echo $number_of_frames ?>)) / (diff_max - diff_min));
+    current_frame = charachter_moods[index_rn];
     if (current_frame > last_frame) {
       counter = last_frame;
       while (current_frame >= counter && frames.length < 100) {
@@ -787,8 +824,7 @@ text {
       $('#current-value').text(raw_data_formatted[i]);
       $('#current-time-text').text(current_times[i]);
       last_frame = current_frame;
-      var diff = current_points[i][1] - relativized_points[i][1];
-      current_frame = Math.round(((diff - diff_min) * (<?php echo $number_of_frames ?>)) / (diff_max - diff_min));
+      current_frame = charachter_moods[i];
       kw += raw_data[i];
       elapsed += current_timestamps[1]-current_timestamps[0];
       accumulation(elapsed, kw/(i+1));
@@ -870,7 +906,7 @@ text {
 
   function accumulation(time_sofar, avg_kw) {
     <?php if ($main_ts->units === 'Kilowatts') { ?>
-    var kwh = (time_sofar/3600)*avg_kw;
+    var kwh = (time_sofar/3600)*avg_kw; // the number of hours in time period * the average kw reading
     // console.log('time elapsed in hours: '+(time_sofar/3600)+"\navg_kw: "+ avg_kw+"\nkwh: "+kwh);
     if (accum_btn.attr('id') === 'kwh') {
       $('#accum-label-value').text(Math.round(kwh).toLocaleString()); // kWh = time elapsed in hours * kilowatts so far

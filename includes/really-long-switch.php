@@ -88,11 +88,11 @@ switch ($time_frame) {
     $pct_through = ($now - $from) / $secs_in_month;
     $double_time = $from - $secs_in_month;
     $num_days = date('t', $from);
-    $dates = '<text fill="' . $interval_color . '" x="1" y="' . $height * 0.91 . '"
+    $dates = '<text fill="' . $interval_color . '" y="' . $height * 0.91 . '"
               font-size="13" font-family="'. $font_family .'">';
     for ($i = 0; $i < $num_days; $i++) { 
       $dates .= '<tspan x="';
-      $dates .= $graph_width * ($i/$num_days);
+      $dates .= (($graph_width-80) * ($i/$num_days))+40;
       $dates .= '">';
       $dates .= $i + 1;
       $dates .= '</tspan>';
@@ -109,20 +109,20 @@ switch ($time_frame) {
     $secs_in_year = $to - $from; // Different if leap year, using strtotime() solves this
     $pct_through = ($now - $from) / $secs_in_year;
     $double_time = $from - $secs_in_year;
-    $dates = '<text fill="' . $interval_color . '" x="1" y="' . $height * 0.91 . '"
+    $dates = '<text fill="' . $interval_color . '" x="'.$chart_padding.'" y="' . $height * 0.91 . '"
               font-size="13" font-family="'. $font_family .'">
-              <tspan x="1" text-anchor="start">Jan</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (1/12) . '">Feb</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (2/11) . '">Mar</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (3/11) . '">Apr</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (4/11) . '">May</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (5/11) . '">Jun</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (6/11) . '">Jul</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (7/11) . '">Aug</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (8/11) . '">Sep</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (9/11) . '">Oct</tspan>
-              <tspan text-anchor="middle" x="' . $graph_width * (10/11) . '">Nov</tspan>
-              <tspan text-anchor="end" x="' . $graph_width * (11/11) . '">Dec</tspan>
+              <tspan text-anchor="start" dx="10">Jan</tspan>
+              <tspan text-anchor="middle" dx="33">Feb</tspan>
+              <tspan text-anchor="middle" dx="33">Mar</tspan>
+              <tspan text-anchor="middle" dx="33">Apr</tspan>
+              <tspan text-anchor="middle" dx="33">May</tspan>
+              <tspan text-anchor="middle" dx="33">Jun</tspan>
+              <tspan text-anchor="middle" dx="33">Jul</tspan>
+              <tspan text-anchor="middle" dx="33">Aug</tspan>
+              <tspan text-anchor="middle" dx="33">Sep</tspan>
+              <tspan text-anchor="middle" dx="33">Oct</tspan>
+              <tspan text-anchor="middle" dx="33">Nov</tspan>
+              <tspan text-anchor="end" dx="33">Dec</tspan>
               </text>';
     break;
   default:
