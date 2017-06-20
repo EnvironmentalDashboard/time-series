@@ -176,6 +176,9 @@ if ($time_frame !== 'today' && $time_frame !== 'week') {
 }
 
 function median($arr) {
+  if (empty($arr)) {
+    return 0;
+  }
   $count = count($arr);
   $mid = floor(($count-1)/2);
   if ($count % 2) {
@@ -190,8 +193,12 @@ function median($arr) {
 ?>
 <defs>
   <linearGradient id="shadow">
-    <stop class="stop1" stop-color="#777" offset="0%"/>
-    <stop class="stop2" stop-color="#777" offset="100%"/>
+    <stop class="stop1" stop-color="#eee" offset="0%"/>
+    <stop class="stop2" stop-color="#eee" offset="100%"/>
+  </linearGradient>
+  <linearGradient id="shadow2" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" style="stop-color:#fff;stop-opacity:1" />
+    <stop offset="100%" style="stop-color:#777;stop-opacity:1" />
   </linearGradient>
 </defs>
 <style>
@@ -223,13 +230,29 @@ text {
 .stop2 { stop-color: #424242; stop-opacity: 0; }
 /* ]]> */
 </style>
+<!-- Menu -->
+<rect x="0" y="0" height="100%" width="250px" style="fill:#fff;" id="menu" />
+<text x="5" y="25" style="font-size: 20px;fill: #777;font-weight: bold">Chart options</text>
+<text style="cursor:pointer" id="historical" x="5" y="60" font-size="15" fill="#777"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
+      if ($time_frame === 'live') { echo 'hour'; }
+      elseif ($time_frame === 'today') { echo 'day'; }
+      else { echo $time_frame; }
+      ?></text>
+<text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="5" y="85" font-size="15" fill="#777">
+  <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
+</text>
+<?php if ($secondary_ts_set) { ?>
+<text style="cursor:pointer" id="second" x="5" y="110" font-size="15" fill="#777">Show <?php echo $name2; ?></text>
+    <?php } ?>
 
+<!-- Wrapper to slide for menu -->
+<g id="entire-svg">
   <rect x="0" y="0" width="100%" height="100%" fill="<?php echo $primary_color; ?>"/>
 
   <!-- Historical data -->
   <g id="historical-chart" <?php echo ($show_hist) ? '' : 'style="opacity: 0;"'; ?>>
     <?php $historical_ts->printChart($graph_height, $graph_width, $graph_offset, $historical_ts->yaxis_min, $historical_ts->yaxis_max); ?>
-    <circle cx="-10" cy="0" id="historical-circle" <?php echo $circle_size . $historical_graph_color . '"'; ?> />
+    <circle cx="-10" cy="-100" id="historical-circle" <?php echo $circle_size . $historical_graph_color . '"'; ?> />
   </g>
 
   <!-- Typical chart -->
@@ -311,6 +334,10 @@ text {
       echo "<image id='frame_{$i}' xlink:href='images/second_frames/frame_{$i}.gif' height='100%' width='";
       echo $width - $graph_width . "px' x='";
       echo $graph_width . "' ";
+      $im = imagecreatefromgif("images/second_frames/frame_{$i}.gif");
+      $rgb = imagecolorat($im, 1, 1);
+      $rgb = imagecolorsforindex($im, $rgb);
+      echo "data-color='rgb({$rgb['red']},{$rgb['green']},{$rgb['blue']})' ";
       echo ($i !== 0) ? 'display="none"' : '';
       echo ' y="0" />';
     }
@@ -320,24 +347,33 @@ text {
       echo "<image id='frame_{$i}' xlink:href='images/main_frames/frame_{$i}.gif' height='100%' width='";
       echo $width - $graph_width . "px' x='";
       echo $graph_width . "' ";
+      $im = imagecreatefromgif("images/main_frames/frame_{$i}.gif");
+      $rgb = imagecolorat($im, 1, 1);
+      $rgb = imagecolorsforindex($im, $rgb);
+      echo "data-color='rgb({$rgb['red']},{$rgb['green']},{$rgb['blue']})' ";
       echo ($i !== 0) ? 'display="none"' : '';
       echo ' y="0" />';
     }
   }
   ?>
+  <!-- matchingColorHeader is a rectangle on the top of the gif that is the same color as the gif to extend it -->
+  <rect id='matchingColorHeader' style="" height='<?php echo $height * 0.076; ?>px' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0"/>
+  <!-- fishbgbg is a solid blue background that's turned on when there's a fish animation -->
   <rect id='fishbgbg' style="fill: #3498db" height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none"/>
+  <!-- fishbg is for the extra layered on fish animations like the seawead -->
   <image id='fishbg' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
+  <!-- movie is where the primary gif goes -->
   <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
-  <text id="current-value-container" text-anchor="middle" fill="<?php echo $primary_color; ?>" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.2; ?>" font-size="20"><tspan id="current-value" font-size="50"></tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em"><?php echo $main_ts->units; ?></tspan></text>
+  <text id="current-value-container" text-anchor="middle" fill="<?php echo $primary_color; ?>" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.15; ?>" font-size="20"><tspan id="current-value" font-size="50"></tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em"><?php echo $main_ts->units; ?></tspan></text>
   <?php if ($main_ts->units === 'Kilowatts') { ?>
   <!-- <rect height='60' width='<?php echo $width - $graph_width - 30 ?>px' x="<?php echo $graph_width + 15 ?>" y="<?php echo $graph_height - 30 ?>" fill="#ECEFF1" /> -->
   <text id="accum-label" text-anchor="middle" fill="#333" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.8; ?>" font-size="15"><tspan id="accum-label-value" font-size="30" style="font-weight: 800">0</tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em" id="accum-label-units">Kilowatt-hours <?php echo $so_far; ?></tspan></text>
   <?php } ?>
-  <rect width="20px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
+  <rect width="10px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
 
   <!-- Topbar -->
-  <rect width="100%" height="<?php echo $height * 0.075; ?>px" x="0" y="0" style="fill:<?php echo '#ECEFF1';//$primary_color; ?>;stroke:<?php echo $font_color; ?>;" stroke-width="0.5" />
-  <line x1="0" y1="<?php echo $height * 0.075; ?>px" x2="<?php echo $width; ?>px" y2="<?php echo $height * 0.075; ?>px" stroke-width="0.25" stroke="<?php echo $font_color; ?>"/>
+  <rect width="74.5%" height="<?php echo $height * 0.075; ?>px" x="0" y="0" style="fill:<?php echo '#fff';//$primary_color; ?>;stroke:<?php echo $font_color; ?>;" stroke-width="0" />
+  <!-- <line x1="0" y1="<?php echo $height * 0.075; ?>px" x2="<?php echo $width; ?>px" y2="<?php echo $height * 0.075; ?>px" stroke-width="0.25" stroke="<?php echo $font_color; ?>"/> -->
   <text fill="<?php echo $font_color; ?>" id="legend"
         x="<?php echo ($width * 0.12); ?>" y="<?php echo $height * 0.049; ?>"
         font-size="13" style="font-weight: 400">
@@ -374,36 +410,21 @@ text {
 
   <!-- Main button -->
   <g id="layer-btn" style="cursor: pointer;" class="noselect">
-    <rect width="<?php echo $width * 0.09; ?>px" height="<?php echo $height * 0.06; ?>px" x="5" y="3" fill="<?php echo $font_color; ?>" stroke="<?php echo '#fff'; ?>" stroke-width="0.5" style="stroke-dasharray:0,<?php echo ($width * 0.1) . ',' . (($width*0.1) + ($height * 0.075)) . ',' . ($height * 0.075); ?>" />
-    <text x="2.2%" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Options</text>
-  </g>
-  <g id="dropdown" style="opacity: 0;">
-    <rect width="<?php echo $width * 0.175; ?>px" height="<?php echo ($secondary_ts_set) ? $height * 0.185 : $height * 0.12; ?>px" x="0" y="<?php echo ($height * 0.075); ?>" fill="<?php echo $font_color; ?>" stroke="<?php echo $font_color; ?>" stroke-width="1" />
-    <text style="cursor:pointer" id="historical" x="1.25%" y="<?php echo ($height * 0.075) + 15; ?>" font-size="12" fill="<?php echo $primary_color; ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
-      if ($time_frame === 'live') { echo 'hour'; }
-      elseif ($time_frame === 'today') { echo 'day'; }
-      else { echo $time_frame; }
-      ?></text>
-    <line x1="0" y1="<?php echo ($height * 0.075) + 25; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 25; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
-    <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="1.25%" y="<?php echo ($height * 0.075) + 40; ?>" font-size="12" fill="<?php echo $primary_color; ?>">
-      <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
-    </text>
-    <?php if ($secondary_ts_set) { ?>
-    <line x1="0" y1="<?php echo ($height * 0.075) + 50; ?>" x2="<?php echo ($width * 0.175); ?>" y2="<?php echo ($height * 0.075) + 50; ?>" stroke="<?php echo $primary_color; ?>" stroke-width="1" />
-    <text style="cursor:pointer" id="second" x="1.25%" y="<?php echo ($height * 0.075) + 65; ?>" font-size="12" fill="<?php echo $primary_color; ?>">Show <?php echo $name2; ?></text>
-    <?php } ?>
+    <rect id='layer-btn-rect' width="<?php echo $width * 0.09; ?>px" height="<?php echo $height * 0.06; ?>px" x="5" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,114,90,100;" />
+    <text id='layer-btn-text' x="2.2%" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Options</text>
   </g>
 
   <!-- Bottom bar -->
-  <rect width="100%" height="<?php echo $height * 0.075; ?>px" x="0" y="<?php echo $height * 0.925; ?>" style="fill:<?php echo '#ECEFF1';//$primary_color; ?>;" />
+  <rect width="100%" height="<?php echo $height * 0.075; ?>px" x="0" y="<?php echo $height * 0.925; ?>" style="fill:#eee;" />
   <line x1="0" y1="<?php echo $height; ?>" x2="<?php echo $width; ?>px" y2="<?php echo $height; ?>" stroke-width="0.5" stroke="<?php echo $font_color; ?>"/>
-  <line x1="0" y1="<?php echo $height - ($height * 0.075); ?>" x2="<?php echo $width; ?>px" y2="<?php echo $height - ($height * 0.075); ?>" stroke-width="0.5" stroke="<?php echo $font_color; ?>"/>
+  <!-- <line x1="0" y1="<?php echo $height - ($height * 0.075); ?>" x2="<?php echo $width; ?>px" y2="<?php echo $height - ($height * 0.075); ?>" stroke-width="0.5" stroke="<?php echo $font_color; ?>"/> -->
+  <!-- <rect width="100%" height="5px" x="0" y="<?php echo $height - ($height * 0.085); ?>" fill="url(#shadow2)" /> -->
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1h); ?>">
     <?php if ($time_frame !== 'live') { ?>
-    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
     <text fill="#fff" x="<?php echo $width * 0.205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3" />
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;"  />
       <text fill="#fff" x="<?php echo $width * 0.205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } ?>
   </a>
@@ -470,7 +491,7 @@ text {
     <text fill="#fff" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <?php } ?>
-
+</g><!--/g#entire-svg-->
   <script type="text/javascript" xlink:href="js/jquery.min.js"/>
   <script type="text/javascript">
   // <![CDATA[
@@ -530,12 +551,17 @@ text {
     $('#accum-label-value').text('$'+Math.round((elapsed*(kw/kw_count))*0.12).toLocaleString());
   });
   $('#layer-btn').on("click", function() {
-    var dropdown = $('#dropdown');
-    if (dropdown.css('opacity') === '0') {
-      dropdown.css('opacity', '1');
+    var layer_btn_rect = $('#layer-btn-rect');
+    var layer_btn_text = $('#layer-btn-text');
+    if (layer_btn_rect.attr('stroke-width') === '3') {
+      layer_btn_text.css('transform', 'translateY(3px)').html('<tspan y="6%" x="2%" style=\'font-size:25px;\'>&#215;</tspan> <tspan dy="-5">Options</tspan>');
+      layer_btn_rect.attr('stroke-width', '0').css('transform', 'translateY(3px)');
+      $('#entire-svg').attr('style', 'transform:translateX(250px);');
     }
     else {
-      dropdown.css('opacity', '0');
+      layer_btn_text.css('transform', 'translateY(0px)').text('Options');
+      layer_btn_rect.attr('stroke-width', '3').css('transform', 'translateY(0px)');
+      $('#entire-svg').attr('style', 'transform:translateX(0px);');
     }
   });
   $('#historical').on("click", function() {
@@ -667,16 +693,13 @@ text {
     $charachter_moods = array();
     if ($typical_time_frame) {
       $relativized_points = $typical_ts->circlepoints;
-      $count2 = count($typical_ts->circlepoints);
     } else {
       $relativized_points = $historical_ts->circlepoints;
-      $count2 = count($historical_ts->circlepoints);
     }
-    $count1 = count($main_ts->circlepoints);
     $diff_min = PHP_INT_MAX;
     $diff_max = PHP_INT_MIN;
-    for ($i=0; $i < (($count1 > $count2) ? $count2 : $count1) ; $i++) {
-      $d = $main_ts->circlepoints[$i][1] - $relativized_points[$i][1];
+    for ($i=0; $i < count($main_ts->circlepoints); $i++) { 
+      $d = $main_ts->circlepoints[$i][1] - $relativized_points[round($pct_through*$i)][1];
       $charachter_moods[] = $d;
       if ($d > $diff_max) {
         $diff_max = $d;
@@ -850,7 +873,7 @@ text {
         clearTimeout(timeout2); timeout2 = null;
         timeout2 = setTimeout(play, mouse_idle_ms);
       }
-    }, 200);
+    }, 30);
   }
 
   function sortNumber(a,b) { return a - b; }
@@ -922,14 +945,16 @@ text {
   play_data(); // start by playing data
 
   var last_animated = current_frame;
+  var changingHeader = $('#matchingColorHeader');
   setInterval(function(){
     if (frames.length > 0 && playing) {
       var shift = frames.shift();
       $('#frame_' + last_animated).attr('display', 'none');
       $('#frame_' + shift).attr('display', '');
+      changingHeader.css('fill', $('#frame_' + shift).data('color'));
       last_animated = shift;
     }
-  }, 10);
+  }, 8);
 
   <?php
   if ($time_frame === 'live') {
