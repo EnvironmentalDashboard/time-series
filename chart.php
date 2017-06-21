@@ -329,7 +329,7 @@ text {
   <text text-anchor="middle" x="<?php echo $graph_width + (($width - $graph_width)/2) ?>" y="200" font-size="15" width="<?php echo $width - ($graph_width+20); ?>px" display="none" id="error-msg">Data are not available for this point</text>
   <?php
   if ($main_ts->units === 'Gallons / hour' || $main_ts->units === 'Liters / hour' || $main_ts->units === 'Liters') {
-    $number_of_frames = 59;
+    $number_of_frames = 49;
     for ($i = 0; $i <= $number_of_frames; $i++) { 
       echo "<image id='frame_{$i}' xlink:href='images/second_frames/frame_{$i}.gif' height='100%' width='";
       echo $width - $graph_width . "px' x='";
