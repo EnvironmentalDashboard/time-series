@@ -4,7 +4,7 @@ ini_set('display_errors', 'On');
 header('Content-Type: image/svg+xml; charset=UTF-8'); // We'll be outputting a SVG
 require '../includes/db.php';
 require '../includes/class.TimeSeries.php';
-require 'includes/vars.php'; // Including in seperate file to keep this file clean
+require 'includes/vars.php'; // Including in seperate file to keep this file clean. Contains $from, $to, etc
 require 'includes/really-long-switch.php';
 ?>
 <svg height="<?php echo $height; ?>" width="<?php echo $width; ?>" viewBox="0 0 <?php echo $width; ?> <?php echo $height; ?>" class="chart" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -40,7 +40,7 @@ if ($typical_time_frame) {
   foreach ($json as $grouping) {
     if (in_array($day_of_week, $grouping['days'])) {
       $days = $grouping['days']; // The array that has the current day in it
-      $npoints = (array_key_exists('npoints', $grouping) ? $grouping['npoints'] : 5); // you can only use npoints
+      $npoints = (array_key_exists('npoints', $grouping) ? $grouping['npoints'] : 5); // you can only use npoints, not start
       break;
     }
   }
@@ -55,28 +55,17 @@ if ($typical_time_frame) {
     ORDER BY recorded DESC LIMIT ' . intval($npoints*24));
     $stmt->execute(array($_GET['meter_id'], 'hour'));
     $typical_data = $stmt->fetchAll();
-    for ($i = 0; $i < 96; $i++) { // 15 min res over day = 96 points
-      $buffer = array();
-      $hour = date('G', $recorded_vals);
-      foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
-        if ($hour === date('G', $value['recorded'])) {
-          $buffer[] = $value['value'];
+    $sec = $from;
+    $result = array();
+    while ($sec <= $to) {
+      $array_val = array();
+      foreach ($typical_data as $row) {
+        if (date('G', $sec) === date('G', $row['recorded'])) {
+          $array_val[] = $row['value'];
         }
       }
-      $median = median($buffer);
-      if ($last_data !== null) { // Interpolate next 45 mins -- 3 data points -- worth of data
-        $diff = ($last_data - $median)/4;
-        $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+$diff);
-        $recorded_vals += 900; // 900s = 15min
-        $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+($diff*2));
-        $recorded_vals += 900;
-        $result[] = array('recorded' => $recorded_vals, 'value' => $last_data+($diff*3));
-        $recorded_vals += 900;
-        $i += 3;
-      }
-      $result[] = array('recorded' => $recorded_vals, 'value' => $median);
-      $last_data = $median;
-      $recorded_vals += 900;
+      $result[] = array('recorded' => $sec, 'value' => median($array_val));
+      $sec += 3600;
     }
   } else { // week
     $stmt = $db->prepare(
@@ -85,18 +74,18 @@ if ($typical_time_frame) {
     ORDER BY DAYOFWEEK(FROM_UNIXTIME(recorded)) ASC');
     $stmt->execute(array($_GET['meter_id'], 'hour'));
     $typical_data = $stmt->fetchAll();
-    for ($i = 0; $i < 168; $i++) { // 1 hour res over week = 168 points
-      $buffer = array();
-      $hour = date('G', $recorded_vals);
-      $day = date('w', $recorded_vals)+1;
-      foreach ($typical_data as $value) { // Get all the data that was recorded in the same hour as the data point we're plotting
-        if ($hour === date('G', $value['recorded']) && in_array(date('w', $value['recorded'])+1, $days)) {
-          $buffer[] = $value['value'];
+    $sec = $from;
+    $result = array();
+    while ($sec <= $to) {
+      $array_val = array();
+      foreach ($typical_data as $row) {
+        // if it's the same day of week & hour of day
+        if (date('G w', $sec) === date('G w', $row['recorded'])) {
+          $array_val[] = $row['value'];
         }
       }
-      $median = median($buffer);
-      $result[] = array('recorded' => $recorded_vals, 'value' => $median);
-      $recorded_vals += 3600;
+      $result[] = array('recorded' => $sec, 'value' => median($array_val));
+      $sec += 3600;
     }
   }
   $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $result);
@@ -158,6 +147,13 @@ if ($secondary_ts_set) {
 $main_ts->yAxis();
 $historical_ts->yAxis();
 $main_ts->setTimes();
+if ($main_ts->units === 'Kilowatts') {
+  $charachter = 'squirrel';
+} else if ($main_ts->units === 'Gallons / hour' || $main_ts->units === 'Liters / hour' || $main_ts->units === 'Liters' || $main_ts->units === 'Milligrams per liter' || $main_ts->units === 'Gallons per minute') {
+  $charachter = 'fish';
+} else {
+  $charachter = 'both';
+}
 // URLs for buttons on bottom
 $curr_url = "//$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 parse_str(parse_url($curr_url, PHP_URL_QUERY), $tmp);
@@ -209,6 +205,16 @@ function median($arr) {
   100% { width: 0%; }
 }
 .anim { animation: anim 1s cubic-bezier(.17,.67,.83,.67) 1; animation-fill-mode: forwards; }
+@keyframes slide {
+  from { transform: translateX(0);}
+  to { transform: translateX(250px); }
+}
+.slide { animation: slide 350ms ease-in-out 1; animation-fill-mode: forwards; }
+@keyframes slide-back {
+  from { transform: translateX(250px);}
+  to { transform: translateX(0px); }
+}
+.slide-back { animation: slide-back 350ms ease-in-out 1; animation-fill-mode: forwards; }
 .noselect {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -231,20 +237,21 @@ text {
 /* ]]> */
 </style>
 <!-- Menu -->
-<rect x="0" y="0" height="100%" width="250px" style="fill:#fff;" id="menu" />
-<text x="5" y="25" style="font-size: 20px;fill: #777;font-weight: bold">Chart options</text>
-<text style="cursor:pointer" id="historical" x="5" y="60" font-size="15" fill="#777"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
-      if ($time_frame === 'live') { echo 'hour'; }
-      elseif ($time_frame === 'today') { echo 'day'; }
-      else { echo $time_frame; }
-      ?></text>
-<text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="5" y="85" font-size="15" fill="#777">
-  <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
-</text>
-<?php if ($secondary_ts_set) { ?>
-<text style="cursor:pointer" id="second" x="5" y="110" font-size="15" fill="#777">Show <?php echo $name2; ?></text>
-    <?php } ?>
-
+<g id="menu">
+  <rect x="0" y="0" height="100%" width="250px" style="fill:#fff;" />
+  <text x="5" y="25" style="font-size: 20px;fill: #777;font-weight: bold">Chart options</text>
+  <text style="cursor:pointer" id="historical" x="5" y="60" font-size="15" fill="#777"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
+        if ($time_frame === 'live') { echo 'hour'; }
+        elseif ($time_frame === 'today') { echo 'day'; }
+        else { echo $time_frame; }
+        ?></text>
+  <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="5" y="85" font-size="15" fill="#777">
+    <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
+  </text>
+  <?php if ($secondary_ts_set) { ?>
+  <text style="cursor:pointer" id="second" x="5" y="110" font-size="15" fill="#777">Show <?php echo $name2; ?></text>
+  <?php } ?>
+</g>
 <!-- Wrapper to slide for menu -->
 <g id="entire-svg">
   <rect x="0" y="0" width="100%" height="100%" fill="<?php echo $primary_color; ?>"/>
@@ -365,7 +372,7 @@ text {
   <!-- movie is where the primary gif goes -->
   <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
   <text id="current-value-container" text-anchor="middle" fill="<?php echo $primary_color; ?>" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.15; ?>" font-size="20"><tspan id="current-value" font-size="50"></tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em"><?php echo $main_ts->units; ?></tspan></text>
-  <?php if ($main_ts->units === 'Kilowatts') { ?>
+  <?php if ($charachter === 'squirrel') { ?>
   <!-- <rect height='60' width='<?php echo $width - $graph_width - 30 ?>px' x="<?php echo $graph_width + 15 ?>" y="<?php echo $graph_height - 30 ?>" fill="#ECEFF1" /> -->
   <text id="accum-label" text-anchor="middle" fill="#333" x="<?php echo $width * 0.88; ?>" y="<?php echo $height * 0.8; ?>" font-size="15"><tspan id="accum-label-value" font-size="30" style="font-weight: 800">0</tspan> <tspan x="<?php echo $width * 0.88; ?>" dy="1.2em" id="accum-label-units">Kilowatt-hours <?php echo $so_far; ?></tspan></text>
   <?php } ?>
@@ -465,7 +472,7 @@ text {
     <?php } ?>
   </a>
   <!-- accum_btnulation selection -->
-  <?php if ($main_ts->units === 'Kilowatts') { ?>
+  <?php if ($charachter === 'squirrel') { ?>
   <g id="kwh" style="display: none">
     <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
     <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
@@ -554,15 +561,32 @@ text {
     var layer_btn_rect = $('#layer-btn-rect');
     var layer_btn_text = $('#layer-btn-text');
     if (layer_btn_rect.attr('stroke-width') === '3') {
-      layer_btn_text.css('transform', 'translateY(3px)').html('<tspan y="6%" x="2%" style=\'font-size:25px;\'>&#215;</tspan> <tspan dy="-5">Options</tspan>');
+      layer_btn_text.css('transform', 'translateY(3px)').html('<tspan y="6%" x="2%" style=\'font-size:25px;\'>&#215;</tspan> <tspan dy="-5">Close</tspan>');
       layer_btn_rect.attr('stroke-width', '0').css('transform', 'translateY(3px)');
-      $('#entire-svg').attr('style', 'transform:translateX(250px);');
+      $('#entire-svg').attr('class', 'slide');
     }
     else {
       layer_btn_text.css('transform', 'translateY(0px)').text('Options');
       layer_btn_rect.attr('stroke-width', '3').css('transform', 'translateY(0px)');
-      $('#entire-svg').attr('style', 'transform:translateX(0px);');
+      $('#entire-svg').attr('class', 'slide-back');
     }
+  });
+  // $('#entire-svg').on('click', function() {
+  //   var layer_btn_rect = $('#layer-btn-rect');
+  //   var layer_btn_text = $('#layer-btn-text');
+  //   if (layer_btn_rect.attr('stroke-width') === '3') {
+  //     console.log('s');
+  //     layer_btn_text.css('transform', 'translateY(0px)').text('Options');
+  //     layer_btn_rect.attr('stroke-width', '3').css('transform', 'translateY(0px)');
+  //     $('#entire-svg').attr('class', 'slide-back');
+  //   }
+  // });
+  $('#menu > text').on('click', function() {
+    var layer_btn_rect = $('#layer-btn-rect');
+    var layer_btn_text = $('#layer-btn-text');
+    layer_btn_text.css('transform', 'translateY(0px)').text('Options');
+    layer_btn_rect.attr('stroke-width', '3').css('transform', 'translateY(0px)');
+    $('#entire-svg').attr('class', 'slide-back');
   });
   $('#historical').on("click", function() {
     var historical = $('#historical-chart');
@@ -885,15 +909,6 @@ text {
     var raw_data_copy_sorted = raw_data.slice().sort(sortNumber);
     var indexof = raw_data_copy_sorted.indexOf(val);
     var relative_value = ((indexof) / raw_data_copy_sorted.length) * 100; // Get percent (0-100)
-    <?php
-    if ($main_ts->units === 'Kilowatts') {
-      $charachter = 'squirrel';
-    } else if ($main_ts->units === 'Gallons / hour' || $main_ts->units === 'Liters / hour' || $main_ts->units === 'Liters') {
-      $charachter = 'fish';
-    } else {
-      $charachter = 'both';
-    }
-    ?>
     $.get("movie.php", {relative_value: relative_value, count: movies_played, charachter: <?php echo json_encode($charachter) ?>}, function(data) {
       $('#accum-label').css('display', 'none');
       movies_played++;
@@ -928,7 +943,7 @@ text {
   }
 
   function accumulation(time_sofar, avg_kw) {
-    <?php if ($main_ts->units === 'Kilowatts') { ?>
+    <?php if ($charachter === 'squirrel') { ?>
     var kwh = (time_sofar/3600)*avg_kw; // the number of hours in time period * the average kw reading
     // console.log('time elapsed in hours: '+(time_sofar/3600)+"\navg_kw: "+ avg_kw+"\nkwh: "+kwh);
     if (accum_btn.attr('id') === 'kwh') {
