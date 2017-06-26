@@ -62,8 +62,8 @@ switch ($time_frame) {
     $res = 'hour';
     $stroke_width = 2;
     $circle_size = 'r="6" stroke-width="0" stroke="' . $primary_color . '" fill="';
-    $from = mktime(0, 0, 0, date("n"), date("j") - date("N")); // Start of the week
-    $to = mktime(0, 0, 0, date("n"), date("j") + (7-date("N"))); // End of the week
+    $from = strtotime('this sunday'); // Start of the week
+    $to = strtotime('next sunday')-1; // End of the week
     $pct_through = ($now - $from) / 604800;
     $double_time = $from - 604800;
     $dates = "<text fill=\"{$interval_color}\" x=\"1\" y='" . $height * 0.91 . "'

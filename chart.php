@@ -16,9 +16,8 @@ if (isset($_GET['timeseriesconfig'])) {
   foreach ($timeseriesconfigs as $key => $value) {
     $_GET[$key] = $value;
   }
-  var_dump($_GET);
 }
-// var_dump($from);var_dump($now);exit;
+// var_dump(date('l n\/j \| g:i a',$from));var_dump(date('l n\/j \| g:i a',$to));exit;
 $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
 $secondary_ts_set = ($_GET['meter_id'] !== $_GET['meter_id2']);
 $secondary_ts = ($secondary_ts_set) ? new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res) : null; // "Second variable" timeseries
@@ -374,10 +373,10 @@ text {
   <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="30" display="none" />
   <rect style="fill:#fff;" height="60px" width="<?php echo $width-$graph_width ?>" y="0" x="<?php echo $graph_width ?>"></rect>
   <?php if ($charachter === 'squirrel') { ?>
-  <text id="accum-label-value" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.08; ?>" font-size="30">0</text>
+  <text id="accum-label-value" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.08; ?>" font-size="30" font-weight="800">0</text>
   <text id="accum-label-units" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.12; ?>" font-size="15">Kilowatt-hours <?php echo $so_far; ?></text>
   <?php } elseif ($charachter === 'fish') { ?>
-  <text id="accum-label-value" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.08; ?>" font-size="30">0</text>
+  <text id="accum-label-value" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.08; ?>" font-size="30" font-weight="800">0</text>
   <text id="accum-label-units" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.12; ?>" font-size="15">Gallons so far <?php echo $so_far; ?></text>
   <?php } ?>
   <rect width="10px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
@@ -385,7 +384,7 @@ text {
   <!-- Topbar -->
   <rect width="74.5%" height="<?php echo $height * 0.075; ?>px" x="0" y="0" style="fill:<?php echo '#fff';//$primary_color; ?>;stroke:<?php echo $font_color; ?>;" stroke-width="0" />
   <!-- <line x1="0" y1="<?php echo $height * 0.075; ?>px" x2="<?php echo $width; ?>px" y2="<?php echo $height * 0.075; ?>px" stroke-width="0.25" stroke="<?php echo $font_color; ?>"/> -->
-  <text id="current-value-container" text-anchor="end" fill="#333" x="<?php echo $graph_width - 5; ?>" y="23" font-size="14"><tspan id="current-value" font-size="23"></tspan> <tspan><?php echo $main_ts->units; ?></tspan></text>
+  <text id="current-value-container" text-anchor="end" fill="#333" x="<?php echo $graph_width - 5; ?>" y="23" font-size="14"><tspan id="current-value" font-size="23">0</tspan> <tspan><?php echo $main_ts->units; ?></tspan></text>
   <text fill="<?php echo $font_color; ?>" id="legend"
         x="<?php echo ($width * 0.12); ?>" y="<?php echo $height * 0.049; ?>"
         font-size="13" style="font-weight: 400">
@@ -515,11 +514,11 @@ text {
   </g>
   <g id="money2">
     <rect width="<?php echo $width * 0.06; ?>px" height="30" x="<?php echo $graph_width; ?>" y="30" style="fill:<?php echo $font_color; ?>;" />
-    <text fill="#fff" x="<?php echo $graph_width + 28; ?>" y="50" font-size="16" style="font-weight:400">$</text>
+    <text fill="#fff" x="<?php echo $graph_width + 20; ?>" y="50" font-size="16" style="font-weight:400">$</text>
   </g>
   <g id="money2-active" style="display: none">
     <rect width="<?php echo $width * 0.06; ?>px" height="30" x="<?php echo $graph_width; ?>" y="30" style="fill:#2196F3;" />
-    <text fill="#fff" x="<?php echo $graph_width + 28; ?>" y="50" font-size="16" style="font-weight:400">$</text>
+    <text fill="#fff" x="<?php echo $graph_width + 20; ?>" y="50" font-size="16" style="font-weight:400">$</text>
   </g>
   <?php } ?>
 </g><!--/g#entire-svg-->
@@ -788,9 +787,15 @@ text {
     }
     $diff_min = PHP_INT_MAX;
     $diff_max = PHP_INT_MIN;
-    for ($i=0; $i < count($main_ts->circlepoints); $i++) { 
-      $d = $main_ts->circlepoints[$i][1] - $relativized_points[round($pct_through*$i)][1];
-      $charachter_moods[] = $d;
+    // calculate the $diff_min/$diff_max
+    $tmp = count($relativized_points)-1;
+    for ($i=0; $i < count($main_ts->circlepoints); $i++) {
+      $scaled = round($pct_through*$i);
+      if ($scaled > $tmp) {
+        $scaled = $tmp;
+      }
+      $d = $main_ts->circlepoints[$i][1] - $relativized_points[$scaled][1];
+      $charachter_moods[] = $d; // save difference to scale later
       if ($d > $diff_max) {
         $diff_max = $d;
       }
@@ -798,6 +803,7 @@ text {
         $diff_min = $d;
       }
     }
+    // scale the difference between two points to a gif frame
     for ($i=0; $i < count($charachter_moods); $i++) { 
       $charachter_moods[$i] = round($main_ts->convertRange($charachter_moods[$i], $diff_min, $diff_max, 0, $number_of_frames));
     }
@@ -882,7 +888,6 @@ text {
     // Hide the movie if the mouse moves
     if (movie.attr('display') != 'none') {
       movie.attr('display', 'none');
-      $('#current-value-container').attr('display', '');
       $("#fishbgbg").attr('display', 'none');
       $("#fishbg").attr('display', 'none');
       alreadydone = true;
@@ -915,7 +920,6 @@ text {
 
   function play_data() {
     console.log('play_data');
-    $('#current-value-container').attr('display', '');
     var i = 0, kw = 0, elapsed = 0;
     interval = setInterval(function() {
       var pct_through = i/(current_points.length-1);
@@ -985,14 +989,12 @@ text {
       }
       $('#movie').attr('xlink:href', 'images/' + name + '.gif').attr('display', '');
       if (name.indexOf("Story") >= 0 || name.indexOf("Idea") >= 0) {
-        $('#current-value-container').attr('display', 'none');
       }
       alreadydone = false;
       setTimeout(function() {
         if (!alreadydone) {
           $('#movie').attr('display', 'none');
           $('#frame_' + current_frame).attr('display', '');
-          $('#current-value-container').attr('display', '');
           $("#fishbgbg").attr('display', 'none');
           $("#fishbg").attr('display', 'none');
           playing = true;
