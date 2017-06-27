@@ -50,7 +50,7 @@ if (empty($_GET['time'])) {
   <meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
   <link rel="stylesheet" href="css/bootstrap.grid.css">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=1">
   <title>Time Series</title>
 </head>
 <body>
@@ -165,7 +165,7 @@ if (empty($_GET['time'])) {
       if (!isset($_GET['webpage']) || $_GET['webpage'] !== 'title') { // if webpage==title, hide img
         $colclass = 'col-xs-10';
       ?>
-      <div class="col-xs-2">
+      <div class="col-xs-2"><!-- thumbnail -->
         <a href="#" class="thumbnail" style="width: 100%">
           <img src="<?php
           $stmt = $db->prepare("SELECT buildings.custom_img, buildings.name FROM buildings WHERE user_id = {$user_id} AND buildings.id IN (SELECT meters.building_id FROM meters WHERE meters.id = ?) LIMIT 1");
@@ -186,7 +186,7 @@ if (empty($_GET['time'])) {
         $colclass = 'col-xs-12';
       }
       ?>
-      <div class="<?php echo $colclass; ?>">
+      <div class="<?php echo $colclass; ?>"><!-- title -->
         <?php
         $iflabel = (isset($_GET['label']) && $_GET['label'] != null);
         if ($iflabel) {
@@ -210,11 +210,15 @@ if (empty($_GET['time'])) {
         ?>
         <!-- <p style="text-align: right"><a href="#" class="btn"></a></p> -->
         <!-- <img src="images/pencil-square-o.svg" height="40px" width="40px" alt="Edit icon" style="position:absolute;top:5px;right:5px;cursor:pointer;" onclick="show_modal()"> -->
+      </div><!-- /title -->
+    </div><!-- /row -->
+    <div class="row">
+      <div class="col-xs-12">
+        <object type="image/svg+xml" data="chart.php?<?php echo http_build_query($_GET); ?>"></object>
       </div>
     </div>
   </div>
   <?php } ?>
-  <object id="object" type="image/svg+xml" data="chart.php?<?php echo http_build_query($_GET); ?>"></object>
   <script>
     function show_modal() {
       document.getElementById("modal").style.display = 'block';

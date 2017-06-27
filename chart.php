@@ -265,7 +265,7 @@ text {
   <!-- Typical chart -->
   <g id="typical-chart" style="opacity: 1;">
     <?php if ($typical_time_frame) {$typical_ts->printChart($graph_height, $graph_width, $graph_offset, $historical_ts->yaxis_min, $historical_ts->yaxis_max);} ?>
-    <circle cx="-10" cy="0" id="typical-circle" <?php echo $circle_size . '#f39c12' . '"'; ?> />
+    <circle cx="-10" cy="-30" id="typical-circle" <?php echo $circle_size . '#f39c12' . '"'; ?> />
   </g>
 
   <!-- Second variable overlay -->
@@ -373,18 +373,22 @@ text {
   <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="30" display="none" />
   <rect style="fill:#fff;" height="60px" width="<?php echo $width-$graph_width ?>" y="0" x="<?php echo $graph_width ?>"></rect>
   <?php if ($charachter === 'squirrel') { ?>
-  <text id="accum-label-value" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.08; ?>" font-size="30" font-weight="800">0</text>
-  <text id="accum-label-units" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.12; ?>" font-size="15">Kilowatt-hours <?php echo $so_far; ?></text>
+  <text text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.12; ?>" font-size="20" font-weight="800">
+    <tspan id="accum-label-value">0</tspan>
+    <tspan id="accum-label-units" font-size="10">Kilowatt-hours <?php echo $so_far; ?></tspan>
+  </text>
   <?php } elseif ($charachter === 'fish') { ?>
-  <text id="accum-label-value" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.08; ?>" font-size="30" font-weight="800">0</text>
-  <text id="accum-label-units" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.12; ?>" font-size="15">Gallons so far <?php echo $so_far; ?></text>
+  <text text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.12; ?>" font-size="20" font-weight="800">
+    <tspan id="accum-label-value">0</tspan> 
+    <tspan id="accum-label-units" font-size="10">Gallons so far <?php echo $so_far; ?></tspan>
+  </text>
   <?php } ?>
   <rect width="10px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
 
   <!-- Topbar -->
   <rect width="74.5%" height="<?php echo $height * 0.075; ?>px" x="0" y="0" style="fill:<?php echo '#fff';//$primary_color; ?>;stroke:<?php echo $font_color; ?>;" stroke-width="0" />
   <!-- <line x1="0" y1="<?php echo $height * 0.075; ?>px" x2="<?php echo $width; ?>px" y2="<?php echo $height * 0.075; ?>px" stroke-width="0.25" stroke="<?php echo $font_color; ?>"/> -->
-  <text id="current-value-container" text-anchor="end" fill="#333" x="<?php echo $graph_width - 5; ?>" y="23" font-size="14"><tspan id="current-value" font-size="23">0</tspan> <tspan><?php echo $main_ts->units; ?></tspan></text>
+  <text id="current-value-container" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="23" font-size="14"><tspan id="current-value" font-size="23">0</tspan> <tspan><?php echo $main_ts->units; ?></tspan></text>
   <text fill="<?php echo $font_color; ?>" id="legend"
         x="<?php echo ($width * 0.12); ?>" y="<?php echo $height * 0.049; ?>"
         font-size="13" style="font-weight: 400">
@@ -538,13 +542,15 @@ text {
     accum_btn = $('#kwh');
     active_accum_btn = $('#kwh-active');
     $('#accum-label-units').text('Kilowatt-hours <?php echo $so_far; ?>');
+    // the amount of time elapsed
     var elapsed = (current_timestamps[current_timestamps.length-1]-current_timestamps[0])/3600;
-    var kw = 0;
-    var kw_count = 0;
+    var kw = 0; // the total number of kw in the time elapsed
+    var kw_count = 0; // used for calculating average
     for (var i = current_timestamps.length-1; i >= 0; i--) {
       kw += raw_data[i];
       kw_count++;
     }
+    // the # of hours elapsed * the average kw reading
     $('#accum-label-value').text(Math.round(elapsed*(kw/kw_count)).toLocaleString());
   });
   $('#co2').on('click', function() {
@@ -587,6 +593,7 @@ text {
   var accum_btn = $('#gal');
   var active_accum_btn = $('#gal-active');
   $('#gal').on('click', function() {
+    console.log('a');
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#gal').css('display', 'none');
@@ -595,13 +602,13 @@ text {
     active_accum_btn = $('#gal-active');
     $('#accum-label-units').text('Gallons so far <?php echo $so_far; ?>');
     var elapsed = (current_timestamps[current_timestamps.length-1]-current_timestamps[0])/3600;
-    var kw = 0;
-    var kw_count = 0;
+    var gals = 0;
+    var gals_count = 0;
     for (var i = current_timestamps.length-1; i >= 0; i--) {
-      kw += raw_data[i];
-      kw_count++;
+      gals += raw_data[i];
+      gals_count++;
     }
-    $('#accum-label-value').text(Math.round(elapsed*(kw/kw_count)).toLocaleString());
+    $('#accum-label-value').text(Math.round(elapsed*(gals/gals_count)).toLocaleString());
   });
   $('#money2').on('click', function() {
     active_accum_btn.css('display', 'none');
@@ -612,13 +619,13 @@ text {
     active_accum_btn = $('#money2-active');
     $('#accum-label-units').text('Dollars spent <?php echo $so_far; ?>');
     var elapsed = (current_timestamps[current_timestamps.length-1]-current_timestamps[0])/3600;
-    var kw = 0;
-    var kw_count = 0;
+    var gals = 0;
+    var gals_count = 0;
     for (var i = current_timestamps.length-1; i >= 0; i--) {
-      kw += raw_data[i];
-      kw_count++;
+      gals += raw_data[i];
+      gals_count++;
     }
-    $('#accum-label-value').text('$'+Math.round((elapsed*(kw/kw_count))*0.12).toLocaleString());
+    $('#accum-label-value').text('$'+Math.round((elapsed*(gals/gals_count))*0.12).toLocaleString());
   });
   <?php } ?>
 
@@ -1007,18 +1014,21 @@ text {
   }
 
   function accumulation(time_sofar, avg_kw) {
-    <?php if ($charachter === 'squirrel') { ?>
     var kwh = (time_sofar/3600)*avg_kw; // the number of hours in time period * the average kw reading
     // console.log('time elapsed in hours: '+(time_sofar/3600)+"\navg_kw: "+ avg_kw+"\nkwh: "+kwh);
-    if (accum_btn.attr('id') === 'kwh') {
+    var id = accum_btn.attr('id');
+    if (id === 'kwh') {
       $('#accum-label-value').text(Math.round(kwh).toLocaleString()); // kWh = time elapsed in hours * kilowatts so far
     }
-    else if (accum_btn.attr('id') === 'co2') {
+    else if (id === 'co2') {
       $('#accum-label-value').text(Math.round(kwh*1.22).toLocaleString()); // pounds of co2 per kwh https://www.eia.gov/tools/faqs/faq.cfm?id=74&t=11
+    } else if (id === 'gal') {
+      $('#accum-label-value').text(Math.round(kwh).toLocaleString());
+    } else if (id === 'money2') {
+      $('#accum-label-value').text('$'+Math.round(kwh*0.004).toLocaleString());
     } else { // money
       $('#accum-label-value').text('$'+Math.round(kwh*0.11).toLocaleString()); // average cost of kwh http://www.npr.org/sections/money/2011/10/27/141766341/the-price-of-electricity-in-your-state
     }
-    <?php } ?>
   }
 
   play_data(); // start by playing data
