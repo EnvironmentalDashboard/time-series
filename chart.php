@@ -593,7 +593,6 @@ text {
   var accum_btn = $('#gal');
   var active_accum_btn = $('#gal-active');
   $('#gal').on('click', function() {
-    console.log('a');
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#gal').css('display', 'none');
@@ -836,9 +835,14 @@ text {
   $(svg).on('mousemove', function(evt) {
     playing = true;
     var loc = cursorPoint(evt);
-    var pct_through = (loc.x / <?php echo (($graph_width)*$pct_through); ?>);
-    var pct_through_whole = (loc.x / <?php echo $graph_width; ?>);
-    if (pct_through > 1) {
+    if (loc.x <= 40) {
+      return;
+    }
+    // subtract 40 from loc.x b/c of the chart padding. subtract 80 from graph width to account for
+    // padding on both sides
+    var pct_through = ((loc.x-40) / <?php echo (($graph_width-80)*$pct_through); ?>);
+    var pct_through_whole = ((loc.x-40) / <?php echo $graph_width-80; ?>);
+    if (pct_through > 1) { // if the mouse is to the right of the main chart
       return;
     }
     index_rn = Math.round(pct_through * (current_points.length-1)); // Coords for circle (subtract 1 to 0-base for array index)
