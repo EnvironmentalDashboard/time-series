@@ -165,8 +165,8 @@ if (empty($_GET['time'])) {
       if (!isset($_GET['webpage']) || $_GET['webpage'] !== 'title') { // if webpage==title, hide img
         $colclass = 'col-xs-10';
       ?>
-      <div class="col-xs-2"><!-- thumbnail -->
-        <a href="#" class="thumbnail" style="width: 100%">
+      <div class="col-xs-2"><!-- img -->
+        <a href="#" style="width: 100%">
           <img src="<?php
           $stmt = $db->prepare("SELECT buildings.custom_img, buildings.name FROM buildings WHERE user_id = {$user_id} AND buildings.id IN (SELECT meters.building_id FROM meters WHERE meters.id = ?) LIMIT 1");
           $stmt->execute(array($_GET['meter_id']));
@@ -176,7 +176,7 @@ if (empty($_GET['time'])) {
             echo $result['custom_img'];
           }
           else {
-            echo 'http://placehold.it/200x200';
+            echo 'http://placehold.it/150x150';
           }
           ?>" alt="<?php echo $title; ?>">
         </a>
@@ -204,7 +204,7 @@ if (empty($_GET['time'])) {
         elseif ($tot_len < 40) {
           $title_size = '';
         } else {
-          $title_size = 'font-size: 50px;';
+          $title_size = 'font-size: 40px;';
         }
         echo "<h1 style='width: 90%;{$title_size}'>{$full_title}</h1>";
         ?>
@@ -214,7 +214,7 @@ if (empty($_GET['time'])) {
     </div><!-- /row -->
     <div class="row">
       <div class="col-xs-12">
-        <object type="image/svg+xml" data="chart.php?<?php echo http_build_query($_GET); ?>"></object>
+        <object style="box-shadow: 0px 2px 2px 2px rgba(0,0,0,0.3);" type="image/svg+xml" data="chart.php?<?php echo http_build_query($_GET); ?>"></object>
       </div>
     </div>
   </div>

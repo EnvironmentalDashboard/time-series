@@ -29,7 +29,7 @@ h1 {
   text-align: center;
   margin-bottom: 0px;
   font-size: 4rem;
-  font-size: 5vw;
+  font-size: 4vw;
   font-weight: 700;
   margin-top: 1%;
 }
@@ -117,7 +117,7 @@ h2 {
   background-color: #fff;
   margin-left: 5px;
   margin-top: 5px;
-  border: 1px solid #ddd;
+  /*border: 1px solid #ddd;*/
   /*border-radius: 4px;*/
   -webkit-transition: border .2s ease-in-out;
        -o-transition: border .2s ease-in-out;

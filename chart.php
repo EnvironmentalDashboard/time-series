@@ -154,7 +154,7 @@ if ($main_ts->units === 'Kilowatts') {
   $charachter = 'both';
 }
 // URLs for buttons on bottom
-$curr_url = "//$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+$curr_url = "$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 parse_str(parse_url($curr_url, PHP_URL_QUERY), $tmp);
 if (!isset($tmp['time'])) { // todo: fix
   $tmp['time'] = 'today';
@@ -206,11 +206,11 @@ function median($arr) {
 .anim { animation: anim 1s cubic-bezier(.17,.67,.83,.67) 1; animation-fill-mode: forwards; }
 @keyframes slide {
   from { transform: translateX(0);}
-  to { transform: translateX(250px); }
+  to { transform: translateX(260px); }
 }
 .slide { animation: slide 350ms ease-in-out 1; animation-fill-mode: forwards; }
 @keyframes slide-back {
-  from { transform: translateX(250px);}
+  from { transform: translateX(260px);}
   to { transform: translateX(0px); }
 }
 .slide-back { animation: slide-back 350ms ease-in-out 1; animation-fill-mode: forwards; }
@@ -289,7 +289,9 @@ text {
 
   <!-- padding at bottom of chart -->
   <rect width="<?php echo $graph_width ?>" height="30px" x="0" y="<?php echo $height * 0.88; ?>" style="fill:#fff;" />
-
+  <!-- side columns -->
+  <rect width="40px" height="100%" x="0" y="0" style="fill:#eee;" />
+  <rect width="40px" height="100%" x="<?php echo $graph_width-40 ?>" y="0" style="fill:#eee;" />
   <g id="y-axis-left" text-anchor="start">
     <?php
     $chart_min = $graph_offset;
@@ -303,7 +305,7 @@ text {
       $chart_max -= $interval;
     }
     ?>
-    <text x="5" y="<?php echo $graph_height + $graph_offset + 20; ?>" font-size="10" fill="<?php echo $font_color; ?>"><?php echo $main_ts->units; ?></text>
+    <text x="-180" y="51%" transform="translate(0)rotate(-90 10 175)" font-size="11" fill="<?php echo $font_color; ?>"><?php echo $main_ts->units; ?></text>
   </g>
   <?php if (isset($secondary_ts->yaxis)) { ?>
   <g id="y-axis-right" text-anchor="end" style="opacity: 0">
@@ -316,7 +318,7 @@ text {
       $chart_max -= $interval;
     }
     ?>
-    <text x="<?php echo $graph_width - 5; ?>" y="<?php echo $graph_height + $graph_offset + 20; ?>" font-size="10" fill="<?php echo $font_color; ?>"><?php echo $secondary_ts->units; ?></text>
+    <text x="-110" y="878" transform="translate(0)rotate(-90 10 175)" font-size="11" fill="<?php echo $font_color; ?>"><?php echo $secondary_ts->units; ?></text>
   </g>
   <?php } ?>
 
@@ -346,7 +348,7 @@ text {
       // $rgb = imagecolorsforindex($im, $rgb);
       // echo "data-color='rgb({$rgb['red']},{$rgb['green']},{$rgb['blue']})' ";
       echo ($i !== 0) ? 'display="none"' : '';
-      echo ' y="30" />';
+      echo ' y="0" />';
     }
   } else {
     $number_of_frames = 46;
@@ -359,7 +361,7 @@ text {
       // $rgb = imagecolorsforindex($im, $rgb);
       // echo "data-color='rgb({$rgb['red']},{$rgb['green']},{$rgb['blue']})' ";
       echo ($i !== 0) ? 'display="none"' : '';
-      echo ' y="30" />';
+      echo ' y="0" />';
     }
   }
   ?>
@@ -370,25 +372,28 @@ text {
   <!-- fishbg is for the extra layered on fish animations like the seawead -->
   <image id='fishbg' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="50" display="none" />
   <!-- movie is where the primary gif goes -->
-  <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="30" display="none" />
-  <rect style="fill:#fff;" height="60px" width="<?php echo $width-$graph_width ?>" y="0" x="<?php echo $graph_width ?>"></rect>
+  <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
+  <rect style="fill:#eee;" height="40px" width="<?php echo $width-$graph_width ?>" y="0" x="<?php echo $graph_width ?>"></rect>
+  <rect style="fill:#eee;" height="30px" width="<?php echo $width-$graph_width ?>" y="<?php echo $height-30 ?>" x="<?php echo $graph_width ?>"></rect>
   <?php if ($charachter === 'squirrel') { ?>
-  <text text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.12; ?>" font-size="20" font-weight="800">
+  <text text-anchor="end" fill="#4C595A" x="950" y="<?php echo $height*0.98; ?>" font-size="20" font-weight="800">
     <tspan id="accum-label-value">0</tspan>
     <tspan id="accum-label-units" font-size="10">Kilowatt-hours <?php echo $so_far; ?></tspan>
   </text>
   <?php } elseif ($charachter === 'fish') { ?>
-  <text text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="<?php echo $height * 0.12; ?>" font-size="20" font-weight="800">
+  <text text-anchor="end" fill="#4C595A" x="950" y="<?php echo $height * 0.98; ?>" font-size="20" font-weight="800">
     <tspan id="accum-label-value">0</tspan> 
     <tspan id="accum-label-units" font-size="10">Gallons so far <?php echo $so_far; ?></tspan>
   </text>
   <?php } ?>
-  <rect width="10px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
+  <rect width="3px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
 
   <!-- Topbar -->
-  <rect width="74.5%" height="<?php echo $height * 0.075; ?>px" x="0" y="0" style="fill:<?php echo '#fff';//$primary_color; ?>;stroke:<?php echo $font_color; ?>;" stroke-width="0" />
+  <g transform="translate(40)">
+  <!-- was 74.5% width -->
+  <rect width="70%" height="35px" x="0" y="0" style="fill:<?php echo '#eee';//$primary_color; ?>;stroke:<?php echo $font_color; ?>;" stroke-width="0" />
   <!-- <line x1="0" y1="<?php echo $height * 0.075; ?>px" x2="<?php echo $width; ?>px" y2="<?php echo $height * 0.075; ?>px" stroke-width="0.25" stroke="<?php echo $font_color; ?>"/> -->
-  <text id="current-value-container" text-anchor="end" fill="#333" x="<?php echo $width - 5; ?>" y="23" font-size="14"><tspan id="current-value" font-size="23">0</tspan> <tspan><?php echo $main_ts->units; ?></tspan></text>
+  <text id="current-value-container" text-anchor="middle" fill="#4C595A" x="840" y="30" font-size="18"><tspan id="current-value" font-size="32">0</tspan> <tspan><?php echo $main_ts->units; ?></tspan></text>
   <text fill="<?php echo $font_color; ?>" id="legend"
         x="<?php echo ($width * 0.12); ?>" y="<?php echo $height * 0.049; ?>"
         font-size="13" style="font-weight: 400">
@@ -402,7 +407,7 @@ text {
         &#160;&#160;&#160;
       </tspan>
     <?php } ?>
-    <tspan id="historical-use-legend">
+    <tspan id="historical-use-legend" style="display: none">
       <tspan dy="8" style='font-size: 40px;fill: <?php echo $historical_graph_color; ?>'>&#9632;</tspan>
       <tspan dy="-8">Previous <?php
       if ($time_frame === 'live') {
@@ -428,12 +433,14 @@ text {
     <rect id='layer-btn-rect' width="<?php echo $width * 0.09; ?>px" height="<?php echo $height * 0.06; ?>px" x="5" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,114,90,100;" />
     <text id='layer-btn-text' x="2.2%" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Options</text>
   </g>
+  </g>
 
   <!-- Bottom bar -->
   <rect width="74.5%" height="<?php echo $height * 0.075; ?>px" x="0" y="<?php echo $height * 0.925; ?>" style="fill:#eee;" />
   <line x1="0" y1="<?php echo $height; ?>" x2="<?php echo $width; ?>px" y2="<?php echo $height; ?>" stroke-width="0.5" stroke="<?php echo $font_color; ?>"/>
   <!-- <line x1="0" y1="<?php echo $height - ($height * 0.075); ?>" x2="<?php echo $width; ?>px" y2="<?php echo $height - ($height * 0.075); ?>" stroke-width="0.5" stroke="<?php echo $font_color; ?>"/> -->
   <!-- <rect width="100%" height="5px" x="0" y="<?php echo $height - ($height * 0.085); ?>" fill="url(#shadow2)" /> -->
+  <g transform="translate(-140)">
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1h); ?>">
     <?php if ($time_frame !== 'live') { ?>
     <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
@@ -479,9 +486,10 @@ text {
       <text fill="#fff" x="<?php echo $width * 0.555; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } ?>
   </a>
+  </g>
   <!-- accum_btnulation selection -->
   <?php if ($charachter === 'squirrel') { ?>
-  <g id="kwh" style="display: none">
+  <!-- <g id="kwh" style="display: none">
     <rect width="<?php echo $width * 0.05; ?>px" height="20" x="<?php echo $graph_width; ?>" y="0" style="fill:<?php echo $font_color; ?>" />
     <text fill="#fff" x="<?php echo $graph_width + 10; ?>" y="15" font-size="14" style="font-weight:400">kWh</text>
   </g>
@@ -504,25 +512,53 @@ text {
   <g id="money-active" style="display: none">
     <rect width="<?php echo $width * 0.05; ?>px" height="20" x="<?php echo $graph_width; ?>" y="40" style="fill:#2196F3;" />
     <text fill="#fff" x="<?php echo $graph_width + 20; ?>" y="55" font-size="14" style="font-weight:400">$</text>
+  </g> -->
+  <g transform="translate(-240)"> 
+  <g id="kwh" style="display: none">
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+  </g>
+  <g id="kwh-active">
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+  </g>
+  <g id="co2">
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
+  </g>
+  <g id="co2-active" style="display: none">
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
+  </g>
+  <g id="money">
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 160; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+  </g>
+  <g id="money-active" style="display: none">
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 160; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+  </g>
   </g>
 
   <?php } elseif ($charachter === 'fish') { ?>
 
-  <g id="gal" style="display: none">
-    <rect width="<?php echo $width * 0.06; ?>px" height="30" x="<?php echo $graph_width; ?>" y="0" style="fill:<?php echo $font_color; ?>" />
-    <text fill="#fff" x="<?php echo $graph_width + 15; ?>" y="20" font-size="16" style="font-weight:400">Gal</text>
+  <g transform="translate(-190)"> 
+  <g id="gal" style="display:none">
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Gal</text>
   </g>
   <g id="gal-active">
-    <rect width="<?php echo $width * 0.06; ?>px" height="30" x="<?php echo $graph_width; ?>" y="0" style="fill:#2196F3;" />
-    <text fill="#fff" x="<?php echo $graph_width + 15; ?>" y="20" font-size="16" style="font-weight:400">Gal</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Gal</text>
   </g>
   <g id="money2">
-    <rect width="<?php echo $width * 0.06; ?>px" height="30" x="<?php echo $graph_width; ?>" y="30" style="fill:<?php echo $font_color; ?>;" />
-    <text fill="#fff" x="<?php echo $graph_width + 20; ?>" y="50" font-size="16" style="font-weight:400">$</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $graph_width + 125; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <g id="money2-active" style="display: none">
-    <rect width="<?php echo $width * 0.06; ?>px" height="30" x="<?php echo $graph_width; ?>" y="30" style="fill:#2196F3;" />
-    <text fill="#fff" x="<?php echo $graph_width + 20; ?>" y="50" font-size="16" style="font-weight:400">$</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 125; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+  </g>
   </g>
   <?php } ?>
 </g><!--/g#entire-svg-->
@@ -610,6 +646,7 @@ text {
     $('#accum-label-value').text(Math.round(elapsed*(gals/gals_count)).toLocaleString());
   });
   $('#money2').on('click', function() {
+    console.log('click');
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#money2').css('display', 'none');
@@ -814,6 +851,7 @@ text {
       $charachter_moods[$i] = round($main_ts->convertRange($charachter_moods[$i], $diff_min, $diff_max, 0, $number_of_frames));
     }
     echo "var charachter_moods = " . json_encode($charachter_moods) . ";\n";
+    // The commented-out JS below creates what the PHP does above
   ?>
   // var diff_min = Number.MAX_VALUE;
   // var diff_max = 0;
