@@ -319,7 +319,7 @@ text {
   <!-- <image display="none" id="error" xlink:href='images/error.svg' height="120px" width="150px" y="50" x="<?php //echo $graph_width + (($width - $graph_width)/4) ?>" /> -->
   <text text-anchor="middle" x="<?php echo $graph_width + (($width - $graph_width)/2) ?>" y="200" font-size="15" width="<?php echo $width - ($graph_width+20); ?>px" display="none" id="error-msg">Data are not available for this point</text>
   <!-- put animation markup here -->
-  <g id="kwh-animation" style="display: none">
+  <g id="kwh-animation" style="display: none" >
     <rect width='100px' height="100px" x="800" y="100" fill="red" id="test"/>
   </g>
   <g id="empathetic-char">
