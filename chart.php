@@ -208,12 +208,12 @@ function median($arr) {
   from { transform: translateX(0);}
   to { transform: translateX(260px); }
 }
-.slide { animation: slide 350ms ease-in-out 1; animation-fill-mode: forwards; }
+/*.slide { animation: slide 350ms ease-in-out 1; animation-fill-mode: forwards; }
 @keyframes slide-back {
   from { transform: translateX(260px);}
   to { transform: translateX(0px); }
 }
-.slide-back { animation: slide-back 350ms ease-in-out 1; animation-fill-mode: forwards; }
+.slide-back { animation: slide-back 350ms ease-in-out 1; animation-fill-mode: forwards; }*/
 .noselect {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -236,24 +236,6 @@ text {
 .stop2 { stop-color: #424242; stop-opacity: 0; }
 /* ]]> */
 </style>
-<!-- Menu -->
-<g id="menu">
-  <rect x="0" y="0" height="100%" width="250px" style="fill:#fff;" />
-  <text x="5" y="25" style="font-size: 20px;fill: #777;font-weight: bold">Chart options</text>
-  <text style="cursor:pointer" id="historical" x="5" y="60" font-size="15" fill="#777"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
-        if ($time_frame === 'live') { echo 'hour'; }
-        elseif ($time_frame === 'today') { echo 'day'; }
-        else { echo $time_frame; }
-        ?></text>
-  <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="5" y="85" font-size="15" fill="#777">
-    <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
-  </text>
-  <?php if ($secondary_ts_set) { ?>
-  <text style="cursor:pointer" id="second" x="5" y="110" font-size="15" fill="#777">Show <?php echo $name2; ?></text>
-  <?php } ?>
-</g>
-<!-- Wrapper to slide for menu -->
-<g id="entire-svg">
   <rect x="0" y="0" width="100%" height="100%" fill="<?php echo $primary_color; ?>"/>
 
   <!-- Historical data -->
@@ -301,11 +283,11 @@ text {
     var_dump($main_ts->yaxis);
     echo " {$main_ts->max} -->";
     foreach ($main_ts->yaxis as $y) {
-      echo "<text x='5' y='{$chart_max}' font-size='13' fill='{$font_color}'>{$y}</text>";
+      echo "<text x='38' text-anchor='end' y='{$chart_max}' font-size='13' fill='{$font_color}'>{$y}</text>";
       $chart_max -= $interval;
     }
     ?>
-    <text x="-180" y="51%" transform="translate(0)rotate(-90 10 175)" font-size="11" fill="<?php echo $font_color; ?>"><?php echo $main_ts->units; ?></text>
+    <text x="-170" y="44%" transform="translate(0)rotate(-90 10 175)" font-size="11" fill="<?php echo $font_color; ?>"><?php echo $main_ts->units; ?></text>
   </g>
   <?php if (isset($secondary_ts->yaxis)) { ?>
   <g id="y-axis-right" text-anchor="end" style="opacity: 0">
@@ -314,11 +296,11 @@ text {
     $chart_max = $graph_height + $graph_offset;
     $interval = ($chart_max - $chart_min)/count($secondary_ts->yaxis);
     foreach ($secondary_ts->yaxis as $y) {
-      echo "<text x='".($graph_width-5)."' y='{$chart_max}' font-size='13' fill='{$font_color}'>{$y}</text>";
+      echo "<text x='708' y='{$chart_max}' font-size='13' fill='{$font_color}' text-anchor='start'>{$y}</text>";
       $chart_max -= $interval;
     }
     ?>
-    <text x="-110" y="878" transform="translate(0)rotate(-90 10 175)" font-size="11" fill="<?php echo $font_color; ?>"><?php echo $secondary_ts->units; ?></text>
+    <text x="-110" y="905" transform="translate(0)rotate(-90 10 175)" font-size="11" fill="<?php echo $font_color; ?>"><?php echo $secondary_ts->units; ?></text>
   </g>
   <?php } ?>
 
@@ -336,54 +318,57 @@ text {
   <text id="suggestion" text-anchor="middle" x="<?php echo $graph_width + (($width - $graph_width)/2) ?>" y="200" font-size="18" width="<?php echo $width - ($graph_width+20); ?>px">Move your mouse over the data</text>
   <!-- <image display="none" id="error" xlink:href='images/error.svg' height="120px" width="150px" y="50" x="<?php //echo $graph_width + (($width - $graph_width)/4) ?>" /> -->
   <text text-anchor="middle" x="<?php echo $graph_width + (($width - $graph_width)/2) ?>" y="200" font-size="15" width="<?php echo $width - ($graph_width+20); ?>px" display="none" id="error-msg">Data are not available for this point</text>
-  <?php
-  if ($main_ts->units === 'Gallons / hour' || $main_ts->units === 'Liters / hour' || $main_ts->units === 'Liters') {
-    $number_of_frames = 49;
-    for ($i = 0; $i <= $number_of_frames; $i++) { 
-      echo "<image id='frame_{$i}' xlink:href='images/second_frames/frame_{$i}.gif' height='100%' width='";
-      echo $width - $graph_width . "px' x='";
-      echo $graph_width . "' ";
-      // $im = imagecreatefromgif("images/second_frames/frame_{$i}.gif");
-      // $rgb = imagecolorat($im, 1, 1);
-      // $rgb = imagecolorsforindex($im, $rgb);
-      // echo "data-color='rgb({$rgb['red']},{$rgb['green']},{$rgb['blue']})' ";
-      echo ($i !== 0) ? 'display="none"' : '';
-      echo ' y="0" />';
+  <!-- put animation markup here -->
+  <g id="kwh-animation" style="display: none">
+    <rect width='100px' height="100px" x="800" y="100" fill="red" id="test"/>
+  </g>
+  <g id="empathetic-char">
+    <?php
+    if ($main_ts->units === 'Gallons / hour' || $main_ts->units === 'Liters / hour' || $main_ts->units === 'Liters') {
+      $number_of_frames = 49;
+      for ($i = 0; $i <= $number_of_frames; $i++) { 
+        echo "<image id='frame_{$i}' xlink:href='images/second_frames/frame_{$i}.gif' height='100%' width='";
+        echo $width - $graph_width . "px' x='";
+        echo $graph_width . "' ";
+        // $im = imagecreatefromgif("images/second_frames/frame_{$i}.gif");
+        // $rgb = imagecolorat($im, 1, 1);
+        // $rgb = imagecolorsforindex($im, $rgb);
+        // echo "data-color='rgb({$rgb['red']},{$rgb['green']},{$rgb['blue']})' ";
+        echo ($i !== 0) ? 'display="none"' : '';
+        echo ' y="0" />';
+      }
+    } else {
+      $number_of_frames = 46;
+      for ($i = 0; $i <= $number_of_frames; $i++) { 
+        echo "<image id='frame_{$i}' xlink:href='images/main_frames/frame_{$i}.gif' height='100%' width='";
+        echo $width - $graph_width . "px' x='";
+        echo $graph_width . "' ";
+        // $im = imagecreatefromgif("images/main_frames/frame_{$i}.gif");
+        // $rgb = imagecolorat($im, 1, 1);
+        // $rgb = imagecolorsforindex($im, $rgb);
+        // echo "data-color='rgb({$rgb['red']},{$rgb['green']},{$rgb['blue']})' ";
+        echo ($i !== 0) ? 'display="none"' : '';
+        echo ' y="0" />';
+      }
     }
-  } else {
-    $number_of_frames = 46;
-    for ($i = 0; $i <= $number_of_frames; $i++) { 
-      echo "<image id='frame_{$i}' xlink:href='images/main_frames/frame_{$i}.gif' height='100%' width='";
-      echo $width - $graph_width . "px' x='";
-      echo $graph_width . "' ";
-      // $im = imagecreatefromgif("images/main_frames/frame_{$i}.gif");
-      // $rgb = imagecolorat($im, 1, 1);
-      // $rgb = imagecolorsforindex($im, $rgb);
-      // echo "data-color='rgb({$rgb['red']},{$rgb['green']},{$rgb['blue']})' ";
-      echo ($i !== 0) ? 'display="none"' : '';
-      echo ' y="0" />';
-    }
-  }
-  ?>
-  <!-- matchingColorHeader is a rectangle on the top of the gif that is the same color as the gif to extend it -->
-  <!-- <rect id='matchingColorHeader' style="" height='<?php echo $height * 0.076; ?>px' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0"/> -->
-  <!-- fishbgbg is a solid blue background that's turned on when there's a fish animation -->
-  <rect id='fishbgbg' style="fill: #3498db" height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none"/>
-  <!-- fishbg is for the extra layered on fish animations like the seawead -->
-  <image id='fishbg' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="50" display="none" />
-  <!-- movie is where the primary gif goes -->
-  <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
+    ?>
+    <rect id='fishbgbg' style="fill: #3498db" height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none"/>
+    <!-- fishbg is for the extra layered on fish animations like the seawead -->
+    <image id='fishbg' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="50" display="none" />
+    <!-- movie is where the primary gif goes -->
+    <image id='movie' xlink:href='' height='100%' width='<?php echo $width - $graph_width ?>px' x="<?php echo $graph_width ?>" y="0" display="none" />
+  </g>
   <rect style="fill:#eee;" height="40px" width="<?php echo $width-$graph_width ?>" y="0" x="<?php echo $graph_width ?>"></rect>
   <rect style="fill:#eee;" height="30px" width="<?php echo $width-$graph_width ?>" y="<?php echo $height-30 ?>" x="<?php echo $graph_width ?>"></rect>
   <?php if ($charachter === 'squirrel') { ?>
-  <text text-anchor="end" fill="#4C595A" x="950" y="<?php echo $height*0.98; ?>" font-size="20" font-weight="800">
+  <text text-anchor="end" fill="#4C595A" x="1000" y="20" style="font-size: 20;font-weight: 800">
     <tspan id="accum-label-value">0</tspan>
-    <tspan id="accum-label-units" font-size="10">Kilowatt-hours <?php echo $so_far; ?></tspan>
+    <tspan id="accum-label-units" font-size="12" x="1000" dy="1.4em">Kilowatt-hours <?php echo $so_far; ?></tspan>
   </text>
   <?php } elseif ($charachter === 'fish') { ?>
-  <text text-anchor="end" fill="#4C595A" x="950" y="<?php echo $height * 0.98; ?>" font-size="20" font-weight="800">
+  <text text-anchor="end" fill="#4C595A" x="1000" y="20" style="font-size: 20;font-weight: 800">
     <tspan id="accum-label-value">0</tspan> 
-    <tspan id="accum-label-units" font-size="10">Gallons so far <?php echo $so_far; ?></tspan>
+    <tspan id="accum-label-units" font-size="12" x="1000" dy="1.4em">Gallons so far <?php echo $so_far; ?></tspan>
   </text>
   <?php } ?>
   <rect width="3px" height="<?php echo $height; ?>px" x="<?php echo $graph_width ?>" y="0" fill="url(#shadow)" />
@@ -393,9 +378,9 @@ text {
   <!-- was 74.5% width -->
   <rect width="70%" height="35px" x="0" y="0" style="fill:<?php echo '#eee';//$primary_color; ?>;stroke:<?php echo $font_color; ?>;" stroke-width="0" />
   <!-- <line x1="0" y1="<?php echo $height * 0.075; ?>px" x2="<?php echo $width; ?>px" y2="<?php echo $height * 0.075; ?>px" stroke-width="0.25" stroke="<?php echo $font_color; ?>"/> -->
-  <text id="current-value-container" text-anchor="middle" fill="#4C595A" x="840" y="30" font-size="18"><tspan id="current-value" font-size="32">0</tspan> <tspan><?php echo $main_ts->units; ?></tspan></text>
+  <text id="current-value-container" fill="#4C595A" x="710" y="20" style="font-size:12;font-weight: 800"><tspan id="current-value" font-size="20">0</tspan> <tspan dy="1.4em" x="710"><?php echo $main_ts->units; ?></tspan></text>
   <text fill="<?php echo $font_color; ?>" id="legend"
-        x="<?php echo ($width * 0.12); ?>" y="<?php echo $height * 0.049; ?>"
+        x="<?php echo ($width * 0.25); ?>" y="<?php echo $height * 0.049; ?>"
         font-size="13" style="font-weight: 400">
     <tspan dy="8" style='font-size: 40px;fill: <?php echo $current_graph_color; ?>'>&#9632;</tspan>
     <tspan dy="-8"><?php echo $name1; ?></tspan>
@@ -430,8 +415,12 @@ text {
 
   <!-- Main button -->
   <g id="layer-btn" style="cursor: pointer;" class="noselect">
-    <rect id='layer-btn-rect' width="<?php echo $width * 0.09; ?>px" height="<?php echo $height * 0.06; ?>px" x="5" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,114,90,100;" />
-    <text id='layer-btn-text' x="2.2%" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Options</text>
+    <rect id='layer-btn-rect' data-state="closed" width="120px" height="<?php echo $height * 0.06; ?>px" x="0" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,144,120,100;" />
+    <text id='layer-btn-text' x="10" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
+  </g>
+  <g id="meter-btn" style="cursor: pointer;" class="noselect">
+    <rect id='meter-btn-rect' data-state="closed" width="115px" height="<?php echo $height * 0.06; ?>px" x="130" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,139,115,100;" />
+    <text id='meter-btn-text' x="140" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Select meter <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
   </g>
   </g>
 
@@ -440,7 +429,7 @@ text {
   <line x1="0" y1="<?php echo $height; ?>" x2="<?php echo $width; ?>px" y2="<?php echo $height; ?>" stroke-width="0.5" stroke="<?php echo $font_color; ?>"/>
   <!-- <line x1="0" y1="<?php echo $height - ($height * 0.075); ?>" x2="<?php echo $width; ?>px" y2="<?php echo $height - ($height * 0.075); ?>" stroke-width="0.5" stroke="<?php echo $font_color; ?>"/> -->
   <!-- <rect width="100%" height="5px" x="0" y="<?php echo $height - ($height * 0.085); ?>" fill="url(#shadow2)" /> -->
-  <g transform="translate(-140)">
+  <!-- <g transform="translate(-140)"> -->
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1h); ?>">
     <?php if ($time_frame !== 'live') { ?>
     <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
@@ -486,7 +475,7 @@ text {
       <text fill="#fff" x="<?php echo $width * 0.555; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } ?>
   </a>
-  </g>
+  <!-- </g> -->
   <!-- accum_btnulation selection -->
   <?php if ($charachter === 'squirrel') { ?>
   <!-- <g id="kwh" style="display: none">
@@ -513,36 +502,41 @@ text {
     <rect width="<?php echo $width * 0.05; ?>px" height="20" x="<?php echo $graph_width; ?>" y="40" style="fill:#2196F3;" />
     <text fill="#fff" x="<?php echo $graph_width + 20; ?>" y="55" font-size="14" style="font-weight:400">$</text>
   </g> -->
-  <g transform="translate(-240)"> 
-  <g id="kwh" style="display: none">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
-    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+  <g id="emo" style="display: none">
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <text fill="#fff" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">😐</text>
   </g>
-  <g id="kwh-active">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
-    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+  <g id="emo-active">
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">😐</text>
+  </g>
+  <g id="kwh">
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 90; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <text fill="#fff" x="<?php echo $graph_width + 105; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+  </g>
+  <g id="kwh-active" style="display: none">
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 90; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 105; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
   </g>
   <g id="co2">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
-    <text fill="#fff" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $graph_width + 150; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="co2-active" style="display: none">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
-    <text fill="#fff" x="<?php echo $graph_width + 120; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 150; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="money">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 160; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
-    <text fill="#fff" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 190; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <text fill="#fff" x="<?php echo $graph_width + 205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <g id="money-active" style="display: none">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 160; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
-    <text fill="#fff" x="<?php echo $graph_width + 175; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
-  </g>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 190; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <text fill="#fff" x="<?php echo $graph_width + 205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
 
   <?php } elseif ($charachter === 'fish') { ?>
 
-  <g transform="translate(-190)"> 
   <g id="gal" style="display:none">
     <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
     <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Gal</text>
@@ -559,18 +553,61 @@ text {
     <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
     <text fill="#fff" x="<?php echo $graph_width + 125; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
-  </g>
   <?php } ?>
-</g><!--/g#entire-svg-->
+  <!-- graph overlay menu -->
+  <g id="overlay-dropdown" style="display: none">
+    <rect x="40" y="30" height="100px" width="200px" style="fill:#eee;" />
+    <text style="cursor:pointer" id="historical" x="45" y="60" font-size="12" fill="<?php echo $font_color ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
+          if ($time_frame === 'live') { echo 'hour'; }
+          elseif ($time_frame === 'today') { echo 'day'; }
+          else { echo $time_frame; }
+          ?></text>
+    <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="45" y="85" font-size="12" fill="<?php echo $font_color ?>">
+      <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
+    </text>
+    <?php if ($secondary_ts_set) { ?>
+    <text style="cursor:pointer" id="second" x="45" y="110" font-size="12" fill="<?php echo $font_color ?>">Show <?php echo $name2; ?></text>
+    <?php } ?>
+  </g>
+  <g id="meter-dropdown" style="display: none">
+    <?php
+    // Select the main meters for the current building being viewed and exclude emters that we're not collecting data for
+    $stmt = $db->prepare('SELECT id, name FROM meters WHERE scope = \'Whole Building\'
+      AND building_id IN (SELECT building_id FROM meters WHERE id = ?)
+      AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0)
+      OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))');
+    $stmt->execute(array($_GET['meter_id']));
+    $related_meters = $stmt->fetchAll();
+    echo '<rect x="170" y="30" height="'.(33*(count($related_meters)+1)).'px" width="200px" style="fill:#eee;" />';
+    $tmp = 60;
+    foreach ($related_meters as $rm) {
+      $url = 'https://oberlindashboard.org/oberlin/time-series/index.php?meter_id=' . $rm['id'];
+      echo "<a href='{$url}'><text style='cursor:pointer' x='175' y='{$tmp}' font-size='12' fill='{$font_color}'>{$rm['name']}</text></a>\n";
+      $tmp += 25;
+    }
+    echo "<a href='#'><text style='cursor:pointer' x='175' y='{$tmp}' font-size='12' fill='{$font_color}'>Other buildings</text></a>\n";
+    ?>
+  </g>
   <script type="text/javascript" xlink:href="js/jquery.min.js"/>
   <script type="text/javascript">
   // <![CDATA[
   //console.log(<?php //echo json_encode($log) ?>);
   /* BUTTON/MENU FUNCTIONALITY */
   <?php if ($charachter === 'squirrel') { ?>
-  var accum_btn = $('#kwh');
-  var active_accum_btn = $('#kwh-active');
+  var accum_btn = $('#emo');//$('#kwh');
+  var active_accum_btn = $('#emo-active');//$('#kwh-active');
+  $('#emo').on('click', function() {
+    $('#empathetic-char').css('display', '');
+    active_accum_btn.css('display', 'none');
+    accum_btn.css('display', '');
+    $('#emo').css('display', 'none');
+    $('#emo-active').css('display', '');
+    accum_btn = $('#emo');
+    active_accum_btn = $('#emo-active');
+  });
   $('#kwh').on('click', function() {
+    // hide the empathetic charachter
+    $('#empathetic-char').css('display', 'none');
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#kwh').css('display', 'none');
@@ -588,8 +625,29 @@ text {
     }
     // the # of hours elapsed * the average kw reading
     $('#accum-label-value').text(Math.round(elapsed*(kw/kw_count)).toLocaleString());
+
+    // accumulation animation code //
+    $('#kwh-animation').css('display', '');
+    var children = $('#kwh-animation').children();
+    $({x:children.attr('x')}).animate(
+      { x: 900 }, // final x coord
+      { duration: 1000,
+        step:function(now) { children.attr('x', now); }, // needed to use with SVG
+        complete: function() { children.attr('x', '800'); } // reset when done
+      }
+    );
+    $({y:children.attr('y')}).animate(
+      { y: 300 },
+      { duration: 1000,
+        step:function(now) { children.attr('y', now); },
+        complete: function() { children.attr('y', '100'); }
+      }
+    );
+    // accumulation animation code //
   });
   $('#co2').on('click', function() {
+    // hide the empathetic charachter
+    $('#empathetic-char').css('display', 'none');
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#co2').css('display', 'none');
@@ -607,6 +665,8 @@ text {
     $('#accum-label-value').text(Math.round((elapsed*(kw/kw_count))*1.22).toLocaleString());
   });
   $('#money').on('click', function() {
+    // hide the empathetic charachter
+    $('#empathetic-char').css('display', 'none');
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#money').css('display', 'none');
@@ -646,7 +706,6 @@ text {
     $('#accum-label-value').text(Math.round(elapsed*(gals/gals_count)).toLocaleString());
   });
   $('#money2').on('click', function() {
-    console.log('click');
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#money2').css('display', 'none');
@@ -668,33 +727,30 @@ text {
   $('#layer-btn').on("click", function() {
     var layer_btn_rect = $('#layer-btn-rect');
     var layer_btn_text = $('#layer-btn-text');
-    if (layer_btn_rect.attr('stroke-width') === '3') {
-      layer_btn_text.css('transform', 'translateY(3px)').html('<tspan y="6%" x="2%" style=\'font-size:25px;\'>&#215;</tspan> <tspan dy="-5">Close</tspan>');
-      layer_btn_rect.attr('stroke-width', '0').css('transform', 'translateY(3px)');
-      $('#entire-svg').attr('class', 'slide');
+    if (layer_btn_rect.data('state') === 'closed') {
+      layer_btn_text.html('Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9650;</tspan>');
+      $('#overlay-dropdown').css('display', '');
+      layer_btn_rect.data('state', 'open');
     }
     else {
-      layer_btn_text.css('transform', 'translateY(0px)').text('Options');
-      layer_btn_rect.attr('stroke-width', '3').css('transform', 'translateY(0px)');
-      $('#entire-svg').attr('class', 'slide-back');
+      layer_btn_text.css('transform', 'translateY(0px)').html('Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan>');
+      $('#overlay-dropdown').css('display', 'none');
+      layer_btn_rect.data('state', 'closed');
     }
   });
-  // $('#entire-svg').on('click', function() {
-  //   var layer_btn_rect = $('#layer-btn-rect');
-  //   var layer_btn_text = $('#layer-btn-text');
-  //   if (layer_btn_rect.attr('stroke-width') === '3') {
-  //     console.log('s');
-  //     layer_btn_text.css('transform', 'translateY(0px)').text('Options');
-  //     layer_btn_rect.attr('stroke-width', '3').css('transform', 'translateY(0px)');
-  //     $('#entire-svg').attr('class', 'slide-back');
-  //   }
-  // });
-  $('#menu > text').on('click', function() {
-    var layer_btn_rect = $('#layer-btn-rect');
-    var layer_btn_text = $('#layer-btn-text');
-    layer_btn_text.css('transform', 'translateY(0px)').text('Options');
-    layer_btn_rect.attr('stroke-width', '3').css('transform', 'translateY(0px)');
-    $('#entire-svg').attr('class', 'slide-back');
+  $('#meter-btn').on("click", function() {
+    var layer_btn_rect = $('#meter-btn-rect');
+    var layer_btn_text = $('#meter-btn-text');
+    if (layer_btn_rect.data('state') === 'closed') {
+      layer_btn_text.html('Select meter <tspan style="font-size: 10px;fill:#4C595A">&#9650;</tspan>');
+      $('#meter-dropdown').css('display', '');
+      layer_btn_rect.data('state', 'open');
+    }
+    else {
+      layer_btn_text.css('transform', 'translateY(0px)').html('Select meter <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan>');
+      $('#meter-dropdown').css('display', 'none');
+      layer_btn_rect.data('state', 'closed');
+    }
   });
   $('#historical').on("click", function() {
     var historical = $('#historical-chart');
@@ -960,10 +1016,14 @@ text {
     clearInterval(interval); interval = null;
     clearTimeout(timeout2); timeout2 = null;
     clearTimeout(timeout); timeout = null;
-    if (Math.random() > 0.6) { // Randomly either play through the data or play movie
-      play_data();
+    if (accum_btn.attr('id') !== 'emo') { // do one of the accumulation animations
+      // accumulation_animation();
     } else {
-      play_movie();
+      if (Math.random() > 0.6) { // Randomly either play through the data or play movie
+        play_data();
+      } else {
+        play_movie();
+      }
     }
   }
 
@@ -1059,7 +1119,7 @@ text {
     var kwh = (time_sofar/3600)*avg_kw; // the number of hours in time period * the average kw reading
     // console.log('time elapsed in hours: '+(time_sofar/3600)+"\navg_kw: "+ avg_kw+"\nkwh: "+kwh);
     var id = accum_btn.attr('id');
-    if (id === 'kwh') {
+    if (id === 'kwh' || id === 'emo') {
       $('#accum-label-value').text(Math.round(kwh).toLocaleString()); // kWh = time elapsed in hours * kilowatts so far
     }
     else if (id === 'co2') {

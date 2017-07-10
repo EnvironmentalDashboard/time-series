@@ -3,14 +3,16 @@ require '../includes/db.php';
 error_reporting(-1);
 ini_set('display_errors', 'On');
 date_default_timezone_set('America/New_York');
-if (empty($_GET['meter_id'])) {
-  $_GET['meter_id'] = 326; // some random meter id
-}
-if (empty($_GET['meter_id2'])) {
-  $_GET['meter_id2'] = 831; // some random meter id
-}
-if (empty($_GET['time'])) {
-  $_GET['time'] = 'today';
+if (!isset($_GET['timeseriesconfig'])) {
+  if (empty($_GET['meter_id'])) {
+    $_GET['meter_id'] = 326; // some random meter id
+  }
+  if (empty($_GET['meter_id2'])) {
+    $_GET['meter_id2'] = $_GET['meter_id'];
+  }
+  if (empty($_GET['time'])) {
+    $_GET['time'] = 'today';
+  }
 }
 // $dropdown_html1 = '';
 // $dropdown_html2 = '';
@@ -166,9 +168,9 @@ if (empty($_GET['time'])) {
         $colclass = 'col-xs-10';
       ?>
       <div class="col-xs-2"><!-- img -->
-        <a href="#" style="width: 100%">
+        <a href="#" style="width: 100%;">
           <img src="<?php
-          $stmt = $db->prepare("SELECT buildings.custom_img, buildings.name FROM buildings WHERE user_id = {$user_id} AND buildings.id IN (SELECT meters.building_id FROM meters WHERE meters.id = ?) LIMIT 1");
+          $stmt = $db->prepare("SELECT buildings.custom_img, buildings.name FROM buildings WHERE org_id IN (SELECT org_id FROM users_orgs_map WHERE user_id = {$user_id}) AND buildings.id IN (SELECT meters.building_id FROM meters WHERE meters.id = ?) LIMIT 1");
           $stmt->execute(array($_GET['meter_id']));
           $result = $stmt->fetch();
           $title = $result['name'];
@@ -178,7 +180,7 @@ if (empty($_GET['time'])) {
           else {
             echo 'http://placehold.it/150x150';
           }
-          ?>" alt="<?php echo $title; ?>">
+          ?>" alt="<?php echo $title; ?>" style="max-height: 100px">
         </a>
       </div>
       <?php
@@ -201,10 +203,8 @@ if (empty($_GET['time'])) {
         if (isset($_GET['title_size']) && $_GET['title_size'] != null) {
           $title_size = "font-size: {$_GET['title_size']};";
         }
-        elseif ($tot_len < 40) {
-          $title_size = '';
-        } else {
-          $title_size = 'font-size: 40px;';
+        else {
+          $title_size = 'font-size:35px;';
         }
         echo "<h1 style='width: 90%;{$title_size}'>{$full_title}</h1>";
         ?>
