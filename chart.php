@@ -319,6 +319,7 @@ text {
   <!-- <image display="none" id="error" xlink:href='images/error.svg' height="120px" width="150px" y="50" x="<?php //echo $graph_width + (($width - $graph_width)/4) ?>" /> -->
   <text text-anchor="middle" x="<?php echo $graph_width + (($width - $graph_width)/2) ?>" y="200" font-size="15" width="<?php echo $width - ($graph_width+20); ?>px" display="none" id="error-msg">Data are not available for this point</text>
   <!-- put animation markup here -->
+<<<<<<< HEAD
   <g id="kwh-animation" style="display: none">
     <rect width='500px' height="500px" x="745" y="40" fill="#B4E3F4"/>
     <g id="ground">
@@ -373,6 +374,10 @@ text {
        <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="950" y="110">
       </image>
     </g>
+=======
+  <g id="kwh-animation" style="display: none" >
+    <rect width='100px' height="100px" x="800" y="100" fill="red" id="test"/>
+>>>>>>> 209eff351d98932a82295caef37037e8e3708ab4
   </g>
   <g id="empathetic-char">
     <?php
