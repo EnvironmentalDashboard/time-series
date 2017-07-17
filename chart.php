@@ -1,5 +1,4 @@
 <?php
-#hello
 error_reporting(-1);
 ini_set('display_errors', 'On');
 header('Content-Type: image/svg+xml; charset=UTF-8'); // We'll be outputting a SVG
@@ -321,7 +320,59 @@ text {
   <text text-anchor="middle" x="<?php echo $graph_width + (($width - $graph_width)/2) ?>" y="200" font-size="15" width="<?php echo $width - ($graph_width+20); ?>px" display="none" id="error-msg">Data are not available for this point</text>
   <!-- put animation markup here -->
   <g id="kwh-animation" style="display: none">
-    <rect width='100px' height="100px" x="800" y="100" fill="red" id="test"/>
+    <rect width='500px' height="500px" x="745" y="40" fill="#B4E3F4"/>
+    <g id="ground">
+      <image overflow="visible" enable-background="new    " width="500" height="500" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/ground.svg" x="745" y="40">
+      </image>
+    </g> 
+    <g id="power-lines"> 
+      <image overflow="visible" enable-background="new    " width="300" height="200" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/powerlines2.svg" x="760" y="180">
+      </image>
+    </g>
+  </g>
+  <g id="co2-animation" style="display: none">
+    <rect width='500px' height="500px" x="745" y="40" fill="#B4E3F4"/>
+    <g id="ground">
+      <image overflow="visible" enable-background="new    " width="500" height="500" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/ground.svg" x="745" y="40">
+      </image>
+    </g>  
+    <g id="building">
+      <image xmlns="http://www.w3.org/2000/svg" style="cursor:pointer" overflow="visible" enable-background="new    " width="228" height="90" id="industry" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/power_plant.png" x="760" y="250">
+      </image>
+    </g>
+    <g id="pipes">
+      <image overflow="visible" enable-background="new    " width="164" height="156" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 107 161)" x="680" y="-45">
+      </image>
+      <image overflow="visible" enable-background="new    " width="164" height="156" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 140 161)" x="681" y="-45">
+      </image>
+      <image overflow="visible" enable-background="new    " width="164" height="156" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 174 161)" x="682" y="-45">
+      </image>
+    </g>
+  </g>
+  <g id="money-animation" style="display: none">
+    <rect width='500px' height="500px" x="745" y="40" fill="#B4E3F4"/>
+    <g id="ground">
+      <image overflow="visible" enable-background="new    " width="500" height="500" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/ground.svg" x="745" y="40">
+      </image>
+    </g>  
+    <g id="tree"> 
+      <image overflow="visible" enable-background="new    " width="250" height="300" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/tree.svg" x="750" y="50">
+      </image>
+    </g>
+    <g id="banknote"> 
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="790" y="130">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="770" y="180">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="830" y="130">
+      </image>
+       <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="900" y="100">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="970" y="170">
+      </image>
+       <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="950" y="110">
+      </image>
+    </g>
   </g>
   <g id="empathetic-char">
     <?php
@@ -607,8 +658,14 @@ text {
     active_accum_btn = $('#emo-active');
   });
   $('#kwh').on('click', function() {
-    // hide the empathetic charachter
+    // hide the empathetic character
     $('#empathetic-char').css('display', 'none');
+    // display the kwh-animation
+    $('#kwh-animation').css('display', '');  
+    // hide co2 animation
+    $('#co2-animation').css('display', 'none'); 
+    // hide money animation
+    $('#money-animation').css('display', 'none'); 
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#kwh').css('display', 'none');
@@ -626,29 +683,27 @@ text {
     }
     // the # of hours elapsed * the average kw reading
     $('#accum-label-value').text(Math.round(elapsed*(kw/kw_count)).toLocaleString());
-
     // accumulation animation code //
-    $('#kwh-animation').css('display', '');
-    var children = $('#kwh-animation').children();
-    $({x:children.attr('x')}).animate(
-      { x: 900 }, // final x coord
-      { duration: 1000,
-        step:function(now) { children.attr('x', now); }, // needed to use with SVG
-        complete: function() { children.attr('x', '800'); } // reset when done
-      }
-    );
-    $({y:children.attr('y')}).animate(
-      { y: 300 },
-      { duration: 1000,
-        step:function(now) { children.attr('y', now); },
-        complete: function() { children.attr('y', '100'); }
-      }
-    );
-    // accumulation animation code //
-  });
+      // var pipes = $('#kwh-animation').children().attr("pipes");
+      // $("pipes").animate({left: '200px'}, 5000);
+       // var counter = 0;
+      // var smokestack = setInterval(function() {
+      //     if (counter++ % 2 == 0) {
+      //       $('#newpipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack2.png');}else {
+      //       $('#newpipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png');}, 3000);
+      //     }
+      //   }
+    });
+  
   $('#co2').on('click', function() {
-    // hide the empathetic charachter
+    // hide the empathetic character
     $('#empathetic-char').css('display', 'none');
+    // hide the kwh-animation
+    $('#kwh-animation').css('display', 'none');  
+    // display co2 animation
+    $('#co2-animation').css('display', '');    
+    // hide the money-animation
+    $('#money-animation').css('display', 'none');  
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#co2').css('display', 'none');
@@ -665,9 +720,16 @@ text {
     }
     $('#accum-label-value').text(Math.round((elapsed*(kw/kw_count))*1.22).toLocaleString());
   });
+
   $('#money').on('click', function() {
     // hide the empathetic charachter
     $('#empathetic-char').css('display', 'none');
+    //hide the kwh-animation
+    $('#kwh-animation').css('display', 'none');  
+    //hide co2 animation
+    $('#co2-animation').css('display', 'none');    
+    // display money animation
+    $('#money-animation').css('display', '');    
     active_accum_btn.css('display', 'none');
     accum_btn.css('display', '');
     $('#money').css('display', 'none');
