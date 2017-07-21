@@ -319,7 +319,6 @@ text {
   <!-- <image display="none" id="error" xlink:href='images/error.svg' height="120px" width="150px" y="50" x="<?php //echo $graph_width + (($width - $graph_width)/4) ?>" /> -->
   <text text-anchor="middle" x="<?php echo $graph_width + (($width - $graph_width)/2) ?>" y="200" font-size="15" width="<?php echo $width - ($graph_width+20); ?>px" display="none" id="error-msg">Data are not available for this point</text>
   <!-- put animation markup here -->
-<<<<<<< HEAD
   <g id="kwh-animation" style="display: none">
     <rect width='500px' height="500px" x="745" y="40" fill="#B4E3F4"/>
     <g id="ground">
@@ -349,6 +348,14 @@ text {
       <image overflow="visible" enable-background="new    " width="164" height="156" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 174 161)" x="682" y="-45">
       </image>
     </g>
+    <g id="smoke">
+      <image overflow="visible" enable-background="new    " width="25" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="790" y="175">
+      </image>
+      <image overflow="visible" enable-background="new    " width="25" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="825" y="175">
+      </image>
+      <image overflow="visible" enable-background="new    " width="25" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="860" y="175">
+      </image>
+    </g>
   </g>
   <g id="money-animation" style="display: none">
     <rect width='500px' height="500px" x="745" y="40" fill="#B4E3F4"/>
@@ -374,10 +381,9 @@ text {
        <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="950" y="110">
       </image>
     </g>
-=======
-  <g id="kwh-animation" style="display: none" >
+  </g>
+  <g id="kwh-animation" style="display: none">
     <rect width='100px' height="100px" x="800" y="100" fill="red" id="test"/>
->>>>>>> 209eff351d98932a82295caef37037e8e3708ab4
   </g>
   <g id="empathetic-char">
     <?php
@@ -646,6 +652,7 @@ text {
     ?>
   </g>
   <script type="text/javascript" xlink:href="js/jquery.min.js"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script>
   <script type="text/javascript">
   // <![CDATA[
   //console.log(<?php //echo json_encode($log) ?>);
@@ -688,16 +695,6 @@ text {
     }
     // the # of hours elapsed * the average kw reading
     $('#accum-label-value').text(Math.round(elapsed*(kw/kw_count)).toLocaleString());
-    // accumulation animation code //
-      // var pipes = $('#kwh-animation').children().attr("pipes");
-      // $("pipes").animate({left: '200px'}, 5000);
-       // var counter = 0;
-      // var smokestack = setInterval(function() {
-      //     if (counter++ % 2 == 0) {
-      //       $('#newpipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack2.png');}else {
-      //       $('#newpipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png');}, 3000);
-      //     }
-      //   }
     });
   
   $('#co2').on('click', function() {
@@ -724,6 +721,63 @@ text {
       kw_count++;
     }
     $('#accum-label-value').text(Math.round((elapsed*(kw/kw_count))*1.22).toLocaleString());
+    //smokestack swapping animation//
+    var counter = 0;
+    var smokestack = setInterval(function() {
+      if (counter++ % 2 == 0) {
+        $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack2.png');
+      }
+      else {
+        $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png');
+      }
+    }, 1000);
+     var smoke = $('#smoke').children();
+    var newsmoke = TweenMax.to($('#smoke > image'), 1, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
+
+    // var smokeanimation = setInterval(function(){
+    //   //smoke animation x
+    //   var smoke = $('#smoke').children();
+    //   smoke.each(function( index ) {
+    //     if (index == 0){
+    //       var x = 1000;
+    //     }
+    //     else if (index == 1){
+    //       var x = 1035;
+    //     }
+    //     else{
+    //       var x = 1060;
+    //     }
+    //     var smokechildren = $(this);
+    //     $({x:$(smokechildren).attr('x')}).animate(
+    //         {x:x},
+    //         {
+    //           duration: 1000,
+    //           step:function(now) {
+    //             $(smokechildren).attr('x', now);
+    //           },
+    //           complete: function() {
+    //             $(smokechildren).css('opacity', '0');
+    //             $(smokechildren).attr('x', '0');
+    //           }
+    //         }
+    //     );
+    //   });     
+
+    //   //smoke animation y
+    //   $({y:smoke.attr('y')}).animate(
+    //     {y: 100},
+    //     {
+    //       duration: 2500,
+    //       step:function(now) {
+    //         smoke.attr('y', now);
+    //       },
+    //       complete: function() {
+    //         smoke.css('opacity', '0');
+    //         smoke.attr('y', '175');
+    //       }
+    //     }
+    //   );
+    // }, 3000);
   });
 
   $('#money').on('click', function() {
@@ -905,13 +959,6 @@ text {
     );
   }
   curtain('curtain');
-
-
-
-
-
-
-
 
   /* MOUSE INTERACTION */
 
