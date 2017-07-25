@@ -491,7 +491,8 @@ text {
     ORDER BY units DESC LIMIT 2');
   $stmt->execute(array($_GET['meter_id']));
   $results = $stmt->fetchAll();
-  if (count($results) === 2) { ?>
+  if (count($results) === 2) {  
+  ?>
   <g id="resource-btn" style="cursor: pointer;" class="noselect">
     <a target="_top" xlink:href="index.php?meter_id=<?php echo $results[0]['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
       <rect width="35" height="25" x="0" y="3" style="fill:<?php echo ($results[0]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
@@ -599,11 +600,11 @@ text {
   </g> -->
   <g id="emo" style="display: none">
     <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">😐</text>
+    <text fill="#fff" x="<?php echo $graph_width + 62; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">🙂</text>
   </g>
   <g id="emo-active">
     <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">😐</text>
+    <text fill="#fff" x="<?php echo $graph_width + 62; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">🙂</text>
   </g>
   <g id="kwh">
     <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 90; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
