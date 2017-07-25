@@ -1,0 +1,303 @@
+/**
+@author Olivia Vasquez
+@lastupdated 7/25/2017
+  NAVIGATION STYLESHEET FOR:
+    1. Building Navigation Page
+    2. Current Electricity Filter Page
+    3. Current Water Filter Page
+    4. Relative Value Electricity Filter Page
+    5. Relative Value Water Filter Page
+*/
+
+.navbar{
+      top: 0px;
+      width: 100%;
+      position: fixed;
+      padding: 10px 10px 10px 10px;
+      background-color: #2C2C2C;
+    }
+    input {      
+      height: 40px;
+      border: none;
+      width: 150px;
+      border-radius: 3px;
+      font-size: 1.5rem;
+      padding-left: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      margin-left: 50px;
+    }
+    input:focus {
+      outline: none;
+      border: 1px solid #95a5a6;
+      padding-left: 10px;
+    }
+    .dropdown{
+      display: inline-block;
+    }
+    .dropdown-menu{
+      min-width: 200px;
+      padding: none;
+    }
+    ul {
+      list-style: none;
+      position: relative;
+    }
+    .dropdown-menu li {
+      height: 30px;
+      width: auto;
+      background: #fff;
+      text-align: left;
+      cursor: pointer;
+      font-size: 100%;
+      padding-left: 10px;
+    }
+    .dropdown-menu li:hover{
+      background-color: #21A7DF;
+    }
+    .dropdown-menu .header{
+      clear: both;
+      color: #999;
+      display: block;
+      font-size: 11px;
+      font-weight: bold;
+      line-height: 18px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .dropdown-menu .header:hover{
+      background-color: #fff;
+    }
+    .notification-bubble {
+      display: block;
+      padding: 0 7px;
+      font-size: 14px;
+      font-weight: 500;
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      min-width: 25px;
+      height: 25px;
+      line-height: 20px;
+      text-align: center;
+      border: 2px solid #FFFFFF;
+      border-radius: 15px;
+      color: #FFFFFF;
+      background: #95a5a6;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+    .key{
+      position: relative;
+      font-size: 1rem;
+      border-radius: 50%;
+      background-color: #fff;
+      height: 40px;
+      width: 40px;
+      position: relative;
+      display: inline-block;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      margin-left: 10px;
+      margin-top: 0px;
+      padding: 0px 5px 0px 5px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .keydescription{
+      height: 125px;
+      width: 200px;
+      background-color: white;
+      visibility: hidden;
+      position: absolute;
+      top: 45px;
+      border-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      padding: 0px 5px 5px 5px;
+      margin: 0 auto;
+      /*border: 2px solid #000;*/
+    }
+    .key:before{
+      position: absolute;
+      height: 50px;
+      width: 50px;
+      content: '';
+    }
+    .keydescription:hover{visibility: visible;}
+    .key:hover .keydescription{visibility: visible;}
+    .key:hover .notification-bubble{visibility: hidden;}
+    button{
+      position: relative;
+      border-radius: 3px;
+      font-size: 1.5rem;
+      height: 40px;
+      margin-left: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+    body {
+      padding-top: 20px;
+      background: #ecf0f1;
+      color: #2c3e50;
+      font-family: 'Roboto', Helvetica, sans-serif;
+      margin-top: 80px;
+    }
+    #object {
+      width: 100%;
+      height: 100%;
+      display: block;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      box-shadow: 0px 0px 15px 5px rgba(0,0,0,0.5);
+      display: none;
+    }
+    .card {
+      height: 260px;
+      width: 100%;
+      margin-bottom: 30px;
+      background: #fff;
+      border-radius: 3px;
+      overflow: auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      margin-left: 10px;
+    }
+    .card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 3px;
+      margin-bottom: 5px;
+      padding-left: none;
+    }
+    .card-text{
+      padding: 0px 5px 0px 5px;
+    }
+    .relval{
+      background-color: white;
+      height: 15px;
+      width: auto;
+      display: inline-block;
+      margin: 0 auto;
+      position: absolute;
+      bottom: 40px;
+      right: 10px;
+    }
+    .relval img{
+      height: 20px;
+      width: 20px;
+      display: inline;
+    }
+    .side2{padding: 0px 7px 0px 7px;}
+    .align-bottom {
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-top: auto;
+    }
+    h1{
+      margin-top: 5px;
+      margin-bottom: 0px;
+      font-size: 20px;
+      color: #2C2C2C;
+      display: block;
+    }
+    h2{
+      font-size: 14px;
+      margin-top: 5px;
+      margin-bottom: 0px;
+    }
+    .meter-num{
+      font-size: 12px;
+      position: absolute;
+      height: auto;
+      width: auto;
+      bottom: 35px;
+      left: 30px;
+      margin: 0 auto;
+      background-color: white;
+      background-color: #e6e6e6;
+      border: 0px solid #95a5a6;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+    .meter-num:hover{
+      border: 2px solid #95a5a6;
+    }
+    .close-meters:hover{
+      height: 25px;
+      width: 25px;
+    }
+    .line-separator{
+      height:1px;
+      background:#717171;
+    }
+    .hidden {
+      display: none;
+    }
+    .active {
+      background: #95a5a6;
+      background-color: #21A7DF;
+    }
+    @media screen and (max-width: 1200px) {
+      .card {
+          height: 235px;
+      }
+      h1{
+        font-size: 18px;
+      }
+      h2{
+        font-size: 14px;
+      }
+      .meter-num{
+        font-size: 12px;
+      }
+    }
+    @media screen and (max-width: 1000px) {
+      h1{
+        font-size: 18px;
+      }
+      h2{
+        font-size: 14px;
+      }
+      .meter-num{
+        font-size: 12px;
+      }
+    }
+     @media screen and (max-width: 600px) {
+      .card {
+        height: 250px;
+      }
+      .container{
+        margin-top: 50px;
+      }
+      h1{
+        font-size: 16px;
+      }
+      h2{
+        font-size: 14px;
+      }
+      .meter-num{
+        font-size: 12px;
+      }
+    }
+    @media screen and (max-width: 480px) {
+      .card{
+        height: 210px;
+      }
+      h1{
+        font-size: 14px;
+      }
+      h2{
+        font-size: 12px;
+      }
+      .meter-num{
+        font-size: 10px;
+      }
+      .relval {
+        position: absolute;
+        bottom: 60px;
+        left: 30px;
+        margin: 0 auto;
+      }
+      .key, button{
+        margin-top: 10px;
+      }
+    }
