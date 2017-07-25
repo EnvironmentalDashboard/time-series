@@ -481,8 +481,8 @@ text {
 
   <!-- Main button -->
   <g id="layer-btn" style="cursor: pointer;" class="noselect">
-    <rect id='layer-btn-rect' data-state="closed" width="120px" height="<?php echo $height * 0.06; ?>px" x="0" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,144,120,100;" />
-    <text id='layer-btn-text' x="10" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
+    <rect id='layer-btn-rect' data-state="closed" width="120px" height="<?php echo $height * 0.06; ?>px" x="420" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,144,120,100;" />
+    <text id='layer-btn-text' x="430" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
   </g>
   <?php
   $stmt = $db->prepare('SELECT id FROM meters WHERE scope = \'Whole Building\'
@@ -494,12 +494,12 @@ text {
   if (count($results) === 2) { ?>
   <g id="resource-btn" style="cursor: pointer;" class="noselect">
     <a target="_top" xlink:href="index.php?meter_id=<?php echo $results[0]['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
-      <rect width="35" height="25" x="135" y="3" style="fill:<?php echo ($results[0]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;"  />
-      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/nav_images/electricity5.svg" x="145" y="8" height="16px" width="16px"/>
+      <rect width="35" height="25" x="0" y="3" style="fill:<?php echo ($results[0]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
+      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/nav_images/electricity5.svg" x="10" y="8" height="16px" width="16px"/>
     </a>
     <a target="_top" xlink:href="index.php?meter_id=<?php echo $results[1]['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
-      <rect width="35" height="25" x="170" y="3" style="fill:<?php echo ($results[1]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;"  />
-      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/nav_images/water1.svg" x="180" y="8" height="16px" width="16px"/>
+      <rect width="35" height="25" x="35" y="3" style="fill:<?php echo ($results[1]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
+      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/nav_images/water1.svg" x="45" y="8" height="16px" width="16px"/>
     </a>
   </g>
   <?php
@@ -527,46 +527,46 @@ text {
   <!-- <g transform="translate(-140)"> -->
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1h); ?>">
     <?php if ($time_frame !== 'live') { ?>
-    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $width * 0.205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;"  />
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.18; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2"  />
       <text fill="#fff" x="<?php echo $width * 0.205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Hour</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1d); ?>">
     <?php if ($time_frame !== 'today') { ?>
-    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.26; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.26; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $width * 0.285; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Today</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.26; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.26; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
       <text fill="#fff" x="<?php echo $width * 0.285; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Today</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1w); ?>">
     <?php if ($time_frame !== 'week') { ?>
-    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $width * 0.374; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.35; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
       <text fill="#fff" x="<?php echo $width * 0.374; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Week</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1m); ?>">
     <?php if ($time_frame !== 'month') { ?>
-    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.432; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.432; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $width * 0.458; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Month</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.432; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.432; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
       <text fill="#fff" x="<?php echo $width * 0.458; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Month</text>
     <?php } ?>
   </a>
   <a xlink:href="<?php echo str_replace('&', '&amp;', $url1y); ?>">
     <?php if ($time_frame !== 'year') { ?>
-    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.518; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.518; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $width * 0.55; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } else { ?>
-      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.522; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+      <rect width="<?php echo $width * 0.09; ?>px" height="22" x="<?php echo $width * 0.522; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
       <text fill="#fff" x="<?php echo $width * 0.555; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Year</text>
     <?php } ?>
   </a>
@@ -598,79 +598,79 @@ text {
     <text fill="#fff" x="<?php echo $graph_width + 20; ?>" y="55" font-size="14" style="font-weight:400">$</text>
   </g> -->
   <g id="emo" style="display: none">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">😐</text>
   </g>
   <g id="emo-active">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">😐</text>
   </g>
   <g id="kwh">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 90; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 90; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 105; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
   </g>
   <g id="kwh-active" style="display: none">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 90; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 90; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 105; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
   </g>
   <g id="co2">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 150; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="co2-active" style="display: none">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 150; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="money">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 190; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 190; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <g id="money-active" style="display: none">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 190; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 190; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
 
   <?php } elseif ($charachter === 'fish') { ?>
 
   <g id="gal" style="display:none">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>" />
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Gal</text>
   </g>
   <g id="gal-active">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Gal</text>
   </g>
   <g id="money2">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;" />
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 125; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <g id="money2-active" style="display: none">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;" />
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
     <text fill="#fff" x="<?php echo $graph_width + 125; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <?php } ?>
   <!-- graph overlay menu -->
   <g id="overlay-dropdown" style="display: none">
-    <rect x="40" y="30" height="100px" width="200px" style="fill:#eee;" />
-    <text style="cursor:pointer" id="historical" x="45" y="60" font-size="12" fill="<?php echo $font_color ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
+    <rect x="380" y="30" height="100px" width="200px" style="fill:#eee;" />
+    <text style="cursor:pointer" id="historical" x="390" y="60" font-size="12" fill="<?php echo $font_color ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
           if ($time_frame === 'live') { echo 'hour'; }
           elseif ($time_frame === 'today') { echo 'day'; }
           else { echo $time_frame; }
           ?></text>
-    <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="45" y="85" font-size="12" fill="<?php echo $font_color ?>">
+    <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="390" y="85" font-size="12" fill="<?php echo $font_color ?>">
       <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
     </text>
     <?php if ($secondary_ts_set) { ?>
-    <text style="cursor:pointer" id="second" x="45" y="110" font-size="12" fill="<?php echo $font_color ?>">Show <?php echo $name2; ?></text>
+    <text style="cursor:pointer" id="second" x="390" y="110" font-size="12" fill="<?php echo $font_color ?>">Show <?php echo $name2; ?></text>
     <?php } ?>
   </g>
   <g id="meter-dropdown" style="display: none">
     <?php
-    echo '<rect x="170" y="30" height="'.(33*(count($related_meters))).'px" width="200px" style="fill:#eee;" />';
+    echo '<rect x="505" y="30" height="'.(33*(count($related_meters))).'px" width="200px" style="fill:#eee;" />';
     $tmp = 60;
     foreach ($related_meters as $rm) {
       $url = 'https://oberlindashboard.org/oberlin/time-series/index.php?meter_id=' . $rm['id'];
-      echo "<a href='{$url}'><text style='cursor:pointer' x='175' y='{$tmp}' font-size='12' fill='{$font_color}'>{$rm['name']}</text></a>\n";
+      echo "<a href='{$url}'><text style='cursor:pointer' x='510' y='{$tmp}' font-size='12' fill='{$font_color}'>{$rm['name']}</text></a>\n";
       $tmp += 25;
     }
     // echo "<a href='#'><text style='cursor:pointer' x='175' y='{$tmp}' font-size='12' fill='{$font_color}'>Other buildings</text></a>\n";
