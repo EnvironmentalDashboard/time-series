@@ -19,6 +19,9 @@ if (isset($_GET['timeseriesconfig'])) {
 }
 // var_dump(date('l n\/j \| g:i a',$from));var_dump(date('l n\/j \| g:i a',$to));exit;
 $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
+if (!isset($_GET['meter_id2'])) {
+  $_GET['meter_id2'] = $_GET['meter_id'];
+}
 $secondary_ts_set = ($_GET['meter_id'] !== $_GET['meter_id2']);
 $secondary_ts = ($secondary_ts_set) ? new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res) : null; // "Second variable" timeseries
 $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
@@ -443,7 +446,7 @@ text {
   <!-- <line x1="0" y1="<?php echo $height * 0.075; ?>px" x2="<?php echo $width; ?>px" y2="<?php echo $height * 0.075; ?>px" stroke-width="0.25" stroke="<?php echo $font_color; ?>"/> -->
   <text id="current-value-container" fill="#4C595A" x="710" y="20" style="font-size:12;font-weight: 800"><tspan id="current-value" font-size="20">0</tspan> <tspan dy="1.4em" x="710"><?php echo $main_ts->units; ?></tspan></text>
   <text fill="<?php echo $font_color; ?>" id="legend"
-        x="<?php echo ($width * 0.25); ?>" y="<?php echo $height * 0.049; ?>"
+        x="0" y="<?php echo $height * 0.13; ?>"
         font-size="13" style="font-weight: 400">
     <tspan dy="8" style='font-size: 40px;fill: <?php echo $current_graph_color; ?>'>&#9632;</tspan>
     <tspan dy="-8"><?php echo $name1; ?></tspan>
@@ -481,10 +484,39 @@ text {
     <rect id='layer-btn-rect' data-state="closed" width="120px" height="<?php echo $height * 0.06; ?>px" x="0" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,144,120,100;" />
     <text id='layer-btn-text' x="10" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
   </g>
-  <g id="meter-btn" style="cursor: pointer;" class="noselect">
-    <rect id='meter-btn-rect' data-state="closed" width="115px" height="<?php echo $height * 0.06; ?>px" x="130" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,139,115,100;" />
-    <text id='meter-btn-text' x="140" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Select meter <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
+  <?php
+  $stmt = $db->prepare('SELECT id FROM meters WHERE scope = \'Whole Building\'
+    AND building_id IN (SELECT building_id FROM meters WHERE id = ?)
+    AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0) OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))
+    ORDER BY units DESC LIMIT 2');
+  $stmt->execute(array($_GET['meter_id']));
+  $results = $stmt->fetchAll();
+  if (count($results) === 2) { ?>
+  <g id="resource-btn" style="cursor: pointer;" class="noselect">
+    <a target="_top" xlink:href="index.php?meter_id=<?php echo $results[0]['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
+      <rect width="35" height="25" x="135" y="3" style="fill:<?php echo ($results[0]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;"  />
+      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/nav_images/electricity5.svg" x="145" y="8" height="16px" width="16px"/>
+    </a>
+    <a target="_top" xlink:href="index.php?meter_id=<?php echo $results[1]['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
+      <rect width="35" height="25" x="170" y="3" style="fill:<?php echo ($results[1]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;"  />
+      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/nav_images/water1.svg" x="180" y="8" height="16px" width="16px"/>
+    </a>
   </g>
+  <?php
+  }
+  // Select the main meters for the current building being viewed and exclude emters that we're not collecting data for
+  $stmt = $db->prepare('SELECT id, name FROM meters WHERE scope != \'Whole Building\'
+    AND building_id IN (SELECT building_id FROM meters WHERE id = ?)
+    AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0)
+    OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))');
+  $stmt->execute(array($_GET['meter_id']));
+  $related_meters = $stmt->fetchAll();
+  if (count($related_meters) > 0) { ?>
+  <g id="meter-btn" style="cursor: pointer;" class="noselect">
+    <rect id='meter-btn-rect' data-state="closed" width="115px" height="<?php echo $height * 0.06; ?>px" x="550" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,139,115,100;" />
+    <text id='meter-btn-text' x="558" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Other meters <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
+  </g>
+  <?php } ?>
   </g>
 
   <!-- Bottom bar -->
@@ -634,21 +666,14 @@ text {
   </g>
   <g id="meter-dropdown" style="display: none">
     <?php
-    // Select the main meters for the current building being viewed and exclude emters that we're not collecting data for
-    $stmt = $db->prepare('SELECT id, name FROM meters WHERE scope = \'Whole Building\'
-      AND building_id IN (SELECT building_id FROM meters WHERE id = ?)
-      AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0)
-      OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))');
-    $stmt->execute(array($_GET['meter_id']));
-    $related_meters = $stmt->fetchAll();
-    echo '<rect x="170" y="30" height="'.(33*(count($related_meters)+1)).'px" width="200px" style="fill:#eee;" />';
+    echo '<rect x="170" y="30" height="'.(33*(count($related_meters))).'px" width="200px" style="fill:#eee;" />';
     $tmp = 60;
     foreach ($related_meters as $rm) {
       $url = 'https://oberlindashboard.org/oberlin/time-series/index.php?meter_id=' . $rm['id'];
       echo "<a href='{$url}'><text style='cursor:pointer' x='175' y='{$tmp}' font-size='12' fill='{$font_color}'>{$rm['name']}</text></a>\n";
       $tmp += 25;
     }
-    echo "<a href='#'><text style='cursor:pointer' x='175' y='{$tmp}' font-size='12' fill='{$font_color}'>Other buildings</text></a>\n";
+    // echo "<a href='#'><text style='cursor:pointer' x='175' y='{$tmp}' font-size='12' fill='{$font_color}'>Other buildings</text></a>\n";
     ?>
   </g>
   <script type="text/javascript" xlink:href="js/jquery.min.js"/>
@@ -864,12 +889,12 @@ text {
     var layer_btn_rect = $('#meter-btn-rect');
     var layer_btn_text = $('#meter-btn-text');
     if (layer_btn_rect.data('state') === 'closed') {
-      layer_btn_text.html('Select meter <tspan style="font-size: 10px;fill:#4C595A">&#9650;</tspan>');
+      layer_btn_text.html('Other meters <tspan style="font-size: 10px;fill:#4C595A">&#9650;</tspan>');
       $('#meter-dropdown').css('display', '');
       layer_btn_rect.data('state', 'open');
     }
     else {
-      layer_btn_text.css('transform', 'translateY(0px)').html('Select meter <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan>');
+      layer_btn_text.css('transform', 'translateY(0px)').html('Other meters <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan>');
       $('#meter-dropdown').css('display', 'none');
       layer_btn_rect.data('state', 'closed');
     }
