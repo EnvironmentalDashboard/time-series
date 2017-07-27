@@ -340,23 +340,23 @@ text {
       </image>
     </g>  
     <g id="building">
-      <image xmlns="http://www.w3.org/2000/svg" style="cursor:pointer" overflow="visible" enable-background="new    " width="228" height="90" id="industry" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/power_plant.png" x="760" y="250">
+      <image xmlns="http://www.w3.org/2000/svg" style="cursor:pointer" overflow="visible" enable-background="new    " width="180" height="90" id="industry" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/power_plant.png" x="780" y="275">
       </image>
     </g>
     <g id="pipes">
-      <image overflow="visible" enable-background="new    " width="164" height="156" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 107 161)" x="680" y="-45">
+      <image overflow="visible" enable-background="new    " width="130" height="130" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 107 161)" x="690" y="15">
       </image>
-      <image overflow="visible" enable-background="new    " width="164" height="156" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 140 161)" x="681" y="-45">
+      <image overflow="visible" enable-background="new    " width="130" height="130" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 140 161)" x="685" y="15">
       </image>
-      <image overflow="visible" enable-background="new    " width="164" height="156" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 174 161)" x="682" y="-45">
+      <image overflow="visible" enable-background="new    " width="130" height="130" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png" transform="matrix(1 0 0 1 174 161)" x="680" y="15">
       </image>
     </g>
     <g id="smoke">
-      <image overflow="visible" enable-background="new    " width="25" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="790" y="175">
+      <image overflow="visible" enable-background="new    " width="80" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="790" y="175">
       </image>
-      <image overflow="visible" enable-background="new    " width="25" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="825" y="175">
+      <image overflow="visible" enable-background="new    " width="80" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="825" y="175">
       </image>
-      <image overflow="visible" enable-background="new    " width="25" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="860" y="175">
+      <image overflow="visible" enable-background="new    " width="80" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="860" y="175">
       </image>
     </g>
   </g>
@@ -677,8 +677,9 @@ text {
     // echo "<a href='#'><text style='cursor:pointer' x='175' y='{$tmp}' font-size='12' fill='{$font_color}'>Other buildings</text></a>\n";
     ?>
   </g>
-  <script type="text/javascript" xlink:href="js/jquery.min.js"/>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script>
+  <script type="text/javascript" xlink:href="js/jquery.min.js"/>
   <script type="text/javascript">
   // <![CDATA[
   //console.log(<?php //echo json_encode($log) ?>);
@@ -756,54 +757,52 @@ text {
       else {
         $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png');
       }
-    }, 1000);
-     var smoke = $('#smoke').children();
-    var newsmoke = TweenMax.to($('#smoke > image'), 1, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
+    }, 3000);
 
-    // var smokeanimation = setInterval(function(){
-    //   //smoke animation x
-    //   var smoke = $('#smoke').children();
-    //   smoke.each(function( index ) {
-    //     if (index == 0){
-    //       var x = 1000;
-    //     }
-    //     else if (index == 1){
-    //       var x = 1035;
-    //     }
-    //     else{
-    //       var x = 1060;
-    //     }
-    //     var smokechildren = $(this);
-    //     $({x:$(smokechildren).attr('x')}).animate(
-    //         {x:x},
-    //         {
-    //           duration: 1000,
-    //           step:function(now) {
-    //             $(smokechildren).attr('x', now);
-    //           },
-    //           complete: function() {
-    //             $(smokechildren).css('opacity', '0');
-    //             $(smokechildren).attr('x', '0');
-    //           }
-    //         }
-    //     );
-    //   });     
+    // var newsmoke = TweenMax.to($('#smoke > image'), 1, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
+      //smoke animation x
+      var smoke = $('#smoke').children();
+      smoke.each(function( index ) {
+        if (index == 0){
+          var x = 1000;
+        }
+        else if (index == 1){
+          var x = 1035;
+        }
+        else{
+          var x = 1060;
+        }
+        var smokechildren = $(this);
+        $({x:$(smokechildren).attr('x')}).animate(
+            {x:x},
+            {
+              duration: 2500,
+              step:function(now) {
+                $(smokechildren).attr('x', now);
+              },
+              complete: function() {
+                $(smokechildren).css('opacity', '0');
+                $(smokechildren).attr('x', '0');
+              }
+            }
+        );
+      });     
 
-    //   //smoke animation y
-    //   $({y:smoke.attr('y')}).animate(
-    //     {y: 100},
-    //     {
-    //       duration: 2500,
-    //       step:function(now) {
-    //         smoke.attr('y', now);
-    //       },
-    //       complete: function() {
-    //         smoke.css('opacity', '0');
-    //         smoke.attr('y', '175');
-    //       }
-    //     }
-    //   );
-    // }, 3000);
+      //smoke animation y
+      $({y:smoke.attr('y')}).animate(
+        {y: 100},
+        {
+          duration: 2500,
+          step:function(now) {
+            smoke.attr('y', now);
+          },
+          complete: function() {
+            smoke.css('opacity', '0');
+            smoke.attr('y', '175');
+          }
+        }
+      );
+
   });
 
   $('#money').on('click', function() {
@@ -830,6 +829,22 @@ text {
       kw_count++;
     }
     $('#accum-label-value').text('$'+Math.round((elapsed*(kw/kw_count))*0.12).toLocaleString());
+    
+    var banknote = $('#banknote').children();
+    $({y:banknote.attr('y')}).animate(
+      {y: 200},
+      {
+        duration: 1500,
+        step:function(now) {
+          banknote.attr('y', now);
+        },
+        complete: function() {
+          banknote.css('opacity', '0');
+          banknote.attr('y', '0');
+
+        }
+      }
+    );
   });
 
   <?php } elseif ($charachter === 'fish') { ?>
