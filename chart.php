@@ -599,55 +599,55 @@ text {
     <text fill="#fff" x="<?php echo $graph_width + 20; ?>" y="55" font-size="14" style="font-weight:400">$</text>
   </g> -->
   <g id="emo" style="display: none">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 62; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">🙂</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 40; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 52; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">🙂</text>
   </g>
   <g id="emo-active">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 50; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 62; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">🙂</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 40; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 52; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">🙂</text>
   </g>
   <g id="kwh">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 90; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 105; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 80; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 95; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
   </g>
   <g id="kwh-active" style="display: none">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 90; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 105; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 80; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 95; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">kWh</text>
   </g>
   <g id="co2">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 150; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 130; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="co2-active" style="display: none">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 150; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 130; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 140; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">CO2</text>
   </g>
   <g id="money">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 190; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 180; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 195; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <g id="money-active" style="display: none">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 190; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 205; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 180; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 195; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
 
   <?php } elseif ($charachter === 'fish') { ?>
 
   <g id="gal" style="display:none">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Gal</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 80; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 93; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Gal</text>
   </g>
   <g id="gal-active">
-    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 60; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 70; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Gal</text>
+    <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 80; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 93; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">Gal</text>
   </g>
   <g id="money2">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 125; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 130; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 145; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <g id="money2-active" style="display: none">
-    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 110; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 125; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
+    <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 130; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
+    <text fill="#fff" x="<?php echo $graph_width + 145; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">$</text>
   </g>
   <?php } ?>
   <!-- graph overlay menu -->
