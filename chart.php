@@ -3,6 +3,7 @@ error_reporting(-1);
 ini_set('display_errors', 'On');
 header('Content-Type: image/svg+xml; charset=UTF-8'); // We'll be outputting a SVG
 require '../includes/db.php';
+require '../includes/class.BuildingOS.php';
 require '../includes/class.TimeSeries.php';
 require 'includes/vars.php'; // Including in seperate file to keep this file clean. Contains $from, $to, etc
 require 'includes/really-long-switch.php';
@@ -17,8 +18,25 @@ if (isset($_GET['timeseriesconfig'])) {
     $_GET[$key] = $value;
   }
 }
-// var_dump(date('l n\/j \| g:i a',$from));var_dump(date('l n\/j \| g:i a',$to));exit;
-$main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
+if (isset($_GET['use_api'])) {
+  $bos = new BuildingOS($db, $db->query("SELECT id FROM api WHERE user_id = {$user_id}")->fetchColumn());
+  $main_ts_alt_data = array_map(function($tag) {
+    return array(
+        'value' => $tag['value'],
+        'recorded' => $tag['localtime']
+    );
+  }, json_decode(
+    $bos->getMeter($db->query("SELECT url FROM meters WHERE id = {$_GET['meter_id']}")->fetchColumn() . '/data', $res, $from, $now), true)['data']);
+} else {
+  $main_ts_alt_data = null;
+}
+$log['alt_data'] = $main_ts_alt_data;
+$main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $main_ts_alt_data); // The main timeseries
+// echo "<!--";
+// echo (date('l n\/j \| g:i a',$from));
+// echo (date('l n\/j \| g:i a',$to));
+// print_r($main_ts->data);
+// echo "-->";
 if (!isset($_GET['meter_id2'])) {
   $_GET['meter_id2'] = $_GET['meter_id'];
 }
@@ -481,8 +499,8 @@ text {
 
   <!-- Main button -->
   <g id="layer-btn" style="cursor: pointer;" class="noselect">
-    <rect id='layer-btn-rect' data-state="closed" width="120px" height="<?php echo $height * 0.06; ?>px" x="420" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,144,120,100;" />
-    <text id='layer-btn-text' x="430" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
+    <rect id='layer-btn-rect' data-state="closed" width="120px" height="<?php echo $height * 0.06; ?>px" x="545" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,144,120,100;" />
+    <text id='layer-btn-text' x="554" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
   </g>
   <?php
   $stmt = $db->prepare('SELECT id FROM meters WHERE scope = \'Whole Building\'
@@ -496,11 +514,11 @@ text {
   <g id="resource-btn" style="cursor: pointer;" class="noselect">
     <a target="_top" xlink:href="index.php?meter_id=<?php echo $results[0]['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
       <rect width="35" height="25" x="0" y="3" style="fill:<?php echo ($results[0]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
-      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/nav_images/electricity5.svg" x="10" y="8" height="16px" width="16px"/>
+      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/electricity-white.svg" x="10" y="8" height="16px" width="16px"/>
     </a>
     <a target="_top" xlink:href="index.php?meter_id=<?php echo $results[1]['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
       <rect width="35" height="25" x="35" y="3" style="fill:<?php echo ($results[1]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
-      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/nav_images/water1.svg" x="45" y="8" height="16px" width="16px"/>
+      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/water-white.svg" x="45" y="8" height="16px" width="16px"/>
     </a>
   </g>
   <?php
@@ -514,8 +532,8 @@ text {
   $related_meters = $stmt->fetchAll();
   if (count($related_meters) > 0) { ?>
   <g id="meter-btn" style="cursor: pointer;" class="noselect">
-    <rect id='meter-btn-rect' data-state="closed" width="115px" height="<?php echo $height * 0.06; ?>px" x="550" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,139,115,100;" />
-    <text id='meter-btn-text' x="558" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Other meters <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
+    <rect id='meter-btn-rect' data-state="closed" width="115px" height="<?php echo $height * 0.06; ?>px" x="420" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,139,115,100;" />
+    <text id='meter-btn-text' x="430" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Other meters <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
   </g>
   <?php } ?>
   </g>
@@ -600,11 +618,11 @@ text {
   </g> -->
   <g id="emo" style="display: none">
     <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 40; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 52; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">🙂</text>
+    <text fill="#fff" x="<?php echo $graph_width + 52; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">☺</text><!-- used to be 🙂-->
   </g>
   <g id="emo-active">
     <rect width="<?php echo $width * 0.04; ?>px" height="22" x="<?php echo $graph_width + 40; ?>" y="<?php echo $height * 0.935; ?>" style="fill:#2196F3;stroke:#4C595A;stroke-width:2" />
-    <text fill="#fff" x="<?php echo $graph_width + 52; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">🙂</text>
+    <text fill="#fff" x="<?php echo $graph_width + 52; ?>" y="<?php echo $height * 0.975; ?>" font-size="14" style="font-weight:400">☺</text>
   </g>
   <g id="kwh">
     <rect width="<?php echo $width * 0.05; ?>px" height="22" x="<?php echo $graph_width + 80; ?>" y="<?php echo $height * 0.935; ?>" style="fill:<?php echo $font_color; ?>;stroke:#4C595A;stroke-width:2" />
@@ -652,37 +670,38 @@ text {
   <?php } ?>
   <!-- graph overlay menu -->
   <g id="overlay-dropdown" style="display: none">
-    <rect x="380" y="30" height="100px" width="200px" style="fill:#eee;" />
-    <text style="cursor:pointer" id="historical" x="390" y="60" font-size="12" fill="<?php echo $font_color ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
+    <rect x="505" y="30" height="100px" width="200px" style="fill:#eee;" />
+    <text style="cursor:pointer" id="historical" x="515" y="60" font-size="12" fill="<?php echo $font_color ?>"><?php echo ($show_hist) ? 'Hide' : 'Show'; ?> previous <?php
           if ($time_frame === 'live') { echo 'hour'; }
           elseif ($time_frame === 'today') { echo 'day'; }
           else { echo $time_frame; }
           ?></text>
-    <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="390" y="85" font-size="12" fill="<?php echo $font_color ?>">
+    <text style="cursor:pointer" <?php echo ($typical_time_frame) ? 'id="typical"' : ''; ?> x="515" y="85" font-size="12" fill="<?php echo $font_color ?>">
       <?php echo ($typical_time_frame) ? 'Show typical' : 'Typical not available'; ?>
     </text>
     <?php if ($secondary_ts_set) { ?>
-    <text style="cursor:pointer" id="second" x="390" y="110" font-size="12" fill="<?php echo $font_color ?>">Show <?php echo $name2; ?></text>
+    <text style="cursor:pointer" id="second" x="515" y="110" font-size="12" fill="<?php echo $font_color ?>">Show <?php echo $name2; ?></text>
     <?php } ?>
   </g>
   <g id="meter-dropdown" style="display: none">
     <?php
-    echo '<rect x="505" y="30" height="'.(33*(count($related_meters))).'px" width="200px" style="fill:#eee;" />';
+    echo '<rect x="380" y="30" height="'.(33*(count($related_meters))).'px" width="200px" style="fill:#eee;" />';
     $tmp = 60;
     foreach ($related_meters as $rm) {
       $url = 'https://oberlindashboard.org/oberlin/time-series/index.php?meter_id=' . $rm['id'];
-      echo "<a href='{$url}'><text style='cursor:pointer' x='510' y='{$tmp}' font-size='12' fill='{$font_color}'>{$rm['name']}</text></a>\n";
+      echo "<a href='{$url}'><text style='cursor:pointer' x='385' y='{$tmp}' font-size='12' fill='{$font_color}'>{$rm['name']}</text></a>\n";
       $tmp += 25;
     }
     // echo "<a href='#'><text style='cursor:pointer' x='175' y='{$tmp}' font-size='12' fill='{$font_color}'>Other buildings</text></a>\n";
     ?>
   </g>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script> -->
+  <!-- olivia, not sure if you were having trouble with this ^ but 'src' probably wont work, it needs to be 'xlink:href'... -->
   <script type="text/javascript" xlink:href="js/jquery.min.js"/>
   <script type="text/javascript">
   // <![CDATA[
-  //console.log(<?php //echo json_encode($log) ?>);
+  console.log(<?php echo json_encode($log) ?>);
   /* BUTTON/MENU FUNCTIONALITY */
   <?php if ($charachter === 'squirrel') { ?>
   var accum_btn = $('#emo');//$('#kwh');
