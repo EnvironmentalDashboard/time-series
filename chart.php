@@ -370,11 +370,11 @@ text {
       </image>
     </g>
     <g id="smoke">
-      <image overflow="visible" enable-background="new    " width="80" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="790" y="175">
+      <image overflow="visible" enable-background="new    " width="80" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="770" y="210">
       </image>
-      <image overflow="visible" enable-background="new    " width="80" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="825" y="175">
+      <image overflow="visible" enable-background="new    " width="80" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="805" y="210">
       </image>
-      <image overflow="visible" enable-background="new    " width="80" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="860" y="175">
+      <image overflow="visible" enable-background="new    " width="80" height="21" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/smoke.png" x="840" y="210">
       </image>
     </g>
   </g>
@@ -696,7 +696,7 @@ text {
     ?>
   </g>
 
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script> -->
+  <script xlink:href="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script>
   <!-- olivia, not sure if you were having trouble with this ^ but 'src' probably wont work, it needs to be 'xlink:href'... -->
   <script type="text/javascript" xlink:href="js/jquery.min.js"/>
   <script type="text/javascript">
@@ -744,84 +744,41 @@ text {
     });
   
   $('#co2').on('click', function() {
-    // hide the empathetic character
-    $('#empathetic-char').css('display', 'none');
-    // hide the kwh-animation
-    $('#kwh-animation').css('display', 'none');  
-    // display co2 animation
-    $('#co2-animation').css('display', '');    
-    // hide the money-animation
-    $('#money-animation').css('display', 'none');  
-    active_accum_btn.css('display', 'none');
-    accum_btn.css('display', '');
-    $('#co2').css('display', 'none');
-    $('#co2-active').css('display', '');
-    accum_btn = $('#co2');
-    active_accum_btn = $('#co2-active');
-    $('#accum-label-units').text('Pounds of CO2 <?php echo $so_far; ?>');
-    var elapsed = (current_timestamps[current_timestamps.length-1]-current_timestamps[0])/3600;
-    var kw = 0;
-    var kw_count = 0;
-    for (var i = current_timestamps.length-1; i >= 0; i--) {
-      kw += raw_data[i];
-      kw_count++;
-    }
-    $('#accum-label-value').text(Math.round((elapsed*(kw/kw_count))*1.22).toLocaleString());
-    //smokestack swapping animation//
-    var counter = 0;
-    var smokestack = setInterval(function() {
-      if (counter++ % 2 == 0) {
-        $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack2.png');
+      // hide the empathetic character
+      $('#empathetic-char').css('display', 'none');
+      // hide the kwh-animation
+      $('#kwh-animation').css('display', 'none');  
+      // display co2 animation
+      $('#co2-animation').css('display', '');    
+      // hide the money-animation
+      $('#money-animation').css('display', 'none');  
+      active_accum_btn.css('display', 'none');
+      accum_btn.css('display', '');
+      $('#co2').css('display', 'none');
+      $('#co2-active').css('display', '');
+      accum_btn = $('#co2');
+      active_accum_btn = $('#co2-active');
+      $('#accum-label-units').text('Pounds of CO2 <?php echo $so_far; ?>');
+      var elapsed = (current_timestamps[current_timestamps.length-1]-current_timestamps[0])/3600;
+      var kw = 0;
+      var kw_count = 0;
+      for (var i = current_timestamps.length-1; i >= 0; i--) {
+        kw += raw_data[i];
+        kw_count++;
       }
-      else {
-        $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png');
-      }
-    }, 3000);
-
-    // var newsmoke = TweenMax.to($('#smoke > image'), 1, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
-      //smoke animation x
+      $('#accum-label-value').text(Math.round((elapsed*(kw/kw_count))*1.22).toLocaleString());
+      //smokestack swapping animation//
+      var counter = 0;
+      var smokestack = setInterval(function() {
+        if (counter++ % 2 == 0) {
+          $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack2.png');
+        }
+        else {
+          $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png');
+        }
+      }, 3000);
       var smoke = $('#smoke').children();
-      smoke.each(function( index ) {
-        if (index == 0){
-          var x = 1000;
-        }
-        else if (index == 1){
-          var x = 1035;
-        }
-        else{
-          var x = 1060;
-        }
-        var smokechildren = $(this);
-        $({x:$(smokechildren).attr('x')}).animate(
-            {x:x},
-            {
-              duration: 2500,
-              step:function(now) {
-                $(smokechildren).attr('x', now);
-              },
-              complete: function() {
-                $(smokechildren).css('opacity', '0');
-                $(smokechildren).attr('x', '0');
-              }
-            }
-        );
-      });     
-
-      //smoke animation y
-      $({y:smoke.attr('y')}).animate(
-        {y: 100},
-        {
-          duration: 2500,
-          step:function(now) {
-            smoke.attr('y', now);
-          },
-          complete: function() {
-            smoke.css('opacity', '0');
-            smoke.attr('y', '175');
-          }
-        }
-      );
-
+      var newsmoke = TweenMax.to($('#smoke > image'), 1, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
   });
 
   $('#money').on('click', function() {
@@ -848,22 +805,24 @@ text {
       kw_count++;
     }
     $('#accum-label-value').text('$'+Math.round((elapsed*(kw/kw_count))*0.12).toLocaleString());
-    
-    var banknote = $('#banknote').children();
-    $({y:banknote.attr('y')}).animate(
-      {y: 200},
-      {
-        duration: 1500,
-        step:function(now) {
-          banknote.attr('y', now);
-        },
-        complete: function() {
-          banknote.css('opacity', '0');
-          banknote.attr('y', '0');
 
-        }
-      }
-    );
+    var banknote = TweenMax.to($('#banknote > image'), 2, {y: "300px", x: "10px", ease: Power0.easeNone, delay: 2, repeat: -1, repeatDelay: 2});
+    
+    // var banknote = $('#banknote').children();
+    // $({y:banknote.attr('y')}).animate(
+    //   {y: 200},
+    //   {
+    //     duration: 1500,
+    //     step:function(now) {
+    //       banknote.attr('y', now);
+    //     },
+    //     complete: function() {
+    //       banknote.css('opacity', '0');
+    //       banknote.attr('y', '0');
+
+    //     }
+    //   }
+    // );
   });
 
   <?php } elseif ($charachter === 'fish') { ?>
