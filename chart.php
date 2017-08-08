@@ -513,23 +513,38 @@ text {
     ORDER BY units DESC') as $row) {
       switch ($row['units']) {
         case 'Kilowatts':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/electricity-white.svg';
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/electricity-white.svg';
           break;
         case 'Watts':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/electricity-white.svg';
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/electricity-white.svg';
           break;
         case 'Gallons / hour':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/water-white.svg';
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/water-white.svg';
           break;
         case 'Gallons per minute':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/water-white.svg';
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/water-white.svg';
+          break;
+        case 'Deg C':
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
+          break;
+        case 'Deg F':
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
+          break;
+        case 'KiloBTU / hour':
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
+          break;
+        case 'BTU / hour':
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
+          break;
+        case 'Pounds of steam / hour':
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/gas.svg';
           break;
         default:
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/error.svg';
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/generic-meter.svg';
           break;
       }
   ?>
-    <a target="_top" xlink:href="index.php?meter_id=<?php echo $row['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
+    <a target="_top" xlink:href="index.php?meter_id=<?php echo $row['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff&amp;webpage=<?php echo isset($_GET['webpage']) ? $_GET['webpage'] : ''; ?>">
       <rect width="35" height="25" x="<?php echo $tmpx; ?>" y="3" style="fill:<?php echo ($row['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
       <image xlink:href="<?php echo $resource_img; ?>" x="<?php echo $tmpx+10; $tmpx+=35; ?>" y="8" height="16px" width="16px"/>
     </a>
