@@ -32,11 +32,13 @@ if (isset($_GET['use_api'])) {
 }
 $log['alt_data'] = $main_ts_alt_data;
 $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $main_ts_alt_data); // The main timeseries
-// echo "<!--";
+echo "<!--";
+echo "SELECT value, recorded FROM meter_data
+      WHERE meter_id = {$_GET['meter_id']} AND resolution = '{$res}' AND recorded > {$from} AND recorded < {$now} ORDER BY recorded ASC\n";
 // echo (date('l n\/j \| g:i a',$from));
 // echo (date('l n\/j \| g:i a',$to));
 // print_r($main_ts->data);
-// echo "-->";
+echo "-->";
 if (!isset($_GET['meter_id2'])) {
   $_GET['meter_id2'] = $_GET['meter_id'];
 }
@@ -502,27 +504,39 @@ text {
     <rect id='layer-btn-rect' data-state="closed" width="120px" height="<?php echo $height * 0.06; ?>px" x="545" y="3" fill="<?php echo $font_color; ?>" stroke="#4C595A" stroke-width="3" style="stroke-dasharray:0,144,120,100;" />
     <text id='layer-btn-text' x="554" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
   </g>
-  <?php
-  $stmt = $db->prepare('SELECT id FROM meters WHERE scope = \'Whole Building\'
-    AND building_id IN (SELECT building_id FROM meters WHERE id = ?)
-    AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0) OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))
-    ORDER BY units DESC LIMIT 2');
-  $stmt->execute(array($_GET['meter_id']));
-  $results = $stmt->fetchAll();
-  if (count($results) === 2) {  
-  ?>
   <g id="resource-btn" style="cursor: pointer;" class="noselect">
-    <a target="_top" xlink:href="index.php?meter_id=<?php echo $results[0]['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
-      <rect width="35" height="25" x="0" y="3" style="fill:<?php echo ($results[0]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
-      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/electricity-white.svg" x="10" y="8" height="16px" width="16px"/>
-    </a>
-    <a target="_top" xlink:href="index.php?meter_id=<?php echo $results[1]['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
-      <rect width="35" height="25" x="35" y="3" style="fill:<?php echo ($results[1]['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
-      <image xlink:href="https://oberlindashboard.org/oberlin/time-series/images/water-white.svg" x="45" y="8" height="16px" width="16px"/>
-    </a>
-  </g>
   <?php
-  }
+  $tmpx = 0;
+  foreach ($db->query('SELECT id, units FROM meters WHERE scope = \'Whole Building\'
+    AND building_id IN (SELECT building_id FROM meters WHERE id = '.intval($_GET['meter_id']).')
+    AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0) OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))
+    ORDER BY units DESC') as $row) {
+      switch ($row['units']) {
+        case 'Kilowatts':
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/electricity-white.svg';
+          break;
+        case 'Watts':
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/electricity-white.svg';
+          break;
+        case 'Gallons / hour':
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/water-white.svg';
+          break;
+        case 'Gallons per minute':
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/water-white.svg';
+          break;
+        default:
+          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/error.svg';
+          break;
+      }
+  ?>
+    <a target="_top" xlink:href="index.php?meter_id=<?php echo $row['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff">
+      <rect width="35" height="25" x="<?php echo $tmpx; ?>" y="3" style="fill:<?php echo ($row['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
+      <image xlink:href="<?php echo $resource_img; ?>" x="<?php echo $tmpx+10; $tmpx+=35; ?>" y="8" height="16px" width="16px"/>
+    </a>
+  <?php } ?>
+  </g>
+  <text fill="#4C595A" x="<?php echo $tmpx + 8; ?>" y="22" style="font-weight: 800"><?php echo $db->query('SELECT name FROM buildings WHERE id IN (SELECT building_id FROM meters WHERE id = '.intval($_GET['meter_id']).') LIMIT 1')->fetchColumn(); ?></text>
+  <?php
   // Select the main meters for the current building being viewed and exclude emters that we're not collecting data for
   $stmt = $db->prepare('SELECT id, name FROM meters WHERE scope != \'Whole Building\'
     AND building_id IN (SELECT building_id FROM meters WHERE id = ?)

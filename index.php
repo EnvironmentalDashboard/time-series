@@ -52,8 +52,13 @@ if (!isset($_GET['timeseriesconfig'])) {
   <meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
   <link rel="stylesheet" href="css/bootstrap.grid.css">
-  <link rel="stylesheet" href="css/style.css?v=1">
+  <!-- <link rel="stylesheet" href="css/style.css?v=1"> -->
   <title>Time Series</title>
+  <style>
+    object {
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
   <?php /*
@@ -161,14 +166,14 @@ if (!isset($_GET['timeseriesconfig'])) {
 
   <?php if (!isset($_GET['webpage']) || $_GET['webpage'] !== 'notitle') { // if webpage==notitle, nothing is shown
   ?>
-  <div class="container-fluid">
+  <!-- <div class="container-fluid"> -->
     <div class="row">
       <?php 
       if (!isset($_GET['webpage']) || $_GET['webpage'] !== 'title') { // if webpage==title, hide img
         $colclass = 'col-xs-10';
       ?>
       <div class="col-xs-2"><!-- img -->
-        <a href="#" style="width: 100%;">
+        <a href="#">
           <img src="<?php
           $stmt = $db->prepare("SELECT buildings.custom_img, buildings.name FROM buildings WHERE org_id IN (SELECT org_id FROM users_orgs_map WHERE user_id = {$user_id}) AND buildings.id IN (SELECT meters.building_id FROM meters WHERE meters.id = ?) LIMIT 1");
           $stmt->execute(array($_GET['meter_id']));
@@ -197,6 +202,9 @@ if (!isset($_GET['timeseriesconfig'])) {
         } else {
           $stmt = $db->prepare('SELECT name FROM meters WHERE id = ? LIMIT 1');
           $stmt->execute(array($_GET['meter_id']));
+          if (!isset($title)) {
+            $title = $db->query("SELECT name FROM buildings WHERE org_id IN (SELECT org_id FROM users_orgs_map WHERE user_id = {$user_id}) AND id IN (SELECT building_id FROM meters WHERE id = ".intval($_GET['meter_id']).")")->fetchColumn();
+          }
           $full_title = $title . ' ' . $stmt->fetch()['name'];
           $tot_len = strlen($full_title);
         }
@@ -212,13 +220,13 @@ if (!isset($_GET['timeseriesconfig'])) {
         <!-- <img src="images/pencil-square-o.svg" height="40px" width="40px" alt="Edit icon" style="position:absolute;top:5px;right:5px;cursor:pointer;" onclick="show_modal()"> -->
       </div><!-- /title -->
     </div><!-- /row -->
-    <div class="row">
-      <div class="col-xs-12">
-        <object style="box-shadow: 0px 2px 2px 2px rgba(0,0,0,0.3);" type="image/svg+xml" data="chart.php?<?php echo http_build_query($_GET); ?>"></object>
-      </div>
-    </div>
-  </div>
+    <!-- <div class="row"> -->
+      <!-- <div class="col-xs-12"> -->
+      <!-- </div> -->
+    <!-- </div> -->
+  <!-- </div> -->
   <?php } ?>
+  <object style="box-shadow: 0px 2px 2px 2px rgba(0,0,0,0.3);" type="image/svg+xml" data="chart.php?<?php echo http_build_query($_GET); ?>"></object>
   <script>
     function show_modal() {
       document.getElementById("modal").style.display = 'block';
