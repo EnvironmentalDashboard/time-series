@@ -726,7 +726,6 @@ text {
   </g>
 
   <script xlink:href="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script>
-  <!-- olivia, not sure if you were having trouble with this ^ but 'src' probably wont work, it needs to be 'xlink:href'... -->
   <script type="text/javascript" xlink:href="js/jquery.min.js"/>
   <script type="text/javascript">
   // <![CDATA[
@@ -1278,7 +1277,7 @@ text {
     // Get gif lengths: http://gifduration.konstochvanligasaker.se/
   }
 
-  function accumulation(time_sofar, avg_kw) {
+  function accumulation(time_sofar, avg_kw) { // how calculate kwh
     var kwh = (time_sofar/3600)*avg_kw; // the number of hours in time period * the average kw reading
     // console.log('time elapsed in hours: '+(time_sofar/3600)+"\navg_kw: "+ avg_kw+"\nkwh: "+kwh);
     var id = accum_btn.attr('id');
