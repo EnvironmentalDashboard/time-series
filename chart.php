@@ -507,52 +507,21 @@ text {
     <text id='layer-btn-text' x="554" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
   </g>
   <g id="resource-btn" style="cursor: pointer;" class="noselect">
-  <?php
-  $tmpx = 0;
-  foreach ($db->query('SELECT id, resource FROM meters WHERE scope = \'Whole Building\'
-    AND building_id IN (SELECT building_id FROM meters WHERE id = '.intval($_GET['meter_id']).')
-    AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0) OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))
-    ORDER BY units DESC') as $row) {
-      /*
-      switch ($row['units']) {
-        case 'Kilowatts':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/electricity-white.svg';
-          break;
-        case 'Watts':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/electricity-white.svg';
-          break;
-        case 'Gallons / hour':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/water-white.svg';
-          break;
-        case 'Gallons per minute':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/water-white.svg';
-          break;
-        case 'Deg C':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
-          break;
-        case 'Deg F':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
-          break;
-        case 'KiloBTU / hour':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
-          break;
-        case 'BTU / hour':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
-          break;
-        case 'Pounds of steam / hour':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/gas.svg';
-          break;
-        default:
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/generic-meter.svg';
-          break;
+    <text fill="#fff" x="8" y="22" style="font-weight: 800">
+    <?php
+    foreach ($db->query('SELECT id, resource FROM meters WHERE scope = \'Whole Building\'
+      AND building_id IN (SELECT building_id FROM meters WHERE id = '.intval($_GET['meter_id']).')
+      AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0) OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))
+      ORDER BY units DESC') as $row) {
+        echo "<a dx='10' style='fill:";
+        echo ($row['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color;
+        echo "' target='_top' xlink:href='index.php?";
+        parse_str($_SERVER['QUERY_STRING'], $tmp_qs);
+        echo str_replace('&', '&amp;', http_build_query(array_replace($tmp_qs, array('meter_id' => $row['id']))));
+        echo "'>{$row['resource']}</a> \n";
       }
-      */
-  ?>
-    <a target="_top" xlink:href="index.php?meter_id=<?php echo $row['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff&amp;webpage=<?php echo isset($_GET['webpage']) ? $_GET['webpage'] : ''; ?>">
-      <rect width="<?php echo strlen($row['resource'])*10 ?>" height="25" x="<?php echo $tmpx; ?>" y="3" style="fill:<?php echo ($row['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
-      <text fill="#fff" x="<?php echo $tmpx + 8; ?>" y="22" style="font-weight: 800"><?php echo $row['resource']; ?></text>
-    </a>
-  <?php $tmpx += strlen($row['resource']) * 10; } ?>
+    ?>
+    </text>
   </g>
   <?php
   // Select the main meters for the current building being viewed and exclude emters that we're not collecting data for
