@@ -18,20 +18,13 @@ if (isset($_GET['timeseriesconfig'])) {
     $_GET[$key] = $value;
   }
 }
-if (isset($_GET['use_api'])) {
-  $bos = new BuildingOS($db, $db->query("SELECT id FROM api WHERE user_id = {$user_id}")->fetchColumn());
-  $main_ts_alt_data = array_map(function($tag) {
-    return array(
-        'value' => $tag['value'],
-        'recorded' => $tag['localtime']
-    );
-  }, json_decode(
-    $bos->getMeter($db->query("SELECT url FROM meters WHERE id = {$_GET['meter_id']}")->fetchColumn() . '/data', $res, $from, $now), true)['data']);
-} else {
-  $main_ts_alt_data = null;
-}
 $log['alt_data'] = $main_ts_alt_data;
-$main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $main_ts_alt_data); // The main timeseries
+$bos = new BuildingOS($db, $db->query("SELECT id FROM api WHERE user_id = {$user_id}")->fetchColumn());
+try {
+  $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
+} catch (Exception $e) {
+  $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, use_api($db, $bos, $_GET['meter_id'], $res, $from, $now));
+}
 /*
 echo "<!--";
 echo "SELECT value, recorded FROM meter_data
@@ -45,8 +38,20 @@ if (!isset($_GET['meter_id2'])) {
   $_GET['meter_id2'] = $_GET['meter_id'];
 }
 $secondary_ts_set = ($_GET['meter_id'] !== $_GET['meter_id2']);
-$secondary_ts = ($secondary_ts_set) ? new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res) : null; // "Second variable" timeseries
-$historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
+if ($secondary_ts_set) {
+  try {
+    $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
+  } catch (Exception $e) {
+    $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res, null, null, use_api($db, $bos, $_GET['meter_id2'], $res, $from, $now));
+  }
+} else {
+  $secondary_ts = null;
+}
+try {
+  $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
+} catch (Exception $e) {
+  $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res, null, null, use_api($db, $bos, $_GET['meter_id'], $res, $double_time, $from));
+}
 $meter = new Meter($db);
 $typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
 
@@ -210,6 +215,16 @@ function median($arr) {
   }
   return $median;
 }
+function use_api($db, $bos, $meter_id, $res, $start, $end) {
+  $api_resp = json_decode(
+    $bos->getMeter($db->query("SELECT url FROM meters WHERE id = {$meter_id}")->fetchColumn() . '/data', $res, $start, $end), true)['data'];
+  return array_map(function($tag) {
+    return array(
+        'value' => $tag['value'],
+        'recorded' => $tag['localtime']
+    );
+  }, $api_resp);
+}
 ?>
 <defs>
   <linearGradient id="shadow">
@@ -220,6 +235,14 @@ function median($arr) {
     <stop offset="0%" style="stop-color:#fff;stop-opacity:1" />
     <stop offset="100%" style="stop-color:#777;stop-opacity:1" />
   </linearGradient>
+  <filter x="0" y="0" width="1" height="1" id="solid-active">
+    <feFlood flood-color="#2196F3"/>
+    <feComposite in="SourceGraphic"/>
+  </filter>
+  <filter x="0" y="0" width="1" height="1" id="solid">
+    <feFlood flood-color="<?php echo $font_color ?>"/>
+    <feComposite in="SourceGraphic"/>
+  </filter>
 </defs>
 <style>
 /* <![CDATA[ */
@@ -513,7 +536,7 @@ text {
       AND building_id IN (SELECT building_id FROM meters WHERE id = '.intval($_GET['meter_id']).')
       AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0) OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))
       ORDER BY units DESC') as $row) {
-        echo "<a dx='10' style='fill:";
+        echo "<a style='fill:";
         echo ($row['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color;
         echo "' target='_top' xlink:href='index.php?";
         parse_str($_SERVER['QUERY_STRING'], $tmp_qs);
