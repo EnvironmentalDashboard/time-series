@@ -18,12 +18,13 @@ if (isset($_GET['timeseriesconfig'])) {
     $_GET[$key] = $value;
   }
 }
-$log['alt_data'] = $main_ts_alt_data;
 $bos = new BuildingOS($db, $db->query("SELECT id FROM api WHERE user_id = {$user_id}")->fetchColumn());
+$main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
 try {
-  $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
+  $main_ts->data();
 } catch (Exception $e) {
-  $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, use_api($db, $bos, $_GET['meter_id'], $res, $from, $now));
+  $main_ts->data(use_api($db, $bos, $_GET['meter_id'], $res, $from, $now));
+  $log[] = 'used api for main data';
 }
 /*
 echo "<!--";
@@ -39,18 +40,22 @@ if (!isset($_GET['meter_id2'])) {
 }
 $secondary_ts_set = ($_GET['meter_id'] !== $_GET['meter_id2']);
 if ($secondary_ts_set) {
+  $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
   try {
-    $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
+    $secondary_ts->data();
   } catch (Exception $e) {
-    $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res, null, null, use_api($db, $bos, $_GET['meter_id2'], $res, $from, $now));
+    $log[] = 'used api for second variable';
+    $secondary_ts->data(use_api($db, $bos, $_GET['meter_id2'], $res, $from, $now));
   }
 } else {
   $secondary_ts = null;
 }
+$historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
 try {
-  $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
+  $historical_ts->data();
 } catch (Exception $e) {
-  $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res, null, null, use_api($db, $bos, $_GET['meter_id'], $res, $double_time, $from));
+  $log[] = 'used api for historical chart';
+  $historical_ts->data(use_api($db, $bos, $_GET['meter_id'], $res, $double_time, $from));
 }
 $meter = new Meter($db);
 $typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
@@ -117,10 +122,18 @@ if ($typical_time_frame) {
       $sec += 3600;
     }
   }
+  echo "<!--";
+  print_r($result);
   $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $result);
   $typical_ts->dashed(false);
   $typical_ts->fill(false);
   $typical_ts->color('#f39c12');
+  if (empty($typical_ts->data)) {
+    $typical_ts = $historical_ts;
+    $typical_time_frame = false;
+  }
+  var_dump(empty($typical_ts->data));
+  echo "-->";
 }
 
 $main_ts->dashed( (isset($_GET['dasharr1']) && $_GET['dasharr1'] === 'on') ? true : false );
@@ -327,9 +340,6 @@ text {
     $chart_min = $graph_offset;
     $chart_max = $graph_height + $graph_offset;
     $interval = ($chart_max - $chart_min)/count($main_ts->yaxis);
-    echo "<!-- {$main_ts->min}";
-    var_dump($main_ts->yaxis);
-    echo " {$main_ts->max} -->";
     foreach ($main_ts->yaxis as $y) {
       echo "<text x='38' text-anchor='end' y='{$chart_max}' font-size='13' fill='{$font_color}'>{$y}</text>";
       $chart_max -= $interval;
@@ -1044,12 +1054,10 @@ text {
     $diff_min = PHP_INT_MAX;
     $diff_max = PHP_INT_MIN;
     // calculate the $diff_min/$diff_max
-    $tmp = count($relativized_points)-1;
+    echo "/*\n";
     for ($i=0; $i < count($main_ts->circlepoints); $i++) {
       $scaled = round($pct_through*$i);
-      if ($scaled > $tmp) {
-        $scaled = $tmp;
-      }
+      // echo "{$i},{$scaled}:{$main_ts->circlepoints[$i][1]},{$relativized_points[$scaled][1]} ";
       $d = $main_ts->circlepoints[$i][1] - $relativized_points[$scaled][1];
       $charachter_moods[] = $d; // save difference to scale later
       if ($d > $diff_max) {
@@ -1059,6 +1067,7 @@ text {
         $diff_min = $d;
       }
     }
+    echo "*/\n\n";
     // scale the difference between two points to a gif frame
     for ($i=0; $i < count($charachter_moods); $i++) { 
       $charachter_moods[$i] = round($main_ts->convertRange($charachter_moods[$i], $diff_min, $diff_max, 0, $number_of_frames));
