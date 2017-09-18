@@ -345,14 +345,64 @@ text {
   <g id="kwh-animation" style="display: none">
     <rect width='500px' height="500px" x="745" y="40" fill="#B4E3F4"/>
     <g id="ground">
-      <image overflow="visible" enable-background="new    " width="500" height="500" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/ground.svg" x="745" y="40">
-      </image>
-    </g> 
-    <g id="power-lines"> 
-      <image overflow="visible" enable-background="new    " width="300" height="200" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/powerlines2.svg" x="760" y="180">
+      <image overflow="visible" enable-background="new    " width="500" height="500" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/ground.svg" x="745" y="-50">
       </image>
     </g>
-  </g>
+     <g id="secondground">
+      <image overflow="visible" enable-background="new    " width="500" height="500" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/ground.svg" x="745" y="-5">
+      </image>
+    </g>
+    <g id="thirdground">
+      <image overflow="visible" enable-background="new    " width="500" height="500" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/ground.svg" x="745" y="40">
+      </image>
+    </g>
+    <g id="house"> 
+      <image xmlns="http://www.w3.org/2000/svg" overflow="visible" enable-background="new    " width="200" height="250" id="houses" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://104.131.103.232/oberlin/cwd/img/houses.png" x="780" y="180">
+      </image>
+    </g>
+    <!-- <g id="bigpowerline">
+      <image xmlns="http://www.w3.org/2000/svg" overflow="visible" enable-background="new    " width="50" height="50" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/powerline.svg" x="745" y="140">
+      </image>
+    </g> -->
+    <g id="powerlines1" xmlns="http://www.w3.org/2000/svg" transform="translate(200, -80)">
+      <polygon fill="#FFFFFF" points="628.964,206.729 620.326,206.729 621.426,204.984 628.964,204.984             "/>
+      <polygon fill="#FFFFFF" points="613.1,204.984 620.575,204.984 619.496,206.729 613.1,206.729             "/>
+      <polygon fill="#FFFFFF" points="612.456,204.984 612.456,206.729 609.009,206.729 609.009,204.984             "/>
+      <polygon fill="#FFFFFF" points="608.324,206.729 601.928,206.729 600.641,204.984 608.324,204.984             "/>
+      <path fill="#FFFFFF" d="M589.365,204.984h10.424l1.308,1.745H589.51C589.15,206.688,589.104,206.106,589.365,204.984z"/>
+      <polygon fill="#FFFFFF" points="629.255,200.185 613.1,200.185 613.1,198.502 629.255,198.502             "/>
+      <polygon fill="#FFFFFF" points="609.009,200.185 609.009,198.502 612.456,198.502 612.456,200.185             "/>
+      <path fill="#FFFFFF" d="M608.324,200.185h-11.13l-0.604-0.894c-0.125-0.166-0.27-0.18-0.436-0.042             c-0.208,0.125-0.242,0.27-0.104,0.437l0.291,0.499h-6.52c-0.401-0.028-0.45-0.589-0.146-1.683h18.647L608.324,200.185             L608.324,200.185z"/>
+      <path fill="#231F20" d="M629.909,200.188c0.229,0.033,0.349,0.149,0.349,0.349c0.033,0.233-0.062,0.35-0.299,0.35h-6.333             l-1.795,3.441h7.38c0.298,0,0.415,0.15,0.349,0.45l0.062,0.199v1.746c0.229,0,0.35,0.116,0.35,0.349             c0.033,0.233-0.062,0.35-0.3,0.35H619.9c-3.125,4.324-5.39,7.616-6.772,9.877v65.253c0,0.166-0.083,0.283-0.25,0.349             c-0.166,0.033-0.283,0-0.354-0.1l-0.053-0.199v-64.106l-0.05,0.049c-0.104,0.167-0.25,0.217-0.449,0.15             c-0.229-0.1-0.276-0.25-0.146-0.449l0.646-1.098v-9.728h-3.438v9.379l0.601,1.047c0.134,0.2,0.104,0.366-0.101,0.499             c-0.166,0.133-0.314,0.099-0.447-0.1l-0.05-0.1v64.405c1.098,0.565,2.061,0.599,2.893,0.1             c0.104-0.066,0.199-0.083,0.301-0.049c0.104,0.032,0.167,0.1,0.197,0.199c0.065,0.166,0.032,0.299-0.1,0.399             c-1.064,0.665-2.229,0.665-3.491,0c-0.271,0.133-0.438,0.066-0.498-0.2l-0.146-0.1c-0.139-0.1-0.188-0.233-0.146-0.398             c0.03-0.2,0.133-0.284,0.3-0.25V217c-1.463-2.395-3.708-5.587-6.729-9.578H589.19c-0.139,0-0.229-0.066-0.305-0.2             c-0.466-0.299-0.525-1.047-0.191-2.245c-0.168-0.066-0.229-0.199-0.197-0.399c0-0.167,0.102-0.25,0.301-0.25h10.521             l-2.438-3.441h-7.382c-0.133,0-0.229-0.066-0.301-0.199c-0.438-0.3-0.498-1.048-0.196-2.246             c-0.166-0.066-0.232-0.199-0.198-0.398c0-0.167,0.104-0.25,0.3-0.25h19.247v-2.045c0-0.233,0.116-0.35,0.354-0.35             c0-0.132,0.062-0.25,0.195-0.35c0.526-0.232,1.479-0.349,2.845-0.349c0.229,0,0.364,0.1,0.396,0.299             c0.032,0.334,0.146,0.798,0.354,1.397v-0.648c0-0.233,0.114-0.35,0.353-0.35c0.197-0.033,0.306,0.066,0.306,0.299v2.095             h16.398c0.304,0,0.416,0.15,0.354,0.449l0.104,0.199v1.697L629.909,200.188z M629.261,198.492h-16.155v1.696h16.155V198.492z              M628.962,204.977h-7.53l-1.097,1.746h8.626L628.962,204.977L628.962,204.977z M622.878,200.887h-9.771v3.441h7.928             C621.896,202.798,622.512,201.651,622.878,200.887z M620.585,204.977h-7.479v1.746h6.382L620.585,204.977z M611.759,196.446             l-0.3-1.047c-1.062,0-1.844,0.099-2.343,0.299l-0.104,0.05v2.045h3.441v-1.372c-0.008,0.216-0.124,0.324-0.354,0.324             C611.909,196.779,611.792,196.679,611.759,196.446z M609.016,200.188h3.441v-1.696h-3.441V200.188z M609.016,206.723h3.441             v-1.746h-3.441V206.723z M612.457,200.887h-3.441v3.441h3.441V200.887z M613.105,216.002c1.263-1.962,3.229-4.822,5.934-8.58             h-5.934V216.002z M608.318,198.492h-18.649c-0.3,1.097-0.25,1.663,0.149,1.696h6.521l-0.299-0.499             c-0.133-0.166-0.1-0.316,0.104-0.449c0.166-0.133,0.312-0.117,0.439,0.05l0.604,0.897h11.115L608.318,198.492L608.318,198.492             z M599.792,204.977H589.37c-0.271,1.131-0.216,1.713,0.146,1.746h11.568L599.792,204.977z M601.936,206.723h6.396v-1.746             h-7.688L601.936,206.723z M608.318,200.887h-10.621l2.438,3.441h8.188L608.318,200.887L608.318,200.887z M608.318,215.703             v-8.281h-5.896C605.027,210.847,606.989,213.608,608.318,215.703z"/>
+      <path fill="#FFFFFF" d="M612.456,207.415v9.744l-0.644,1.081c-0.146,0.208-0.103,0.359,0.145,0.457             c0.194,0.069,0.346,0.021,0.457-0.146l0.042-0.062V282.6l0.042,0.208h-0.083c-0.042-0.097-0.111-0.166-0.208-0.208             c-0.097-0.027-0.194-0.007-0.291,0.062c-0.831,0.499-1.799,0.464-2.907-0.104v-64.402l0.062,0.083             c0.125,0.208,0.27,0.242,0.436,0.104c0.208-0.125,0.242-0.291,0.104-0.499l-0.604-1.039v-9.391L612.456,207.415             L612.456,207.415z"/>
+      <path fill="#FFFFFF" d="M612.456,197.796h-3.447v-2.057l0.104-0.042c0.499-0.194,1.271-0.291,2.347-0.291l0.291,1.039             c0.042,0.235,0.159,0.333,0.353,0.291c0.232,0,0.354-0.094,0.354-0.281L612.456,197.796L612.456,197.796z"/>
+    </g>      
+    <g id="lines" transform="translate(180, -80)">
+      <path xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="3" d="M624.023,200.2     c64.021,63.933,133.396,96.833,208.1,98.7"/>
+    </g>
+    <g id="powerlines2">
+          <g opacity="0.2">
+            <path d="M886.57,361.189v0.104l-0.771,0.848c0.164-0.018,0.246,0.036,0.246,0.164c-0.055-0.019-0.062,0-0.021,0.062         c-0.138,0.055-0.282,0.091-0.477,0.104l-7.312-0.021l-3.578,1.639l8.548,0.054c0.292,0,0.364,0.098,0.219,0.273l-0.812,0.979         c0.229-0.018,0.312,0.036,0.244,0.165c-0.107,0.098-0.271,0.144-0.489,0.144l-11.361-0.062         c-5.681,2.149-9.877,3.814-12.59,4.998l-34.028,36.869c-0.128,0.073-0.291,0.154-0.486,0.246l-0.402-0.104h-0.146         c-0.029,0.067-0.137,0.146-0.3,0.225c-0.966,0.128-1.814,0.255-2.562,0.382c-0.781-0.073-1.477-0.2-2.059-0.382         c-0.454,0.056-0.629,0.018-0.52-0.108h-0.164c-0.188-0.104-0.188-0.21,0-0.301c0.127-0.164,0.328-0.229,0.602-0.188         l34.574-36.896c-0.638-1.188-1.757-2.787-3.354-4.812l-14.609-0.104c-0.2-0.062-0.282-0.104-0.245-0.144         c-0.292-0.104-0.292-0.271,0-0.485c0.146-0.2,0.438-0.4,0.874-0.604c-0.164-0.072-0.2-0.136-0.104-0.188         c-0.021-0.036,0.01-0.045,0.08-0.027c0.06-0.108,0.221-0.146,0.483-0.108l12.289,0.062l-1.199-1.694l-8.566-0.054         c-0.199-0.021-0.291-0.063-0.271-0.139c-0.382-0.187-0.091-0.55,0.874-1.097c-0.184-0.054-0.195-0.116-0.057-0.188         c0.057-0.128,0.221-0.175,0.491-0.144l22.34,0.191l0.955-1.01c0.058-0.128,0.229-0.188,0.548-0.165         c0.021-0.073,0.146-0.144,0.384-0.191c0.689-0.104,1.839-0.152,3.438-0.137c0.221-0.036,0.312,0.009,0.303,0.137         c-0.128,0.146-0.188,0.382-0.188,0.71l0.245-0.328c0.07-0.146,0.271-0.195,0.573-0.164c0.198-0.031,0.28,0.015,0.244,0.143         l-1.019,1.01l18.95,0.107C886.635,360.962,886.697,361.043,886.57,361.189z M864.449,364.057l9.229,0.081         c1.657-0.776,2.896-1.338,3.688-1.666l-11.279-0.136L864.449,364.057z M865.296,362.391l-3.987-0.081l-1.584,1.748l4.021,0.027         L865.296,362.391z M860.517,362.282l-12.344-0.082l1.174,1.771l9.531,0.061L860.517,362.282z M859.042,369.929         c2.386-1.02,6.045-2.442,10.979-4.289l-6.977-0.054L859.042,369.929z M857.458,365.586l-6.909-0.056         c1.383,1.729,2.376,3.141,2.979,4.229L857.458,365.586z"/>
+          </g>
+          <g transform="translate(150, -80), scale(1)">
+            <g>
+              <g>
+                <polygon fill="#FFFFFF" points="844.979,307.962 833.616,307.962 835.062,305.668 844.979,305.668             "/>
+                <polygon fill="#FFFFFF" points="824.112,305.668 833.944,305.668 832.524,307.962 824.112,307.962             "/>
+                <polygon fill="#FFFFFF" points="823.266,305.668 823.266,307.962 818.732,307.962 818.732,305.668             "/>
+                <polygon fill="#FFFFFF" points="817.831,307.962 809.42,307.962 807.727,305.668 817.831,305.668            "/>
+                <path fill="#FFFFFF" d="M792.896,305.668h13.709l1.722,2.294h-15.239C792.614,307.907,792.552,307.143,792.896,305.668z"/>
+                <polygon fill="#FFFFFF" points="845.359,299.36 824.112,299.36 824.112,297.147 845.359,297.147             "/>
+                <polygon fill="#FFFFFF" points="818.732,299.36 818.732,297.147 823.266,297.147 823.266,299.36             "/>
+                <path fill="#FFFFFF" d="M817.831,299.36h-14.638l-0.792-1.175c-0.164-0.218-0.355-0.236-0.574-0.054             c-0.272,0.164-0.318,0.354-0.136,0.573l0.382,0.656h-8.575c-0.528-0.037-0.592-0.774-0.191-2.212h24.524V299.36             L817.831,299.36z"/>
+                <path fill="#231F20" d="M846.22,299.363c0.312,0.044,0.459,0.196,0.459,0.459c0.044,0.307-0.086,0.459-0.393,0.459h-8.33             l-2.36,4.524h9.707c0.396,0,0.546,0.197,0.458,0.591l0.065,0.262v2.295c0.307,0,0.46,0.153,0.46,0.459             c0.043,0.306-0.089,0.46-0.396,0.46h-12.852c-4.11,5.684-7.083,10.012-8.918,12.984v85.772c0,0.229-0.11,0.373-0.329,0.459             c-0.219,0.043-0.373,0-0.459-0.131l-0.066-0.262v-84.272l-0.062,0.065c-0.131,0.22-0.329,0.285-0.591,0.197             c-0.312-0.138-0.372-0.329-0.196-0.597l0.854-1.438V308.87h-4.524v12.329l0.787,1.377c0.175,0.262,0.131,0.479-0.131,0.656             c-0.229,0.175-0.415,0.13-0.591-0.137l-0.065-0.132v84.664c1.442,0.744,2.711,0.787,3.805,0.131             c0.131-0.087,0.271-0.104,0.396-0.062c0.132,0.043,0.22,0.131,0.263,0.262c0.088,0.218,0.043,0.396-0.131,0.525             c-1.399,0.875-2.932,0.875-4.592,0c-0.354,0.175-0.566,0.087-0.654-0.271l-0.197-0.13c-0.175-0.131-0.229-0.307-0.188-0.521             c0.045-0.271,0.176-0.368,0.396-0.324V321.46c-1.925-3.146-4.876-7.345-8.854-12.591h-16.33c-0.188,0-0.312-0.088-0.396-0.263             c-0.604-0.396-0.689-1.376-0.262-2.953c-0.219-0.087-0.308-0.262-0.264-0.524c0-0.219,0.132-0.329,0.395-0.329h13.837             l-3.214-4.524h-9.707c-0.173,0-0.305-0.087-0.394-0.262c-0.567-0.394-0.655-1.377-0.271-2.952             c-0.219-0.088-0.307-0.262-0.262-0.524c0-0.22,0.131-0.329,0.394-0.329h25.313v-2.688c0-0.307,0.15-0.459,0.459-0.459             c0-0.175,0.088-0.329,0.263-0.46c0.699-0.306,1.944-0.458,3.737-0.458c0.307,0,0.479,0.131,0.521,0.393             c0.048,0.439,0.193,1.049,0.456,1.837v-0.853c0-0.307,0.152-0.459,0.459-0.459c0.271-0.044,0.396,0.087,0.396,0.393v2.754             H845.7c0.394,0,0.547,0.197,0.459,0.59l0.132,0.262v2.231L846.22,299.363z M845.368,297.134h-21.247v2.229h21.247V297.134z              M844.974,305.659h-9.896l-1.441,2.295h11.353L844.974,305.659L844.974,305.659z M836.974,300.282H824.12v4.524h10.427             C835.683,302.795,836.492,301.287,836.974,300.282z M833.957,305.659h-9.837v2.295h8.394L833.957,305.659z M822.35,294.444             l-0.396-1.376c-1.398,0-2.425,0.13-3.081,0.393l-0.132,0.066v2.688h4.521v-1.804c-0.01,0.285-0.162,0.426-0.459,0.426             C822.546,294.883,822.392,294.75,822.35,294.444z M818.741,299.363h4.521v-2.229h-4.521V299.363z M818.741,307.954h4.521             v-2.295h-4.521V307.954z M823.267,300.282h-4.521v4.524h4.521V300.282z M824.12,320.152c1.661-2.579,4.262-6.338,7.804-11.278             h-7.804V320.152z M817.824,297.134h-24.526c-0.396,1.442-0.329,2.186,0.196,2.229h8.591l-0.394-0.656             c-0.188-0.217-0.145-0.415,0.131-0.59c0.219-0.174,0.415-0.153,0.59,0.066l0.787,1.18h14.624L817.824,297.134L817.824,297.134             z M806.61,305.659h-13.708c-0.354,1.487-0.283,2.252,0.188,2.295h15.225L806.61,305.659z M809.43,307.954h8.396v-2.295             h-10.104L809.43,307.954z M817.824,300.282h-13.969l3.214,4.524h10.755V300.282z M817.824,319.758v-10.885h-7.738             C813.496,313.376,816.075,317.005,817.824,319.758z"/>
+                <path fill="#FFFFFF" d="M823.266,308.863v12.809l-0.847,1.42c-0.182,0.273-0.118,0.479,0.191,0.604             c0.255,0.09,0.455,0.021,0.601-0.191l0.055-0.083V407.7l0.062,0.271h-0.109c-0.055-0.127-0.146-0.218-0.271-0.271             c-0.128-0.036-0.268-0.009-0.396,0.082c-1.092,0.646-2.354,0.604-3.812-0.146v-84.654l0.082,0.104             c0.164,0.273,0.354,0.318,0.562,0.136c0.273-0.165,0.318-0.382,0.146-0.648l-0.792-1.366v-12.344L823.266,308.863             L823.266,308.863z"/>
+                <path fill="#FFFFFF" d="M823.266,296.219h-4.521v-2.704l0.137-0.054c0.655-0.256,1.688-0.383,3.086-0.383l0.382,1.366             c0.062,0.309,0.211,0.437,0.471,0.382c0.312,0,0.459-0.124,0.469-0.37L823.266,296.219L823.266,296.219z"/>
+              </g>
+            </g>
+          </g>
+        </g>
+    </g>
   <g id="co2-animation" style="display: none">
     <rect width='500px' height="500px" x="745" y="40" fill="#B4E3F4"/>
     <g id="ground">
@@ -404,9 +454,54 @@ text {
        <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="950" y="110">
       </image>
     </g>
-  </g>
-  <g id="kwh-animation" style="display: none">
-    <rect width='100px' height="100px" x="800" y="100" fill="red" id="test"/>
+    <g id="staticbanknote">
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="750" y="170">
+      </image> 
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="770" y="140">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="775" y="185">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="790" y="120">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="795" y="160">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="800" y="100">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="820" y="160">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="830" y="130">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="830" y="100">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="850" y="160">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="865" y="115">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="870" y="170">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="870" y="80">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="890" y="140">
+      </image>
+       <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="900" y="100">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="910" y="180">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="920" y="150">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="930" y="120">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="950" y="110">
+      </image> 
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="950" y="175">
+      </image>  
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="950" y="140">
+      </image>  
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="970" y="170">
+      </image>
+      <image overflow="visible" enable-background="new    " width="20" height="20" xlink:href="https://oberlindashboard.org/oberlin/cwd/img/banknote.svg" x="970" y="100">
+      </image>
+    </g>
   </g>
   <g id="empathetic-char">
     <?php
@@ -806,6 +901,8 @@ text {
           $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png');
         }
       }, 3000);
+      console.log('#accum-label-value');
+      console.log(current_points);
       var smoke = $('#smoke').children();
       var newsmoke = TweenMax.to($('#smoke > image'), 1, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
   });
@@ -835,7 +932,7 @@ text {
     }
     $('#accum-label-value').text('$'+Math.round((elapsed*(kw/kw_count))*0.12).toLocaleString());
 
-    var banknote = TweenMax.to($('#banknote > image'), 2, {y: "300px", x: "10px", ease: Power0.easeNone, delay: 2, repeat: -1, repeatDelay: 2});
+    var banknote = TweenMax.to($('#banknote > image'), 2, {y: "300px", x: "10px", ease: Power0.easeNone, repeat: -1, repeatDelay: 2});
     
     // var banknote = $('#banknote').children();
     // $({y:banknote.attr('y')}).animate(

@@ -1,6 +1,6 @@
 /**
 @author Olivia Vasquez
-@lastupdated 7/25/2017
+@lastupdated 7/27/2017
   NAVIGATION STYLESHEET FOR:
     1. Building Navigation Page
     2. Current Electricity Filter Page
@@ -24,7 +24,7 @@
       font-size: 1.5rem;
       padding-left: 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-      margin-left: 50px;
+      margin-left: 0 auto;
     }
     input:focus {
       outline: none;
@@ -82,7 +82,26 @@
       border: 2px solid #FFFFFF;
       border-radius: 15px;
       color: #FFFFFF;
-      background: #95a5a6;
+      background: #21A7DF;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+    .warning-bubble {
+      display: block;
+      padding: 0 7px;
+      font-size: 14px;
+      font-weight: 500;
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      min-width: 25px;
+      height: 25px;
+      line-height: 20px;
+      text-align: center;
+      border: 2px solid #FFFFFF;
+      border-radius: 15px;
+      color: #FFFFFF;
+      background: #21A7DF;
       -moz-box-sizing: border-box;
       box-sizing: border-box;
     }
@@ -138,6 +157,9 @@
       color: #2c3e50;
       font-family: 'Roboto', Helvetica, sans-serif;
       margin-top: 80px;
+      float: center;
+      margin-left: auto;
+      margin-right: auto;
     }
     #object {
       width: 100%;

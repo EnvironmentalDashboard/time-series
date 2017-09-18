@@ -20,7 +20,7 @@ require '../includes/class.TimeSeries.php';
 </head>
 <body>
   <!--WEBSITE CONTAINER-->
-  <div class="container" style="margin-left: 20px; margin-right: 20px;">
+  <div class="container">
       <div class="col-sm-3">
       </div>
       <div class="col-sm-12 col-sm-pull-0">
@@ -55,10 +55,14 @@ require '../includes/class.TimeSeries.php';
                 <?php
                   foreach ($meters as $meter) {
                     if ($meter['scope'] == "Whole building"){
-                      $stmt = $db->prepare('SELECT relative_value FROM relative_values WHERE (meter_uuid = ?) LIMIT 1');
+                      $stmt = $db->prepare('SELECT relative_value, last_updated FROM relative_values WHERE (meter_uuid = ?) LIMIT 1');
                       $stmt->execute(array($meter['bos_uuid']));
                       if ($meter['units'] == "Kilowatts"){
                         $elecrelval = $stmt->fetchColumn();
+                        $lastupdate = $stmt->fetchColumn(1);
+                        if ($lastupdate == 0){
+                          echo "<span class='warning-bubble'></span>";
+                        }
                         if ($elecrelval <= 20){
                           echo "<img src='images/nav_images/electricity1.svg' 
                           height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
@@ -82,6 +86,10 @@ require '../includes/class.TimeSeries.php';
                       }
                       else if ($meter['units'] == "Gallons / hour"){
                         $waterrelval = $stmt->fetchColumn();
+                        $lastupdate = $stmt->fetchColumn(1);
+                         if ($lastupdate == 0){
+                          echo "<span class='warning-bubble'></span>";
+                        }
                         if ($waterrelval <= 20){
                           echo "<img src='images/nav_images/water1.svg'  
                           height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
@@ -154,10 +162,9 @@ require '../includes/class.TimeSeries.php';
           </ul>
         </div>
         <div class="dropdown">
-          <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Sort By
+          <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Sort By: Alphabetical
           <span class="caret"></span></button>
           <ul class="dropdown-menu">
-              <li onClick="window.location.reload()">Alphabetical</li>
               <li class="header">Current Use</li>
               <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingnavigation/currentelecfilter.php';">Electricity</li>
               <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingnavigation/currentwaterfilter.php';">Water</li>

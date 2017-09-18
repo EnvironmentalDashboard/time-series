@@ -1,8 +1,8 @@
 <?php
 error_reporting(-1);
 ini_set('display_errors', 'On');
-require '../includes/db.php';
-require '../includes/class.TimeSeries.php';
+require '../../includes/db.php';
+require '../../includes/class.TimeSeries.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +20,7 @@ require '../includes/class.TimeSeries.php';
 </head>
 <body>
   <!--WEBSITE CONTAINER-->
-  <div class="container" style="margin-left: 20px; margin-right: 20px;">
+  <div class="container">
       <div class="col-sm-3">
       </div>
       <div class="col-sm-12 col-sm-pull-0">
@@ -157,7 +157,7 @@ require '../includes/class.TimeSeries.php';
           </ul>
         </div>
         <div class="dropdown">
-          <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Sort By
+          <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Sort By: Relative Use Water
           <span class="caret"></span></button>
           <ul class="dropdown-menu">
               <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingnavigation.php';">Alphabetical</li>
@@ -166,8 +166,8 @@ require '../includes/class.TimeSeries.php';
               <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingnavigation/currentwaterfilter.php';">Water</li>
               <li class="header">Relative Use</li>
               <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingnavigation/relvalelecfilter.php';">Electricity</li>
-              <li onClick="window.location.reload()">Water</li>
-              </ul>
+<!--               <li onClick="window.location.reload()">Water</li>
+ -->              </ul>
           </ul>
         </div>
       </div>

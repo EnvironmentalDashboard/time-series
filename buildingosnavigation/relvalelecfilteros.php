@@ -140,7 +140,7 @@ require '../includes/class.TimeSeries.php';
         </ul>
       </div>
       <div class="dropdown">
-        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Sort By
+        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Sort By: Relative Use Electricity
         <span class="caret"></span></button>
         <ul class="dropdown-menu">
               <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingosnavigation.php';">Alphabetical</li>
@@ -148,8 +148,8 @@ require '../includes/class.TimeSeries.php';
               <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingosnavigation/currentelecfilteros.php';">Electricity</li>
               <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingosnavigation/currentwaterfilteros.php';">Water</li>
               <li class="header">Relative Use</li>
-              <li onClick="window.location.reload()">Electricity</li>
-              <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingosnavigation/relvalwaterfilteros.php';">Water</li>
+<!--               <li onClick="window.location.reload()">Electricity</li>
+ -->              <li onClick="location.href='https://oberlindashboard.org/oberlin/time-series/buildingosnavigation/relvalwaterfilteros.php';">Water</li>
               </ul>
           </ul>
       </div>
