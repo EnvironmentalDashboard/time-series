@@ -18,20 +18,15 @@ if (isset($_GET['timeseriesconfig'])) {
     $_GET[$key] = $value;
   }
 }
-if (isset($_GET['use_api'])) {
-  $bos = new BuildingOS($db, $db->query("SELECT id FROM api WHERE user_id = {$user_id}")->fetchColumn());
-  $main_ts_alt_data = array_map(function($tag) {
-    return array(
-        'value' => $tag['value'],
-        'recorded' => $tag['localtime']
-    );
-  }, json_decode(
-    $bos->getMeter($db->query("SELECT url FROM meters WHERE id = {$_GET['meter_id']}")->fetchColumn() . '/data', $res, $from, $now), true)['data']);
-} else {
-  $main_ts_alt_data = null;
+$bos = new BuildingOS($db, $db->query("SELECT id FROM api WHERE user_id = {$user_id}")->fetchColumn());
+$main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The main timeseries
+try {
+  $main_ts->data();
+} catch (Exception $e) {
+  $main_ts->data(use_api($db, $bos, $_GET['meter_id'], $res, $from, $now));
+  $log[] = 'used api for main data';
 }
-$log['alt_data'] = $main_ts_alt_data;
-$main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $main_ts_alt_data); // The main timeseries
+/*
 echo "<!--";
 echo "SELECT value, recorded FROM meter_data
       WHERE meter_id = {$_GET['meter_id']} AND resolution = '{$res}' AND recorded > {$from} AND recorded < {$now} ORDER BY recorded ASC\n";
@@ -39,12 +34,29 @@ echo "SELECT value, recorded FROM meter_data
 // echo (date('l n\/j \| g:i a',$to));
 // print_r($main_ts->data);
 echo "-->";
+*/
 if (!isset($_GET['meter_id2'])) {
   $_GET['meter_id2'] = $_GET['meter_id'];
 }
 $secondary_ts_set = ($_GET['meter_id'] !== $_GET['meter_id2']);
-$secondary_ts = ($secondary_ts_set) ? new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res) : null; // "Second variable" timeseries
+if ($secondary_ts_set) {
+  $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
+  try {
+    $secondary_ts->data();
+  } catch (Exception $e) {
+    $log[] = 'used api for second variable';
+    $secondary_ts->data(use_api($db, $bos, $_GET['meter_id2'], $res, $from, $now));
+  }
+} else {
+  $secondary_ts = null;
+}
 $historical_ts = new TimeSeries($db, $_GET['meter_id'], $double_time, $from, $res); // Historical data of main
+try {
+  $historical_ts->data();
+} catch (Exception $e) {
+  $log[] = 'used api for historical chart';
+  $historical_ts->data(use_api($db, $bos, $_GET['meter_id'], $res, $double_time, $from));
+}
 $meter = new Meter($db);
 $typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
 
@@ -110,10 +122,18 @@ if ($typical_time_frame) {
       $sec += 3600;
     }
   }
+  echo "<!--";
+  print_r($result);
   $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $result);
   $typical_ts->dashed(false);
   $typical_ts->fill(false);
   $typical_ts->color('#f39c12');
+  if (empty($typical_ts->data)) {
+    $typical_ts = $historical_ts;
+    $typical_time_frame = false;
+  }
+  var_dump(empty($typical_ts->data));
+  echo "-->";
 }
 
 $main_ts->dashed( (isset($_GET['dasharr1']) && $_GET['dasharr1'] === 'on') ? true : false );
@@ -208,6 +228,16 @@ function median($arr) {
   }
   return $median;
 }
+function use_api($db, $bos, $meter_id, $res, $start, $end) {
+  $api_resp = json_decode(
+    $bos->getMeter($db->query("SELECT url FROM meters WHERE id = {$meter_id}")->fetchColumn() . '/data', $res, $start, $end), true)['data'];
+  return array_map(function($tag) {
+    return array(
+        'value' => $tag['value'],
+        'recorded' => $tag['localtime']
+    );
+  }, $api_resp);
+}
 ?>
 <defs>
   <linearGradient id="shadow">
@@ -218,6 +248,14 @@ function median($arr) {
     <stop offset="0%" style="stop-color:#fff;stop-opacity:1" />
     <stop offset="100%" style="stop-color:#777;stop-opacity:1" />
   </linearGradient>
+  <filter x="0" y="0" width="1" height="1" id="solid-active">
+    <feFlood flood-color="#2196F3"/>
+    <feComposite in="SourceGraphic"/>
+  </filter>
+  <filter x="0" y="0" width="1" height="1" id="solid">
+    <feFlood flood-color="<?php echo $font_color ?>"/>
+    <feComposite in="SourceGraphic"/>
+  </filter>
 </defs>
 <style>
 /* <![CDATA[ */
@@ -302,9 +340,6 @@ text {
     $chart_min = $graph_offset;
     $chart_max = $graph_height + $graph_offset;
     $interval = ($chart_max - $chart_min)/count($main_ts->yaxis);
-    echo "<!-- {$main_ts->min}";
-    var_dump($main_ts->yaxis);
-    echo " {$main_ts->max} -->";
     foreach ($main_ts->yaxis as $y) {
       echo "<text x='38' text-anchor='end' y='{$chart_max}' font-size='13' fill='{$font_color}'>{$y}</text>";
       $chart_max -= $interval;
@@ -600,52 +635,22 @@ text {
     <text id='layer-btn-text' x="554" y="5%" font-size="15" fill="#ECEFF1" style="font-weight: 400">Graph overlay <tspan style="font-size: 10px;fill:#4C595A">&#9660;</tspan></text>
   </g>
   <g id="resource-btn" style="cursor: pointer;" class="noselect">
-  <?php
-  $tmpx = 0;
-  foreach ($db->query('SELECT id, units FROM meters WHERE scope = \'Whole Building\'
-    AND building_id IN (SELECT building_id FROM meters WHERE id = '.intval($_GET['meter_id']).')
-    AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0) OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))
-    ORDER BY units DESC') as $row) {
-      switch ($row['units']) {
-        case 'Kilowatts':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/electricity-white.svg';
-          break;
-        case 'Watts':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/electricity-white.svg';
-          break;
-        case 'Gallons / hour':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/water-white.svg';
-          break;
-        case 'Gallons per minute':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/water-white.svg';
-          break;
-        case 'Deg C':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
-          break;
-        case 'Deg F':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
-          break;
-        case 'KiloBTU / hour':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
-          break;
-        case 'BTU / hour':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/therm.svg';
-          break;
-        case 'Pounds of steam / hour':
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/gas.svg';
-          break;
-        default:
-          $resource_img = 'https://oberlindashboard.org/oberlin/time-series/images/icons/generic-meter.svg';
-          break;
+    <text fill="#fff" x="8" y="22" style="font-weight: 800">
+    <?php
+    foreach ($db->query('SELECT id, resource FROM meters WHERE scope = \'Whole Building\'
+      AND building_id IN (SELECT building_id FROM meters WHERE id = '.intval($_GET['meter_id']).')
+      AND ((gauges_using > 0 OR for_orb > 0 OR timeseries_using > 0) OR bos_uuid IN (SELECT DISTINCT meter_uuid FROM relative_values WHERE permission = \'orb_server\' AND meter_uuid != \'\'))
+      ORDER BY units DESC') as $row) {
+        echo "<a style='fill:";
+        echo ($row['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color;
+        echo "' target='_top' xlink:href='index.php?";
+        parse_str($_SERVER['QUERY_STRING'], $tmp_qs);
+        echo str_replace('&', '&amp;', http_build_query(array_replace($tmp_qs, array('meter_id' => $row['id']))));
+        echo "'>{$row['resource']}</a> \n";
       }
-  ?>
-    <a target="_top" xlink:href="index.php?meter_id=<?php echo $row['id']; ?>&amp;fill1=on&amp;fill2=on&amp;fill3=on&amp;start=0&amp;ticks=0&amp;color1=%2300a185&amp;color2=%23bdc3c7&amp;color3=%2333a7ff&amp;webpage=<?php echo isset($_GET['webpage']) ? $_GET['webpage'] : ''; ?>">
-      <rect width="35" height="25" x="<?php echo $tmpx; ?>" y="3" style="fill:<?php echo ($row['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color; ?>;stroke:#4C595A;stroke-width:2"  />
-      <image xlink:href="<?php echo $resource_img; ?>" x="<?php echo $tmpx+10; $tmpx+=35; ?>" y="8" height="16px" width="16px"/>
-    </a>
-  <?php } ?>
+    ?>
+    </text>
   </g>
-  <text fill="#4C595A" x="<?php echo $tmpx + 8; ?>" y="22" style="font-weight: 800"><?php echo $db->query('SELECT name FROM buildings WHERE id IN (SELECT building_id FROM meters WHERE id = '.intval($_GET['meter_id']).') LIMIT 1')->fetchColumn(); ?></text>
   <?php
   // Select the main meters for the current building being viewed and exclude emters that we're not collecting data for
   $stmt = $db->prepare('SELECT id, name FROM meters WHERE scope != \'Whole Building\'
@@ -821,7 +826,6 @@ text {
   </g>
 
   <script xlink:href="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script>
-  <!-- olivia, not sure if you were having trouble with this ^ but 'src' probably wont work, it needs to be 'xlink:href'... -->
   <script type="text/javascript" xlink:href="js/jquery.min.js"/>
   <script type="text/javascript">
   // <![CDATA[
@@ -1147,12 +1151,10 @@ text {
     $diff_min = PHP_INT_MAX;
     $diff_max = PHP_INT_MIN;
     // calculate the $diff_min/$diff_max
-    $tmp = count($relativized_points)-1;
+    echo "/*\n";
     for ($i=0; $i < count($main_ts->circlepoints); $i++) {
       $scaled = round($pct_through*$i);
-      if ($scaled > $tmp) {
-        $scaled = $tmp;
-      }
+      // echo "{$i},{$scaled}:{$main_ts->circlepoints[$i][1]},{$relativized_points[$scaled][1]} ";
       $d = $main_ts->circlepoints[$i][1] - $relativized_points[$scaled][1];
       $charachter_moods[] = $d; // save difference to scale later
       if ($d > $diff_max) {
@@ -1162,6 +1164,7 @@ text {
         $diff_min = $d;
       }
     }
+    echo "*/\n\n";
     // scale the difference between two points to a gif frame
     for ($i=0; $i < count($charachter_moods); $i++) { 
       $charachter_moods[$i] = round($main_ts->convertRange($charachter_moods[$i], $diff_min, $diff_max, 0, $number_of_frames));
@@ -1375,7 +1378,7 @@ text {
     // Get gif lengths: http://gifduration.konstochvanligasaker.se/
   }
 
-  function accumulation(time_sofar, avg_kw) {
+  function accumulation(time_sofar, avg_kw) { // how calculate kwh
     var kwh = (time_sofar/3600)*avg_kw; // the number of hours in time period * the average kw reading
     // console.log('time elapsed in hours: '+(time_sofar/3600)+"\navg_kw: "+ avg_kw+"\nkwh: "+kwh);
     var id = accum_btn.attr('id');
