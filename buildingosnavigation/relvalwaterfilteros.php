@@ -1,8 +1,8 @@
 <?php
 error_reporting(-1);
 ini_set('display_errors', 'On');
-require '../includes/db.php';
-require '../includes/class.TimeSeries.php';
+require '../../includes/db.php';
+require '../../includes/class.TimeSeries.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +21,7 @@ require '../includes/class.TimeSeries.php';
 
 <body>
   <!--WEBSITE CONTAINER-->
-  <div class="container" style="margin-left: 20px; margin-right: 20px;">
+  <div class="container">
     <!--<div class="row">-->
       <div class="col-sm-3">
         <!--EMPTY-->
@@ -41,6 +41,7 @@ require '../includes/class.TimeSeries.php';
           $meters = $stmt->fetchAll();
         ?>
         <div class="col-xs-4 col-sm-3 col-md-2 col-lg-2 card-col" data-title="<?php echo $building['name'] ?>" data-buildingtype="<?php echo $building['building_type'] ?>" data-consumption="<?php echo $meters[0]['current']?>">
+          <a class="card-hilight" href="{$building['db_link']}" target="_top">
             <div class="card">
               <div class="side1" id="side1<?php echo $building['id']; ?>">
                 <img src="<?php echo $building['custom_img'] ?>" alt="<?php echo $building['name'] ?>" align="middle">
@@ -116,7 +117,7 @@ require '../includes/class.TimeSeries.php';
               </div>
               </div>
             </div>
-
+          </a>
         </div>
         <?php } ?>
         </div>

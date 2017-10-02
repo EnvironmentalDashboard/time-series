@@ -172,6 +172,13 @@
     .card-text{
       padding: 0px 5px 0px 5px;
     }
+    .card-hilight:hover{
+      text-decoration: none;
+    }
+    .card-hilight:hover .card{
+      border: 3px solid #2C2C2C;
+      border-radius: 5px;
+    }
     .relval{
       background-color: white;
       height: 15px;
@@ -206,6 +213,7 @@
       margin-bottom: 0px;
     }
     .meter-num{
+      color: black;
       font-size: 12px;
       position: absolute;
       height: auto;

@@ -60,8 +60,8 @@ require '../includes/class.TimeSeries.php';
                       if ($meter['units'] == "Kilowatts"){
                         $elecrelval = $stmt->fetchColumn();
                         $lastupdate = $stmt->fetchColumn(1);
-                        if ($lastupdate == 0){
-                          echo "<span class='warning-bubble'></span>";
+                        if ($lastupdate != 0){
+                          echo "<span class='warning-bubble'>~</span>";
                         }
                         if ($elecrelval <= 20){
                           echo "<img src='images/nav_images/electricity1.svg' 
@@ -87,8 +87,8 @@ require '../includes/class.TimeSeries.php';
                       else if ($meter['units'] == "Gallons / hour"){
                         $waterrelval = $stmt->fetchColumn();
                         $lastupdate = $stmt->fetchColumn(1);
-                         if ($lastupdate == 0){
-                          echo "<span class='warning-bubble'></span>";
+                         if ($lastupdate != 0){
+                          echo "<span class='warning-bubble'>~</span>";
                         }
                         if ($waterrelval <= 20){
                           echo "<img src='images/nav_images/water1.svg'  

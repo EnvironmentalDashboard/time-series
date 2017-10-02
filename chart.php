@@ -392,7 +392,7 @@ text {
       </image>
     </g>
     <g id="house"> 
-      <image xmlns="http://www.w3.org/2000/svg" overflow="visible" enable-background="new    " width="200" height="250" id="houses" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://104.131.103.232/oberlin/cwd/img/houses.png" x="780" y="180">
+      <image xmlns="http://www.w3.org/2000/svg" overflow="visible" enable-background="new    " width="200" height="250" id="houses" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://67.205.179.187/oberlin/cwd/img/houses.png" x="780" y="180">
       </image>
     </g>
     <g id="bigpowerline">
