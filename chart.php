@@ -122,9 +122,8 @@ if ($typical_time_frame) {
       $sec += 3600;
     }
   }
-  echo "<!--";
-  print_r($result);
-  $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res, null, null, $result);
+  $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res);
+  $typical_ts->data($result);
   $typical_ts->dashed(false);
   $typical_ts->fill(false);
   $typical_ts->color('#f39c12');
@@ -132,8 +131,6 @@ if ($typical_time_frame) {
     $typical_ts = $historical_ts;
     $typical_time_frame = false;
   }
-  var_dump(empty($typical_ts->data));
-  echo "-->";
 }
 
 $main_ts->dashed( (isset($_GET['dasharr1']) && $_GET['dasharr1'] === 'on') ? true : false );
