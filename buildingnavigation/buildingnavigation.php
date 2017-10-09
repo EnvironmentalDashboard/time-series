@@ -21,10 +21,10 @@ require '../includes/class.TimeSeries.php';
 <body>
   <!--WEBSITE CONTAINER-->
   <div class="container">
-      <div class="col-sm-3">
-      </div>
+      <div class="col-sm-3"></div>
       <div class="col-sm-12 col-sm-pull-0">
-        <div class="row">
+      <h1 style="font-size: 30px; margin-top: 0px; margin-bottom: 10px"> Select a building to find out more information </h1>
+      <div class="row">
         <?php
         $sql = "SELECT id, name, area, building_type, custom_img FROM buildings WHERE org_id IN (SELECT org_id from users_orgs_map WHERE user_id = {$user_id})
         AND custom_img IS NOT NULL AND id IN (SELECT building_id FROM meters WHERE for_orb > 0 OR timeseries_using > 0 
@@ -35,108 +35,109 @@ require '../includes/class.TimeSeries.php';
           $meters = $stmt->fetchAll();
         ?>
         <div class="col-xs-4 col-sm-3 col-md-2 col-lg-2 card-col" data-title="<?php echo $building['name'] ?>" data-buildingtype="<?php echo $building['building_type'] ?>" data-consumption="<?php echo $meters[0]['current']?>">
-          <div class="card">
-            <div class="side1" id="side1<?php echo $building['id']; ?>">
-              <img src="<?php echo $building['custom_img'] ?>" alt="<?php echo $building['name'] ?>" align="middle">
-              <div class="card-text">
-                <h1><?php echo $building['name'] ?></h1>
-                <h2 class="text-muted"><?php echo $building['building_type'] ?></h2>
-                <button class="meter-num" data-side1="side1<?php echo $building['id'] ?>" data-side2="side2<?php echo $building['id'] ?>">
-                    <?php 
-                    $count = 0;
-                    foreach ($meters as $meter){
-                      if ($meter['scope'] == "Whole building" || $meter['current'] != NULL){
-                        $count++;
+          <div class="card-hilight" data-side1="side1<?php echo $building['id'] ?>" data-side2="side2<?php echo $building['id'] ?>">
+            <div class="card">
+              <div class="side1" id="side1<?php echo $building['id']; ?>">
+                <img src="<?php echo $building['custom_img'] ?>" alt="<?php echo $building['name'] ?>" align="middle">
+                <div class="card-text">
+                  <h1><?php echo $building['name'] ?></h1>
+                  <h2 class="text-muted"><?php echo $building['building_type'] ?></h2>
+                  <p class="meter-num">
+                      <?php 
+                      $count = 0;
+                      foreach ($meters as $meter){
+                        if ($meter['scope'] == "Whole building" || $meter['current'] != NULL){
+                          $count++;
+                        }
                       }
-                    }
-                    if ($count != 1){echo $count; echo " meters";} else{echo $count; echo " meter";} ?>
-                </button>
-                <div class="relval">
+                      if ($count != 1){echo $count; echo " meters";} else{echo $count; echo " meter";} ?>
+                  </p>
+                  <div class="relval">
+                  <?php
+                    foreach ($meters as $meter) {
+                      if ($meter['scope'] == "Whole building"){
+                        $stmt = $db->prepare('SELECT relative_value, last_updated FROM relative_values WHERE (meter_uuid = ?) LIMIT 1');
+                        $stmt->execute(array($meter['bos_uuid']));
+                        if ($meter['units'] == "Kilowatts"){
+                          $elecrelval = $stmt->fetchColumn();
+                          $lastupdate = $stmt->fetchColumn(1);
+                          if ($lastupdate != 0){
+                            echo "<span class='warning-bubble'>~</span>";
+                          }
+                          if ($elecrelval <= 20){
+                            echo "<img src='images/nav_images/electricity1.svg' 
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }
+                          else if ($elecrelval <= 40){
+                            echo "<img src='images/nav_images/electricity2.svg'
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }
+                          else if ($elecrelval <= 60){
+                            echo "<img src='images/nav_images/electricity3.svg'  
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }
+                          else if ($elecrelval <= 80){
+                            echo "<img src='images/nav_images/electricity4.svg' 
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }
+                          else{
+                            echo "<img src='images/nav_images/electricity5.svg'  
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }
+                        }
+                        else if ($meter['units'] == "Gallons / hour"){
+                          $waterrelval = $stmt->fetchColumn();
+                          $lastupdate = $stmt->fetchColumn(1);
+                           if ($lastupdate != 0){
+                            echo "<span class='warning-bubble'>~</span>";
+                          }
+                          if ($waterrelval <= 20){
+                            echo "<img src='images/nav_images/water1.svg'  
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }   
+                          else if ($waterrelval <= 40){
+                            echo "<img src='images/nav_images/water2.svg'  
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }
+                          else if ($waterrelval <= 60){
+                            echo "<img src='images/nav_images/water3.svg'  
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }
+                          else if ($waterrelval <= 80){
+                            echo "<img src='images/nav_images/water4.svg'  
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }
+                          else{
+                            echo "<img src='images/nav_images/water5.svg' 
+                            height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
+                          }
+                        }
+                      }
+                    } 
+                  ?>
+                  </div>
+                </div>
+              </div>
+              <div class="side2 hidden" id="side2<?php echo $building['id']; ?>">
+                <img src="images/close.svg" data-side1="side1<?php echo $building['id'] ?>" data-side2="side2<?php echo $building['id'] ?>" 
+                class="close-meters" style="height: 20px; width: 20px; cursor: pointer;position: absolute;top: 3px;right: 7px;">                <h1>Main Meters</h1>
                 <?php
                   foreach ($meters as $meter) {
                     if ($meter['scope'] == "Whole building"){
-                      $stmt = $db->prepare('SELECT relative_value, last_updated FROM relative_values WHERE (meter_uuid = ?) LIMIT 1');
-                      $stmt->execute(array($meter['bos_uuid']));
-                      if ($meter['units'] == "Kilowatts"){
-                        $elecrelval = $stmt->fetchColumn();
-                        $lastupdate = $stmt->fetchColumn(1);
-                        if ($lastupdate != 0){
-                          echo "<span class='warning-bubble'>~</span>";
-                        }
-                        if ($elecrelval <= 20){
-                          echo "<img src='images/nav_images/electricity1.svg' 
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }
-                        else if ($elecrelval <= 40){
-                          echo "<img src='images/nav_images/electricity2.svg'
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }
-                        else if ($elecrelval <= 60){
-                          echo "<img src='images/nav_images/electricity3.svg'  
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }
-                        else if ($elecrelval <= 80){
-                          echo "<img src='images/nav_images/electricity4.svg' 
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }
-                        else{
-                          echo "<img src='images/nav_images/electricity5.svg'  
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }
-                      }
-                      else if ($meter['units'] == "Gallons / hour"){
-                        $waterrelval = $stmt->fetchColumn();
-                        $lastupdate = $stmt->fetchColumn(1);
-                         if ($lastupdate != 0){
-                          echo "<span class='warning-bubble'>~</span>";
-                        }
-                        if ($waterrelval <= 20){
-                          echo "<img src='images/nav_images/water1.svg'  
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }   
-                        else if ($waterrelval <= 40){
-                          echo "<img src='images/nav_images/water2.svg'  
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }
-                        else if ($waterrelval <= 60){
-                          echo "<img src='images/nav_images/water3.svg'  
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }
-                        else if ($waterrelval <= 80){
-                          echo "<img src='images/nav_images/water4.svg'  
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }
-                        else{
-                          echo "<img src='images/nav_images/water5.svg' 
-                          height='40px' width='20px' style='position: relative; display: inline; float: left;'>";
-                        }
-                      }
+                      echo "<a href='#' style='font-size: 13px;'data-meterid='{$meter['id']}' class='show-timeseries'>{$meter['name']}</a>"; 
+                      echo "<div class='line-separator'></div>";
                     }
-                  } 
-                ?>
-                </div>
+                  } ?>
+                <br>
+                <h1>Other Meters</h1>
+                <?php
+                  foreach ($meters as $meter) {
+                    if ($meter['scope'] != "Whole building" && $meter['current'] != NULL){
+                      echo "<a href='#' style='font-size: 13px;'data-meterid='{$meter['id']}' class='show-timeseries'>{$meter['name']}</a>"; 
+                      echo "<div class='line-separator'></div>";
+                    }
+                  } ?>
               </div>
-            </div>
-            <div class="side2 hidden" id="side2<?php echo $building['id']; ?>">
-              <img src="images/close.svg" data-side1="side1<?php echo $building['id'] ?>" data-side2="side2<?php echo $building['id'] ?>" 
-              class="close-meters" style="height: 20px; width: 20px; cursor: pointer;position: absolute;top: 3px;right: 7px;">
-              <h1>Main Meters</h1>
-              <?php
-                foreach ($meters as $meter) {
-                  if ($meter['scope'] == "Whole building"){
-                    echo "<a href='#' style='font-size: 13px;'data-meterid='{$meter['id']}' class='show-timeseries'>{$meter['name']}</a>"; 
-                    echo "<div class='line-separator'></div>";
-                  }
-                } ?>
-              <br>
-              <h1>Other Meters</h1>
-              <?php
-                foreach ($meters as $meter) {
-                  if ($meter['scope'] != "Whole building" && $meter['current'] != NULL){
-                    echo "<a href='#' style='font-size: 13px;'data-meterid='{$meter['id']}' class='show-timeseries'>{$meter['name']}</a>"; 
-                    echo "<div class='line-separator'></div>";
-                  }
-                } ?>
             </div>
           </div>
         </div>
@@ -258,9 +259,10 @@ require '../includes/class.TimeSeries.php';
       buildingarray.sort();
     });
 
-    $('.meter-num').on('click', function() {
+    $('.card-hilight').on('click', function() {
       var side1 = $('#' + $(this).data('side1'));
       var side2 = $('#' + $(this).data('side2'));
+      $('#close-meters').css('display', 'initial');
       side1.addClass('hidden');
       side2.removeClass('hidden');
     });
@@ -270,7 +272,6 @@ require '../includes/class.TimeSeries.php';
       var side2 = $('#' + $(this).data('side2'));
       side2.addClass('hidden');
       side1.removeClass('hidden');
-      console.log("I am still here I swear to God!!");
     });
 
     $('.show-timeseries').on('click', function() {

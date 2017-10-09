@@ -1,6 +1,6 @@
 /**
 @author Olivia Vasquez
-@lastupdated 7/27/2017
+@lastupdated 10/09/2017
   NAVIGATION STYLESHEET FOR:
     1. Building Navigation Page
     2. Current Electricity Filter Page
@@ -156,7 +156,7 @@
       background: #ecf0f1;
       color: #2c3e50;
       font-family: 'Roboto', Helvetica, sans-serif;
-      margin-top: 80px;
+      margin-top: 50px;
       float: center;
       margin-left: auto;
       margin-right: auto;
@@ -181,6 +181,7 @@
       overflow: auto;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
       margin-left: 10px;
+      background-color: yellow;
     }
     .card img {
       width: 100%;
@@ -193,6 +194,11 @@
     }
     .card-text{
       padding: 0px 5px 0px 5px;
+    }
+    .card-hilight:hover{
+      border: 3px solid #2C2C2C;
+      border-radius: 5px;
+      cursor: pointer;
     }
     .relval{
       background-color: white;
@@ -231,20 +237,14 @@
       margin-bottom: 0px;
     }
     .meter-num{
+      color: black;
       font-size: 12px;
       position: absolute;
       height: auto;
       width: auto;
-      bottom: 35px;
+      bottom: 20px;
       left: 30px;
       margin: 0 auto;
-      background-color: white;
-      background-color: #e6e6e6;
-      border: 0px solid #95a5a6;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    }
-    .meter-num:hover{
-      border: 2px solid #95a5a6;
     }
     .close-meters:hover{
       height: 25px;

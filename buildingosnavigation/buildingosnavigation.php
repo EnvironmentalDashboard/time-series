@@ -27,6 +27,7 @@ require '../includes/class.TimeSeries.php';
         <!--EMPTY-->
       </div>
       <div class="col-sm-12 col-sm-pull-0">
+      <h1 style="font-size: 30px; margin-top: 0px; margin-bottom: 10px"> Select a building to find out more information </h1>
         <div class="row">
         <?php
              $sql = "SELECT id, name, db_link, building_type, area, custom_img FROM buildings WHERE org_id IN (SELECT org_id from users_orgs_map WHERE user_id = {$user_id}) AND custom_img IS NOT NULL AND id IN (SELECT building_id FROM meters WHERE for_orb > 0 OR timeseries_using > 0 OR bos_uuid IS NOT NULL) AND area != 0 ORDER BY name ASC";

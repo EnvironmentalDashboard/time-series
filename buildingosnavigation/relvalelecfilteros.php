@@ -27,6 +27,7 @@ require '../../includes/class.TimeSeries.php';
         <!--EMPTY-->
       </div>
       <div class="col-sm-12 col-sm-pull-0">
+      <h1 style="font-size: 30px; margin-top: 0px; margin-bottom: 10px"> Select a building to find out more information </h1>
         <div class="row">
         <?php
         $sql = "SELECT DISTINCT buildings.name, buildings.id, buildings.db_link, buildings.area, buildings.building_type, buildings.custom_img, meters.current, meters.building_id, meters.for_orb, meters.timeseries_using, meters.bos_uuid, meters.scope, meters.units, relative_values.relative_value FROM buildings 
