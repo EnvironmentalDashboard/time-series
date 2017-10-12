@@ -868,7 +868,9 @@ text {
     // the # of hours elapsed * the average kw reading
     $('#accum-label-value').text(Math.round(elapsed*(kw/kw_count)).toLocaleString());
     });
+
   
+  var smokespeed = 0;
   $('#co2').on('click', function() {
       // hide the empathetic character
       $('#empathetic-char').css('display', 'none');
@@ -903,10 +905,6 @@ text {
           $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png');
         }
       }, 3000);
-      var speed = (current_points[index_rn][0] - raw_data_formatted[index_rn]) / current_points[index_rn][0];
-      console.log(current_points);
-      var smoke = $('#smoke').children();
-      var newsmoke = TweenMax.to($('#smoke > image'), speed, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
   });
 
   $('#money').on('click', function() {
@@ -1193,6 +1191,12 @@ text {
     if (loc.x <= 40) {
       return;
     }
+    smokespeed = current_frame;
+    var smoke = $('#smoke').children();
+    var newsmoke = TweenMax.to($('#smoke > image'), smokespeed, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
+    //console.log("Here is the smokespeed: " + smokespeed);
+    console.log("Here is the number of frames: " + frames.length);
+
     // subtract 40 from loc.x b/c of the chart padding. subtract 80 from graph width to account for
     // padding on both sides
     var pct_through = ((loc.x-40) / <?php echo (($graph_width-80)*$pct_through); ?>);
@@ -1289,7 +1293,7 @@ text {
   }
 
   function play_data() {
-    console.log('play_data');
+    //console.log('play_data');
     var i = 0, kw = 0, elapsed = 0;
     interval = setInterval(function() {
       var pct_through = i/(current_points.length-1);
@@ -1340,7 +1344,7 @@ text {
   function sortNumber(a,b) { return a - b; }
 
   function play_movie() {
-    console.log('play_movie');
+    //console.log('play_movie');
     playing = false;
     var val = (raw_data[index_rn] == null) ? 0 : raw_data[index_rn];
     var raw_data_copy_sorted = raw_data.slice().sort(sortNumber);
