@@ -903,10 +903,10 @@ text {
           $('#pipes').children().attr('xlink:href', 'https://oberlindashboard.org/oberlin/cwd/img/smokestack/smokestack1.png');
         }
       }, 3000);
-      console.log('#accum-label-value');
+      var speed = (current_points[index_rn][0] - raw_data_formatted[index_rn]) / current_points[index_rn][0];
       console.log(current_points);
       var smoke = $('#smoke').children();
-      var newsmoke = TweenMax.to($('#smoke > image'), 1, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
+      var newsmoke = TweenMax.to($('#smoke > image'), speed, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
   });
 
   $('#money').on('click', function() {
