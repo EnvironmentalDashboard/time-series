@@ -828,6 +828,12 @@ text {
   <script type="text/javascript">
   // <![CDATA[
   console.log(<?php echo json_encode($log) ?>);
+  function convertRange(val, old_min, old_max, new_min, new_max) {
+    if (old_max == old_min) {
+      return 0;
+    }
+    return (((new_max - new_min) * (val - old_min)) / (old_max - old_min)) + new_min;
+  }
   /* BUTTON/MENU FUNCTIONALITY */
   <?php if ($charachter === 'squirrel') { ?>
   var accum_btn = $('#emo');//$('#kwh');
@@ -1192,6 +1198,7 @@ text {
       return;
     }
     smokespeed = current_frame;
+    smokespeed = convertRange(smokespeed, 0, Math.max.apply(null, charachter_moods), 0, 5);
     var smoke = $('#smoke').children();
     var newsmoke = TweenMax.to($('#smoke > image'), smokespeed, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
     //console.log("Here is the smokespeed: " + smokespeed);
