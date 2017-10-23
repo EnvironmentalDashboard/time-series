@@ -1168,8 +1168,12 @@ text {
     }
     echo "*/\n\n";
     // scale the difference between two points to a gif frame
-    for ($i=0; $i < count($charachter_moods); $i++) { 
-      $charachter_moods[$i] = round($main_ts->convertRange($charachter_moods[$i], $diff_min, $diff_max, 0, $number_of_frames));
+    for ($i=0; $i < count($charachter_moods); $i++) {
+      if ($charachter_moods[$i] < 0) { // current point is below typical
+        $charachter_moods[$i] = round($main_ts->convertRange($charachter_moods[$i], $diff_min, $diff_max, 0, ceil($number_of_frames/2)));
+      } else {
+        $charachter_moods[$i] = round($main_ts->convertRange($charachter_moods[$i], $diff_min, $diff_max, floor($number_of_frames/2), $number_of_frames));
+      }
     }
     echo "var charachter_moods = " . json_encode($charachter_moods) . ";\n";
     // The commented-out JS below creates what the PHP does above
