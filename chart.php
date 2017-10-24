@@ -23,7 +23,8 @@ $main_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res); // The mai
 try {
   $main_ts->data();
 } catch (Exception $e) {
-  $main_ts->data(use_api($db, $bos, $_GET['meter_id'], $res, $from, $now));
+  $data = use_api($db, $bos, $_GET['meter_id'], $res, $from, $now);
+  $main_ts->data($data);
   $log[] = 'used api for main data';
 }
 /*
@@ -35,17 +36,15 @@ echo "SELECT value, recorded FROM meter_data
 // print_r($main_ts->data);
 echo "-->";
 */
-if (!isset($_GET['meter_id2'])) {
-  $_GET['meter_id2'] = $_GET['meter_id'];
-}
-$secondary_ts_set = ($_GET['meter_id'] !== $_GET['meter_id2']);
+$secondary_ts_set = (isset($_GET['meter_id2']) && $_GET['meter_id'] !== $_GET['meter_id2']);
 if ($secondary_ts_set) {
   $secondary_ts = new TimeSeries($db, $_GET['meter_id2'], $from, $now, $res); // "Second variable" timeseries
   try {
     $secondary_ts->data();
   } catch (Exception $e) {
     $log[] = 'used api for second variable';
-    $secondary_ts->data(use_api($db, $bos, $_GET['meter_id2'], $res, $from, $now));
+    $data = use_api($db, $bos, $_GET['meter_id2'], $res, $from, $now);
+    $secondary_ts->data($data);
   }
 } else {
   $secondary_ts = null;
@@ -55,7 +54,8 @@ try {
   $historical_ts->data();
 } catch (Exception $e) {
   $log[] = 'used api for historical chart';
-  $historical_ts->data(use_api($db, $bos, $_GET['meter_id'], $res, $double_time, $from));
+  $data = use_api($db, $bos, $_GET['meter_id'], $res, $double_time, $from);
+  $historical_ts->data($data);
 }
 $meter = new Meter($db);
 $typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
@@ -226,12 +226,13 @@ function median($arr) {
   return $median;
 }
 function use_api($db, $bos, $meter_id, $res, $start, $end) {
+  $meter_id = intval($meter_id);
   $api_resp = json_decode(
     $bos->getMeter($db->query("SELECT url FROM meters WHERE id = {$meter_id}")->fetchColumn() . '/data', $res, $start, $end), true)['data'];
   return array_map(function($tag) {
     return array(
         'value' => $tag['value'],
-        'recorded' => $tag['localtime']
+        'recorded' => strtotime($tag['localtime'])
     );
   }, $api_resp);
 }
@@ -1206,7 +1207,7 @@ text {
     var smoke = $('#smoke').children();
     var newsmoke = TweenMax.to($('#smoke > image'), smokespeed, {y: "-60px", x: "20px", scaleX: 2, scaleY: 1.5, opacity: 0, ease:Power0.easeNone, repeat: -1, repeatDelay: 3});
     //console.log("Here is the smokespeed: " + smokespeed);
-    console.log("Here is the number of frames: " + frames.length);
+    // console.log("Here is the number of frames: " + frames.length);
 
     // subtract 40 from loc.x b/c of the chart padding. subtract 80 from graph width to account for
     // padding on both sides
