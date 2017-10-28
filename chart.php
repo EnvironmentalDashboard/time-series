@@ -1212,37 +1212,37 @@ text {
     // Create an array the same size as the $main_ts->circlepoints that stores the squirrel/fish `current_frame` (do command-f for 'current_frame = ')
     // if ($typical_time_frame) {
     //   $charachter_moods = change_resolution_frames($orb_values, 750);
-    //   // echo "/* ORB VALUES\n";
-    //   // print_r($charachter_moods);
-    //   // echo "*/\n";
     // } else {
-  if ($typical_time_frame) {
-    $relativized_points = $typical_ts->circlepoints;
-  } else {
-    $relativized_points = $historical_ts->circlepoints;
-  }
-      $diff_min = PHP_INT_MAX;
-      $diff_max = PHP_INT_MIN;
-      // calculate the $diff_min/$diff_max
-      for ($i=0; $i < count($main_ts->circlepoints); $i++) {
-        $scaled = round($pct_through*$i);
-        $d = $main_ts->circlepoints[$i][1] - $relativized_points[$scaled][1];
-        $charachter_moods[] = $d; // save difference to scale later
-        if ($d > $diff_max) {
-          $diff_max = $d;
-        }
-        if ($d < $diff_min) {
-          $diff_min = $d;
-        }
+    if ($typical_time_frame) {
+      $relativized_points = $typical_ts->circlepoints;
+    } else {
+      $relativized_points = $historical_ts->circlepoints;
+    }
+    $diff_min = PHP_INT_MAX;
+    $diff_max = PHP_INT_MIN;
+    // calculate the $diff_min/$diff_max
+    for ($i=0; $i < count($main_ts->circlepoints); $i++) {
+      $scaled = round($pct_through*$i);
+      $d = $main_ts->circlepoints[$i][1] - $relativized_points[$scaled][1];
+      $charachter_moods[] = $d; // save difference to scale later
+      if ($d > $diff_max) {
+        $diff_max = $d;
       }
-      // scale the difference between two points to a gif frame
-      for ($i=0; $i < count($charachter_moods); $i++) {
-        if ($charachter_moods[$i] < 0) { // current point is below typical
-          $charachter_moods[$i] = round(Meter::convertRange($charachter_moods[$i], $diff_min, $diff_max, 0, ceil($number_of_frames/2)));
-        } else {
-          $charachter_moods[$i] = round(Meter::convertRange($charachter_moods[$i], $diff_min, $diff_max, floor($number_of_frames/2), $number_of_frames));
-        }
+      if ($d < $diff_min) {
+        $diff_min = $d;
       }
+    }
+    // scale the difference between two points to a gif frame
+    for ($i=0; $i < count($charachter_moods); $i++) {
+      if ($charachter_moods[$i] <= 0) { // current point is below typical
+        $charachter_moods[$i] = round(Meter::convertRange(($diff_max-abs($charachter_moods[$i])), $diff_min, $diff_max, 0, ceil($number_of_frames/2)));
+      } else {
+        $charachter_moods[$i] = round(Meter::convertRange(($charachter_moods[$i]), $diff_min, $diff_max, floor($number_of_frames/2), $number_of_frames));
+      }
+      // $logrthm = log(abs($charachter_moods[$i]));
+      // echo "$logrthm \n\n";
+      // $charachter_moods[$i] = round(Meter::convertRange($logrthm, $diff_min, $diff_max, 0, $number_of_frames));
+    }
     // }
     echo "var charachter_moods = " . json_encode($charachter_moods) . ";\n";
   ?>
