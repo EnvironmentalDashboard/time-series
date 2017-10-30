@@ -207,11 +207,11 @@ parse_str(parse_url($curr_url, PHP_URL_QUERY), $tmp);
 if (!isset($tmp['time'])) { // todo: fix
   $tmp['time'] = 'today';
 }
-$url1h = str_replace('time=' . rawurlencode($tmp['time']), 'time=live', $curr_url);
-$url1d = str_replace('time=' . rawurlencode($tmp['time']), 'time=today', $curr_url);
-$url1w = str_replace('time=' . rawurlencode($tmp['time']), 'time=week', $curr_url);
-$url1m = str_replace('time=' . rawurlencode($tmp['time']), 'time=month', $curr_url);
-$url1y = str_replace('time=' . rawurlencode($tmp['time']), 'time=year', $curr_url);
+$url1h = 'https://' . str_replace('time=' . rawurlencode($tmp['time']), 'time=live', $curr_url);
+$url1d = 'https://' . str_replace('time=' . rawurlencode($tmp['time']), 'time=today', $curr_url);
+$url1w = 'https://' . str_replace('time=' . rawurlencode($tmp['time']), 'time=week', $curr_url);
+$url1m = 'https://' . str_replace('time=' . rawurlencode($tmp['time']), 'time=month', $curr_url);
+$url1y = 'https://' . str_replace('time=' . rawurlencode($tmp['time']), 'time=year', $curr_url);
 
 $show_hist = false;
 if ($time_frame !== 'today' && $time_frame !== 'week') {
@@ -707,7 +707,7 @@ text {
       ORDER BY units DESC') as $row) {
         echo "<a style='fill:";
         echo ($row['id'] == $_GET['meter_id']) ? '#2196F3' : $font_color;
-        echo "' target='_top' xlink:href='index.php?";
+        echo "' xlink:href='index.php?";
         parse_str($_SERVER['QUERY_STRING'], $tmp_qs);
         echo str_replace('&', '&amp;', http_build_query(array_replace($tmp_qs, array('meter_id' => $row['id']))));
         echo "'>{$row['resource']}</a> \n";
