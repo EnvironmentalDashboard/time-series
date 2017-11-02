@@ -67,7 +67,7 @@ if ($main_ts->units === 'Gallons / hour' || $main_ts->units === 'Liters / hour' 
   $number_of_frames = 46;
 }
 $typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
-// $orb_values = array();
+$orb_values = array();
 if ($typical_time_frame) {
   // See if a configuration for the relative data exists in the db, and if not, have a default
   $stmt = $db->prepare('SELECT relative_values.grouping FROM relative_values INNER JOIN meters ON meters.id = ? LIMIT 1');
@@ -88,7 +88,6 @@ if ($typical_time_frame) {
   }
   $result = array();
   $recorded_vals = $from;
-  $last_data = null;
   if ($time_frame === 'today') { // Get the typical data for today
     // echo "<!--\n";
     $stmt = $db->prepare(
@@ -109,13 +108,14 @@ if ($typical_time_frame) {
       }
       $result[] = array('recorded' => $sec, 'value' => median($array_val));
       // $cur = find_nearest($main_ts->data, $sec);
-      // $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
-      // $orb_values[] = $rv;
+      $cur = current_reading($main_ts->data, $sec);
+      $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
+      $orb_values[] = $rv;
       // echo "\n\n\nrv: {$rv}\ncurrent: {$cur}\n";
       // print_r($array_val);
       $sec += 3600;
     }
-    // echo "-->\n";
+    echo "-->\n";
   } else { // week
     $stmt = $db->prepare(
     'SELECT value, recorded FROM meter_data
@@ -134,6 +134,9 @@ if ($typical_time_frame) {
         }
       }
       $result[] = array('recorded' => $sec, 'value' => median($array_val));
+      $cur = current_reading($main_ts->data, $sec);
+      $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
+      $orb_values[] = $rv;
       // $orb_values[] = $number_of_frames - Meter::relativeValue($array_val, find_nearest($main_ts->data, $sec), 0, $number_of_frames);
       $sec += 3600;
     }
@@ -252,36 +255,48 @@ function use_api($db, $bos, $meter_id, $res, $start, $end) {
 /**
  * returns the average of two points in $arr that were recorded before and after $sec
  */
-function find_nearest($arr, $sec) { 
-  static $i = 0;
-  $count = count($arr);
-  while ($i < $count) { 
-    if ($arr[$i]['recorded'] > $sec) {
-      if ($i > 0) {
-        $next_time = $arr[$i]['recorded'];
-        $last_time = $arr[$i-1]['recorded'];
-        $next_val = $arr[$i]['value'];
-        $last_val = $arr[$i-1]['value'];
-        $frac = Meter::convertRange($sec, $last_time, $next_time, 0, 1);
-        // $now_time = $last_time + (($next_time-$last_time)*$frac);
-        $now_val = $last_val + (($next_val-$last_val)*$frac);
-        if ($i === $count-1) {
-          $i = 0;
-        } else {
-          $i++;
-        }
-        return $now_val;
-      } else { // first index was recorded before $sec
-        return $arr[0]['value'];
-      }
-    }
-    if ($i === $count-1) {
-      $i = 0;
-      return null; // all of the data in this array was recorded before $sec
-    } else {
-      $i++;
+// function find_nearest($arr, $sec) { 
+//   static $i = 0;
+//   $count = count($arr);
+//   while ($i < $count) { 
+//     if ($arr[$i]['recorded'] > $sec) {
+//       if ($i > 0) {
+//         $next_time = $arr[$i]['recorded'];
+//         $last_time = $arr[$i-1]['recorded'];
+//         $next_val = $arr[$i]['value'];
+//         $last_val = $arr[$i-1]['value'];
+//         $frac = Meter::convertRange($sec, $last_time, $next_time, 0, 1);
+//         // $now_time = $last_time + (($next_time-$last_time)*$frac);
+//         $now_val = $last_val + (($next_val-$last_val)*$frac);
+//         if ($i === $count-1) {
+//           $i = 0;
+//         } else {
+//           $i++;
+//         }
+//         return $now_val;
+//       } else { // first index was recorded before $sec
+//         return $arr[0]['value'];
+//       }
+//     }
+//     if ($i === $count-1) {
+//       $i = 0;
+//       return null; // all of the data in this array was recorded before $sec
+//     } else {
+//       $i++;
+//     }
+//   }
+// }
+function current_reading($data, $time) {
+  $sum = 0;
+  $count = 0;
+  $str = date('Gw', $time);
+  foreach ($data as $point) {
+    if (date('Gw', $point['recorded']) === $str) {
+      $sum += $point['value'];
+      ++$count;
     }
   }
+  return ($sum === 0) ? 0 : $sum/$count;
 }
 
 function change_resolution_frames($data, $result_size) { // similar to TimeSeries::change_resolution()
@@ -1209,41 +1224,44 @@ text {
   var last_frame = 0;
   var movie = $('#movie');
   <?php
+    $debug = true;
     // Create an array the same size as the $main_ts->circlepoints that stores the squirrel/fish `current_frame` (do command-f for 'current_frame = ')
-    // if ($typical_time_frame) {
-    //   $charachter_moods = change_resolution_frames($orb_values, 750);
-    // } else {
-    if ($typical_time_frame) {
+    if ($debug && $typical_time_frame) {
+      $charachter_moods = change_resolution_frames($orb_values, 750);
+    }
+    if (!$debug && $typical_time_frame) {
       $relativized_points = $typical_ts->circlepoints;
     } else {
       $relativized_points = $historical_ts->circlepoints;
     }
-    $diff_min = PHP_INT_MAX;
-    $diff_max = PHP_INT_MIN;
-    // calculate the $diff_min/$diff_max
-    for ($i=0; $i < count($main_ts->circlepoints); $i++) {
-      $scaled = round($pct_through*$i);
-      $d = $main_ts->circlepoints[$i][1] - $relativized_points[$scaled][1];
-      $charachter_moods[] = $d; // save difference to scale later
-      if ($d > $diff_max) {
-        $diff_max = $d;
+    if (!$debug || !$typical_time_frame) {
+      $diff_min = PHP_INT_MAX;
+      $diff_max = PHP_INT_MIN;
+      // calculate the $diff_min/$diff_max
+      for ($i=0; $i < count($main_ts->circlepoints); $i++) {
+        $scaled = round($pct_through*$i);
+        $d = $main_ts->circlepoints[$i][1] - $relativized_points[$scaled][1];
+        $charachter_moods[] = $d; // save difference to scale later
+        if ($d > $diff_max) {
+          $diff_max = $d;
+        }
+        if ($d < $diff_min) {
+          $diff_min = $d;
+        }
       }
-      if ($d < $diff_min) {
-        $diff_min = $d;
+      // scale the difference between two points to a gif frame
+      for ($i=0; $i < count($charachter_moods); $i++) {
+        if ($charachter_moods[$i] <= 0) { // current point is below typical
+          $charachter_moods[$i] = round(Meter::convertRange(($diff_max-abs($charachter_moods[$i])), $diff_min, $diff_max, 0, ceil($number_of_frames/2)));
+        } else {
+          $charachter_moods[$i] = round(Meter::convertRange(($charachter_moods[$i]), $diff_min, $diff_max, floor($number_of_frames/2), $number_of_frames));
+        }
+        // $logrthm = log(abs($charachter_moods[$i]));
+        // echo "$logrthm \n\n";
+        // $charachter_moods[$i] = round(Meter::convertRange($logrthm, $diff_min, $diff_max, 0, $number_of_frames));
       }
+      // }
     }
-    // scale the difference between two points to a gif frame
-    for ($i=0; $i < count($charachter_moods); $i++) {
-      if ($charachter_moods[$i] <= 0) { // current point is below typical
-        $charachter_moods[$i] = round(Meter::convertRange(($diff_max-abs($charachter_moods[$i])), $diff_min, $diff_max, 0, ceil($number_of_frames/2)));
-      } else {
-        $charachter_moods[$i] = round(Meter::convertRange(($charachter_moods[$i]), $diff_min, $diff_max, floor($number_of_frames/2), $number_of_frames));
-      }
-      // $logrthm = log(abs($charachter_moods[$i]));
-      // echo "$logrthm \n\n";
-      // $charachter_moods[$i] = round(Meter::convertRange($logrthm, $diff_min, $diff_max, 0, $number_of_frames));
-    }
-    // }
     echo "var charachter_moods = " . json_encode($charachter_moods) . ";\n";
   ?>
   $(svg).one('mousemove', function() {
