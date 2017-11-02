@@ -1224,7 +1224,7 @@ text {
   var last_frame = 0;
   var movie = $('#movie');
   <?php
-    $debug = true;
+    $debug = false;
     // Create an array the same size as the $main_ts->circlepoints that stores the squirrel/fish `current_frame` (do command-f for 'current_frame = ')
     if ($debug && $typical_time_frame) {
       $charachter_moods = change_resolution_frames($orb_values, 750);
