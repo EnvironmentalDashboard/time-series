@@ -66,6 +66,9 @@ if ($main_ts->units === 'Gallons / hour' || $main_ts->units === 'Liters / hour' 
   $charachter = 'squirrel';
   $number_of_frames = 46;
 }
+
+
+
 $typical_time_frame = ($time_frame === 'today' || $time_frame === 'week');
 $orb_values = array();
 if ($typical_time_frame) {
@@ -86,66 +89,74 @@ if ($typical_time_frame) {
       break;
     }
   }
-  $result = array();
-  $recorded_vals = $from;
+
+
+  $typical_line = array();
   if ($time_frame === 'today') { // Get the typical data for today
-    // echo "<!--\n";
+    $prev_lines = array_fill(0, 24, array()); // the lines that are averaged to form the typical line
     $stmt = $db->prepare(
     'SELECT value, recorded FROM meter_data
     WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
     AND DAYOFWEEK(FROM_UNIXTIME(recorded)) IN ('.implode(',', $days).')
     ORDER BY recorded DESC LIMIT ' . intval($npoints*24));
     $stmt->execute(array($_GET['meter_id'], 'hour'));
-    $typical_data = $stmt->fetchAll();
+    foreach (array_reverse($stmt->fetchAll()) as $row) { // need to order by DESC for the LIMIT to select the most recent records but actually we want it to be ASC
+      $prev_lines[intval(date('G', $row['recorded']))][] = floatval($row['value']);
+    }
     $sec = $from;
-    $result = array();
     while ($sec <= $to) {
-      $array_val = array();
-      foreach ($typical_data as $row) {
-        if (date('G', $sec) === date('G', $row['recorded'])) {
-          $array_val[] = $row['value'];
-        }
-      }
-      $result[] = array('recorded' => $sec, 'value' => median($array_val));
-      // $cur = find_nearest($main_ts->data, $sec);
-      $cur = current_reading($main_ts->data, $sec);
-      $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
-      $orb_values[] = $rv;
-      // echo "\n\n\nrv: {$rv}\ncurrent: {$cur}\n";
-      // print_r($array_val);
+      $array_val = $prev_lines[intval(date('G', $sec))];
+      $typical_line[] = array('recorded' => $sec, 'value' => median($array_val));
+      // $cur = current_reading($main_ts->data, $sec);
+      // $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
+      // $orb_values[] = $rv;
       $sec += 3600;
     }
-    echo "-->\n";
   } else { // week
+    $prev_lines = array_fill(0, 7, array_fill(0, 24, array())); // $prev_lines[day_of_week][hour_of_day]
     $stmt = $db->prepare(
     'SELECT value, recorded FROM meter_data
     WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
-    ORDER BY DAYOFWEEK(FROM_UNIXTIME(recorded)) ASC');
+    ORDER BY recorded DESC LIMIT ' . $npoints*24*7);
     $stmt->execute(array($_GET['meter_id'], 'hour'));
-    $typical_data = $stmt->fetchAll();
+    foreach (array_reverse($stmt->fetchAll()) as $row) {
+      $prev_lines[intval(date('w', $row['recorded']))][intval(date('G', $row['recorded']))][] = $row['value'];
+    }
     $sec = $from;
-    $result = array();
     while ($sec <= $to) {
-      $array_val = array();
-      foreach ($typical_data as $row) {
-        // if it's the same day of week & hour of day
-        if (date('G w', $sec) === date('G w', $row['recorded'])) {
-          $array_val[] = $row['value'];
-        }
-      }
-      $result[] = array('recorded' => $sec, 'value' => median($array_val));
-      $cur = current_reading($main_ts->data, $sec);
-      $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
-      $orb_values[] = $rv;
-      // $orb_values[] = $number_of_frames - Meter::relativeValue($array_val, find_nearest($main_ts->data, $sec), 0, $number_of_frames);
+      $array_val = $prev_lines[intval(date('w', $sec))][intval(date('G', $sec))];
+      $typical_line[] = array('recorded' => $sec, 'value' => median($array_val));
+      // $cur = current_reading($main_ts->data, $sec);
+      // $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
+      // $orb_values[] = $rv;
       $sec += 3600;
     }
   }
+
   $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res);
-  $typical_ts->data($result);
+  $typical_ts->data($typical_line);
   $typical_ts->dashed(false);
   $typical_ts->fill(false);
   $typical_ts->color('#f39c12');
+  // generate charachter moods
+  $charachter_moods = array();
+  $sec = $from;
+  while ($sec <= $to) {
+    if ($time_frame === 'today') {
+      $g = intval(date('G', $sec));
+      $prev = $prev_lines[$g];
+    } else {
+      $g = intval(date('G', $sec));
+      $w = intval(date('w', $sec));
+      $prev = $prev_lines[$w][$g];
+    }
+    $cur = current_reading($main_ts->data, $sec);
+    $rv = Meter::relativeValue($prev, $cur, 0, $number_of_frames);
+    $charachter_moods[] = $rv;
+    $sec += 3600;
+  }
+  $charachter_moods = change_res($charachter_moods, count($main_ts->circlepoints));
+
   if (empty($typical_ts->data)) {
     $typical_ts = $historical_ts;
     $typical_time_frame = false;
@@ -220,6 +231,9 @@ $show_hist = false;
 if ($time_frame !== 'today' && $time_frame !== 'week') {
   $show_hist = true;
 }
+
+
+// misc. helper functions
 /**
  * how is this not built in to php
  */
@@ -299,7 +313,7 @@ function current_reading($data, $time) {
   return ($sum === 0) ? 0 : $sum/$count;
 }
 
-function change_resolution_frames($data, $result_size) { // similar to TimeSeries::change_resolution()
+function change_res($data, $result_size, $error_val = null) { // similar to TimeSeries::change_resolution()
     $count = count($data);
     $return = array();
     for ($i = 0; $i < $result_size; $i++) {
@@ -311,7 +325,7 @@ function change_resolution_frames($data, $result_size) { // similar to TimeSerie
       $pct = $index_fraction - $floor;
       $diff = $next_point - $current_point;
       if ($current_point === null || $next_point === null) {
-        $return[$i] = 25; // pick a neutral frame if there's no data
+        $return[$i] = $error_val;
       } else {
         $return[$i] = round($current_point+($pct*$diff));
       }
@@ -378,6 +392,35 @@ text {
 /* ]]> */
 </style>
   <rect x="0" y="0" width="100%" height="100%" fill="<?php echo $primary_color; ?>"/>
+
+  <?php
+  // $max = 0;
+  // foreach ($prev_lines as $arr) {
+  //   $c = count($arr);
+  //   if ($c > $max) {
+  //     $max = $c;
+  //   }
+  // }
+  // $test_lines = array_fill(0, $max, array());
+  // $i = 0;
+  // foreach ($prev_lines as $arr) {
+  //   foreach ($arr as $row) {
+  //     $test_lines[$i++][] = $row;
+  //   }
+  //   $i = 0;
+  // }
+  // foreach ($test_lines as $line) {
+  //   $test_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res);
+  //   $test_ts->data($line);
+  //   $test_ts->dashed(false);
+  //   $test_ts->fill(false);
+  //   $test_ts->color('red');
+  //   $test_ts->setMin();
+  //   $test_ts->setMax();
+  //   $test_ts->yAxis();
+  //   $test_ts->printChart($graph_height, $graph_width, $graph_offset, $test_ts->yaxis_min, $test_ts->yaxis_max);
+  // }
+  ?>
 
   <!-- Historical data -->
   <g id="historical-chart" <?php echo ($show_hist) ? '' : 'style="opacity: 0;"'; ?>>
@@ -1223,18 +1266,18 @@ text {
   var current_frame = 0;
   var last_frame = 0;
   var movie = $('#movie');
-  <?php
-    $debug = false;
+  <?php /*
+    $test = false;
     // Create an array the same size as the $main_ts->circlepoints that stores the squirrel/fish `current_frame` (do command-f for 'current_frame = ')
-    if ($debug && $typical_time_frame) {
-      $charachter_moods = change_resolution_frames($orb_values, 750);
+    if ($test && $typical_time_frame) {
+      $charachter_moods = change_res($orb_values, 750, 25);
     }
-    if (!$debug && $typical_time_frame) {
+    if (!$test && $typical_time_frame) {
       $relativized_points = $typical_ts->circlepoints;
     } else {
       $relativized_points = $historical_ts->circlepoints;
     }
-    if (!$debug || !$typical_time_frame) {
+    if (!$test || !$typical_time_frame) {
       $diff_min = PHP_INT_MAX;
       $diff_max = PHP_INT_MIN;
       // calculate the $diff_min/$diff_max
@@ -1262,8 +1305,13 @@ text {
       }
       // }
     }
-    echo "var charachter_moods = " . json_encode($charachter_moods) . ";\n";
+    */echo "var charachter_moods = " . json_encode($charachter_moods) . ";\n";
+    // echo "var prev_lines = " . json_encode($prev_lines) . ";\n";
   ?>
+  // var charachter_moods = [];
+  // var sec = <?php //echo $from; ?>;
+  // while ($sec <= <?php //echo $to ?>) {
+  // }
   $(svg).one('mousemove', function() {
     $('#suggestion').attr('display', 'none');
     $('#error-msg').attr('display', '');
