@@ -1,4 +1,5 @@
 <?php
+define('PPL', 1000); // points per line
 $log = array(); // For debugging
 $now = time();
 $time_frame = (!empty($_GET['time'])) ? $_GET['time'] : 'today'; // Which button on the bottom is selected

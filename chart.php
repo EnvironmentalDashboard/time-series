@@ -90,10 +90,11 @@ if ($typical_time_frame) {
     }
   }
 
-
-  $typical_line = array();
+  $prev_lines = array_fill(0, $npoints, array()); // holds npoints arrays that each represent a line
+  $prev_linesi = 0;
+  $typical_line = array(); // formed by taking the median of each sub array value in $prev_lines
+  $last = null;
   if ($time_frame === 'today') { // Get the typical data for today
-    $prev_lines = array_fill(0, 24, array()); // the lines that are averaged to form the typical line
     $stmt = $db->prepare(
     'SELECT value, recorded FROM meter_data
     WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
@@ -101,61 +102,71 @@ if ($typical_time_frame) {
     ORDER BY recorded DESC LIMIT ' . intval($npoints*24));
     $stmt->execute(array($_GET['meter_id'], 'hour'));
     foreach (array_reverse($stmt->fetchAll()) as $row) { // need to order by DESC for the LIMIT to select the most recent records but actually we want it to be ASC
-      $prev_lines[intval(date('G', $row['recorded']))][] = floatval($row['value']);
+      $day_of_week = date('w', $row['recorded']);
+      if ($last !== $day_of_week && $last !== null) {
+        ++$prev_linesi;
+      }
+      $prev_lines[$prev_linesi][] = $row;
+      $last = $day_of_week;
+    }
+    for ($i=0; $i < $npoints; $i++) { // make sure all arrays are same size
+      $prev_lines[$i] = change_res($prev_lines[$i], PPL);
     }
     $sec = $from;
-    while ($sec <= $to) {
-      $array_val = $prev_lines[intval(date('G', $sec))];
-      $typical_line[] = array('recorded' => $sec, 'value' => median($array_val));
-      // $cur = current_reading($main_ts->data, $sec);
-      // $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
-      // $orb_values[] = $rv;
-      $sec += 3600;
+    $inc = ($to - $from) / PPL;
+    for ($i=0; $i < PPL; $i++) { 
+      $array_val = array();
+      for ($j=0; $j < $npoints; $j++) { 
+        $array_val[] = $prev_lines[$j][$i]['value'];
+      }
+      $cur = current_reading($main_ts->data, round($sec));
+      $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
+      $orb_values[] = round($rv);
+      $typical_line[$i] = array('recorded' => round($sec), 'value' => median($array_val));
+      $sec += $inc;
     }
   } else { // week
-    $prev_lines = array_fill(0, 7, array_fill(0, 24, array())); // $prev_lines[day_of_week][hour_of_day]
-    $stmt = $db->prepare(
+    $stmt = $db->prepare( // https://stackoverflow.com/a/7786588/2624391
     'SELECT value, recorded FROM meter_data
     WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
     ORDER BY recorded DESC LIMIT ' . $npoints*24*7);
     $stmt->execute(array($_GET['meter_id'], 'hour'));
-    foreach (array_reverse($stmt->fetchAll()) as $row) {
-      $prev_lines[intval(date('w', $row['recorded']))][intval(date('G', $row['recorded']))][] = $row['value'];
+    // echo "<!--";
+    foreach (array_reverse($stmt->fetchAll()) as $row) { // need to reorder for same reason as above
+      $day_of_week = date('w', $row['recorded']);
+      if ($day_of_week == '0' && $day_of_week !== $last && $last !== null) {
+        ++$prev_linesi;
+      }
+      $prev_lines[$prev_linesi][] = $row;
+      $last = $day_of_week;
+    }
+    // echo "NUM LINES: $prev_linesi";
+    // print_r($prev_lines);
+    // echo "-->";
+    $npoints = $prev_linesi;
+    for ($i=0; $i < $npoints; $i++) { // make sure all arrays are same size
+      $prev_lines[$i] = change_res($prev_lines[$i], PPL);
     }
     $sec = $from;
-    while ($sec <= $to) {
-      $array_val = $prev_lines[intval(date('w', $sec))][intval(date('G', $sec))];
-      $typical_line[] = array('recorded' => $sec, 'value' => median($array_val));
-      // $cur = current_reading($main_ts->data, $sec);
-      // $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
-      // $orb_values[] = $rv;
-      $sec += 3600;
+    $inc = ($to - $from) / PPL;
+    for ($i=0; $i < PPL; $i++) { 
+      $array_val = array();
+      for ($j=0; $j < $npoints; $j++) { 
+        $array_val[] = $prev_lines[$j][$i]['value'];
+      }
+      $cur = current_reading($main_ts->data, round($sec));
+      $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
+      $orb_values[] = round($rv);
+      $typical_line[$i] = array('recorded' => round($sec), 'value' => median($array_val));
+      $sec += $inc;
     }
   }
 
   $typical_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res);
-  $typical_ts->data($typical_line);
+  $typical_ts->data($typical_line, PPL);
   $typical_ts->dashed(false);
   $typical_ts->fill(false);
   $typical_ts->color('#f39c12');
-  // generate charachter moods
-  $charachter_moods = array();
-  $sec = $from;
-  while ($sec <= $to) {
-    if ($time_frame === 'today') {
-      $g = intval(date('G', $sec));
-      $prev = $prev_lines[$g];
-    } else {
-      $g = intval(date('G', $sec));
-      $w = intval(date('w', $sec));
-      $prev = $prev_lines[$w][$g];
-    }
-    $cur = current_reading($main_ts->data, $sec);
-    $rv = Meter::relativeValue($prev, $cur, 0, $number_of_frames);
-    $charachter_moods[] = $rv;
-    $sec += 3600;
-  }
-  $charachter_moods = change_res($charachter_moods, count($main_ts->circlepoints));
 
   if (empty($typical_ts->data)) {
     $typical_ts = $historical_ts;
@@ -267,71 +278,46 @@ function use_api($db, $bos, $meter_id, $res, $start, $end) {
   }, $api_resp);
 }
 /**
- * returns the average of two points in $arr that were recorded before and after $sec
+ * similar to TimeSeries::change_resolution()
  */
-// function find_nearest($arr, $sec) { 
-//   static $i = 0;
-//   $count = count($arr);
-//   while ($i < $count) { 
-//     if ($arr[$i]['recorded'] > $sec) {
-//       if ($i > 0) {
-//         $next_time = $arr[$i]['recorded'];
-//         $last_time = $arr[$i-1]['recorded'];
-//         $next_val = $arr[$i]['value'];
-//         $last_val = $arr[$i-1]['value'];
-//         $frac = Meter::convertRange($sec, $last_time, $next_time, 0, 1);
-//         // $now_time = $last_time + (($next_time-$last_time)*$frac);
-//         $now_val = $last_val + (($next_val-$last_val)*$frac);
-//         if ($i === $count-1) {
-//           $i = 0;
-//         } else {
-//           $i++;
-//         }
-//         return $now_val;
-//       } else { // first index was recorded before $sec
-//         return $arr[0]['value'];
-//       }
-//     }
-//     if ($i === $count-1) {
-//       $i = 0;
-//       return null; // all of the data in this array was recorded before $sec
-//     } else {
-//       $i++;
-//     }
-//   }
-// }
-function current_reading($data, $time) {
-  $sum = 0;
-  $count = 0;
-  $str = date('Gw', $time);
-  foreach ($data as $point) {
-    if (date('Gw', $point['recorded']) === $str) {
-      $sum += $point['value'];
-      ++$count;
-    }
-  }
-  return ($sum === 0) ? 0 : $sum/$count;
-}
-
-function change_res($data, $result_size, $error_val = null) { // similar to TimeSeries::change_resolution()
-    $count = count($data);
-    $return = array();
-    for ($i = 0; $i < $result_size; $i++) {
-      $index_fraction = Meter::convertRange($i, 0, $result_size-1, 0, $count-1);
-      $floor = floor($index_fraction); // index of current data point
-      $ceil = ceil($index_fraction); // index of next point
-      $current_point = $data[$floor];
-      $next_point = $data[$ceil];
-      $pct = $index_fraction - $floor;
-      $diff = $next_point - $current_point;
-      if ($current_point === null || $next_point === null) {
-        $return[$i] = $error_val;
-      } else {
-        $return[$i] = round($current_point+($pct*$diff));
-      }
-    }
+function change_res($data, $result_size, $error_val = null) {
+  $count = count($data);
+  $return = array();
+  if (!$count) {
     return $return;
   }
+  for ($i = 0; $i < $result_size; $i++) {
+    $index_fraction = Meter::convertRange($i, 0, $result_size-1, 0, $count-1);
+    $floor = floor($index_fraction); // index of current data point
+    $ceil = ceil($index_fraction); // index of next point
+    $current_point = $data[$floor]['value'];
+    $next_point = $data[$ceil]['value'];
+    $pct = $index_fraction - $floor;
+    $diff = $next_point - $current_point;
+    $current_time = $data[$floor]['recorded'];
+    $next_time = $data[$ceil]['recorded'];
+    $diff2 = $next_time - $current_time;
+    if ($current_point === null || $next_point === null) {
+      $return[$i] = array('value' => null, 'recorded' => $current_time+round($pct*$diff2));
+    } else {
+      $return[$i] = array('value' => $current_point+($pct*$diff), 'recorded' => $current_time+round($pct*$diff2));
+    }
+  }
+  return $return;
+}
+
+function current_reading($data, $time) {
+  $min = PHP_INT_MAX;
+  $closest = null;
+  foreach ($data as $point) {
+    $diff = abs($time - $point['recorded']);
+    if ($diff < $min) {
+      $min = $diff;
+      $closest = $point['value'];
+    }
+  }
+  return $closest;
+}
 ?>
 <defs>
   <linearGradient id="shadow">
@@ -394,32 +380,20 @@ text {
   <rect x="0" y="0" width="100%" height="100%" fill="<?php echo $primary_color; ?>"/>
 
   <?php
-  // $max = 0;
-  // foreach ($prev_lines as $arr) {
-  //   $c = count($arr);
-  //   if ($c > $max) {
-  //     $max = $c;
-  //   }
-  // }
-  // $test_lines = array_fill(0, $max, array());
-  // $i = 0;
-  // foreach ($prev_lines as $arr) {
-  //   foreach ($arr as $row) {
-  //     $test_lines[$i++][] = $row;
-  //   }
-  //   $i = 0;
-  // }
-  // foreach ($test_lines as $line) {
-  //   $test_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res);
-  //   $test_ts->data($line);
-  //   $test_ts->dashed(false);
-  //   $test_ts->fill(false);
-  //   $test_ts->color('red');
-  //   $test_ts->setMin();
-  //   $test_ts->setMax();
-  //   $test_ts->yAxis();
-  //   $test_ts->printChart($graph_height, $graph_width, $graph_offset, $test_ts->yaxis_min, $test_ts->yaxis_max);
-  // }
+    // foreach ($prev_lines as $line) {
+    //   if (empty($line)) {
+    //     continue;
+    //   }
+    //   $test_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res);
+    //   $test_ts->data($line, PPL);
+    //   $test_ts->dashed(false);
+    //   $test_ts->fill(false);
+    //   $test_ts->color('#bdc3c7');
+    //   $test_ts->setMin($typical_ts->min);
+    //   $test_ts->setMax($typical_ts->max);
+    //   $test_ts->yAxis();
+    //   $test_ts->printChart($graph_height, $graph_width, $graph_offset, $test_ts->yaxis_min, $test_ts->yaxis_max);
+    // }
   ?>
 
   <!-- Historical data -->
@@ -1266,52 +1240,39 @@ text {
   var current_frame = 0;
   var last_frame = 0;
   var movie = $('#movie');
-  <?php /*
-    $test = false;
-    // Create an array the same size as the $main_ts->circlepoints that stores the squirrel/fish `current_frame` (do command-f for 'current_frame = ')
-    if ($test && $typical_time_frame) {
-      $charachter_moods = change_res($orb_values, 750, 25);
-    }
-    if (!$test && $typical_time_frame) {
-      $relativized_points = $typical_ts->circlepoints;
-    } else {
-      $relativized_points = $historical_ts->circlepoints;
-    }
-    if (!$test || !$typical_time_frame) {
-      $diff_min = PHP_INT_MAX;
-      $diff_max = PHP_INT_MIN;
-      // calculate the $diff_min/$diff_max
-      for ($i=0; $i < count($main_ts->circlepoints); $i++) {
-        $scaled = round($pct_through*$i);
-        $d = $main_ts->circlepoints[$i][1] - $relativized_points[$scaled][1];
-        $charachter_moods[] = $d; // save difference to scale later
-        if ($d > $diff_max) {
-          $diff_max = $d;
-        }
-        if ($d < $diff_min) {
-          $diff_min = $d;
-        }
+  <?php
+  if ($typical_time_frame) {
+    echo "var charachter_moods = " . json_encode($orb_values) . ";\n";
+  } else {
+    $relativized_points = $historical_ts->circlepoints;
+    $diff_min = PHP_INT_MAX;
+    $diff_max = PHP_INT_MIN;
+    $charachter_moods = array();
+    // calculate the $diff_min/$diff_max
+    for ($i=0; $i < count($main_ts->circlepoints); $i++) {
+      $scaled = round($pct_through*$i);
+      $d = $main_ts->circlepoints[$i][1] - $relativized_points[$scaled][1];
+      $charachter_moods[] = $d; // save difference to scale later
+      if ($d > $diff_max) {
+        $diff_max = $d;
       }
-      // scale the difference between two points to a gif frame
-      for ($i=0; $i < count($charachter_moods); $i++) {
-        if ($charachter_moods[$i] <= 0) { // current point is below typical
-          $charachter_moods[$i] = round(Meter::convertRange(($diff_max-abs($charachter_moods[$i])), $diff_min, $diff_max, 0, ceil($number_of_frames/2)));
-        } else {
-          $charachter_moods[$i] = round(Meter::convertRange(($charachter_moods[$i]), $diff_min, $diff_max, floor($number_of_frames/2), $number_of_frames));
-        }
-        // $logrthm = log(abs($charachter_moods[$i]));
-        // echo "$logrthm \n\n";
-        // $charachter_moods[$i] = round(Meter::convertRange($logrthm, $diff_min, $diff_max, 0, $number_of_frames));
+      if ($d < $diff_min) {
+        $diff_min = $d;
       }
-      // }
     }
-    */echo "var charachter_moods = " . json_encode($charachter_moods) . ";\n";
-    // echo "var prev_lines = " . json_encode($prev_lines) . ";\n";
+    // scale the difference between two points to a gif frame
+    for ($i=0; $i < count($charachter_moods); $i++) {
+      if ($charachter_moods[$i] <= 0) { // current point is below typical
+        $charachter_moods[$i] = round(Meter::convertRange(($diff_max-abs($charachter_moods[$i])), $diff_min, $diff_max, 0, ceil($number_of_frames/2)));
+      } else {
+        $charachter_moods[$i] = round(Meter::convertRange(($charachter_moods[$i]), $diff_min, $diff_max, floor($number_of_frames/2), $number_of_frames));
+      }
+      // $logrthm = log(abs($charachter_moods[$i]));
+      // $charachter_moods[$i] = round(Meter::convertRange($logrthm, $diff_min, $diff_max, 0, $number_of_frames));
+    }
+    echo "var charachter_moods = " . json_encode($charachter_moods) . ";\n";
+  }
   ?>
-  // var charachter_moods = [];
-  // var sec = <?php //echo $from; ?>;
-  // while ($sec <= <?php //echo $to ?>) {
-  // }
   $(svg).one('mousemove', function() {
     $('#suggestion').attr('display', 'none');
     $('#error-msg').attr('display', '');
