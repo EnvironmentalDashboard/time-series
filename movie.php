@@ -23,15 +23,18 @@ else if ($rv > 40) { $bin = 'bin3'; $bg_name = 'bg2'; }
 else if ($rv > 20) { $bin = 'bin4'; $bg_name = 'bg1'; }
 else { $bin = 'bin5'; $bg_name = 'bg1'; }
 
-if ($keyword !== null && $keyword2 !== null) {
-  $stmt = $db->prepare("SELECT name, length FROM time_series WHERE length > 0 AND {$bin} > 0 AND user_id = ? AND name LIKE ? AND name LIKE ? ORDER BY {$bin} * rand() * rand() * rand() * rand() * rand() * rand() DESC LIMIT 1"); // Multiply by random numbers to reduce the influence of the bin but still use it for weighting the randomness
-  $stmt->execute(array($user_id, "%{$keyword}%", "%{$keyword2}%"));
+if ($keyword === null && $keyword2 === null) {
+  $stmt = $db->prepare("SELECT name, length FROM time_series WHERE length > 0 AND {$bin} > 0 AND user_id = ? ORDER BY {$bin} * rand() * rand() * rand() * rand() * rand() * rand() DESC LIMIT 1");
+  $stmt->execute(array($user_id));
 } elseif ($keyword === null) {
   $stmt = $db->prepare("SELECT name, length FROM time_series WHERE length > 0 AND {$bin} > 0 AND user_id = ? AND name LIKE ? ORDER BY {$bin} * rand() * rand() * rand() * rand() * rand() * rand() DESC LIMIT 1");
   $stmt->execute(array($user_id, "%{$keyword2}%"));
-} else {
+} elseif ($keyword2 === null) {
   $stmt = $db->prepare("SELECT name, length FROM time_series WHERE length > 0 AND {$bin} > 0 AND user_id = ? AND name LIKE ? ORDER BY {$bin} * rand() * rand() * rand() * rand() * rand() * rand() DESC LIMIT 1");
   $stmt->execute(array($user_id, "%{$keyword}%"));
+} else {
+  $stmt = $db->prepare("SELECT name, length FROM time_series WHERE length > 0 AND {$bin} > 0 AND user_id = ? AND name LIKE ? AND name LIKE ? ORDER BY {$bin} * rand() * rand() * rand() * rand() * rand() * rand() DESC LIMIT 1"); // Multiply by random numbers to reduce the influence of the bin but still use it for weighting the randomness
+  $stmt->execute(array($user_id, "%{$keyword}%", "%{$keyword2}%"));
 }
 $result = $stmt->fetch();
 if ($_GET['charachter'] === 'fish') {
