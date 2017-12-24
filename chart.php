@@ -94,13 +94,13 @@ if ($typical_time_frame) {
   $prev_linesi = 0;
   $typical_line = array(); // formed by taking the median of each sub array value in $prev_lines
   $last = null;
-  if ($time_frame === 'today') { // Get the typical data for today
-    $stmt = $db->prepare(
+  if ($time_frame === 'today') {
+    $stmt = $db->prepare( // get npoints days worth of data
     'SELECT value, recorded FROM meter_data
     WHERE meter_id = ? AND value IS NOT NULL AND resolution = ?
     AND DAYOFWEEK(FROM_UNIXTIME(recorded)) IN ('.implode(',', $days).')
-    ORDER BY recorded DESC LIMIT ' . intval($npoints*24));
-    $stmt->execute(array($_GET['meter_id'], 'hour'));
+    ORDER BY recorded DESC LIMIT ' . intval($npoints)*24*4); // npoints*24*4 = 4 points per hour, 24 per day
+    $stmt->execute(array($_GET['meter_id'], 'quarterhour'));
     foreach (array_reverse($stmt->fetchAll()) as $row) { // need to order by DESC for the LIMIT to select the most recent records but actually we want it to be ASC
       $day_of_week = date('w', $row['recorded']);
       if ($last !== $day_of_week && $last !== null) {
@@ -119,7 +119,7 @@ if ($typical_time_frame) {
       for ($j=0; $j < $npoints; $j++) { 
         $array_val[] = $prev_lines[$j][$i]['value'];
       }
-      $cur = current_reading($main_ts->data, round($sec));
+      $cur = $main_ts->data[$i];
       $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
       $orb_values[] = round($rv);
       $typical_line[$i] = array('recorded' => round($sec), 'value' => median($array_val));
@@ -154,7 +154,7 @@ if ($typical_time_frame) {
       for ($j=0; $j < $npoints; $j++) { 
         $array_val[] = $prev_lines[$j][$i]['value'];
       }
-      $cur = current_reading($main_ts->data, round($sec));
+      $cur = $main_ts->data[$i];
       $rv = $number_of_frames - Meter::relativeValue($array_val, $cur, 0, $number_of_frames);
       $orb_values[] = round($rv);
       $typical_line[$i] = array('recorded' => round($sec), 'value' => median($array_val));
@@ -215,10 +215,10 @@ if ($typical_time_frame) {
   $typical_ts->setMin($min);
   $typical_ts->setMax($max);
 }
-$name1 = $main_ts->getName();
+$name1 = $main_ts->getMeterName();
 if ($secondary_ts_set) {
   $secondary_ts->yAxis();
-  $name2 = $secondary_ts->getName();
+  $name2 = $secondary_ts->getMeterName();
   $name = $name1 . 'vs. ' . $name2;
 } else {
   $name = $name1;
@@ -305,19 +305,6 @@ function change_res($data, $result_size, $error_val = null) {
   }
   return $return;
 }
-
-function current_reading($data, $time) {
-  $min = PHP_INT_MAX;
-  $closest = null;
-  foreach ($data as $point) {
-    $diff = abs($time - $point['recorded']);
-    if ($diff < $min) {
-      $min = $diff;
-      $closest = $point['value'];
-    }
-  }
-  return $closest;
-}
 ?>
 <defs>
   <linearGradient id="shadow">
@@ -380,20 +367,22 @@ text {
   <rect x="0" y="0" width="100%" height="100%" fill="<?php echo $primary_color; ?>"/>
 
   <?php
-    // foreach ($prev_lines as $line) {
-    //   if (empty($line)) {
-    //     continue;
-    //   }
-    //   $test_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res);
-    //   $test_ts->data($line, PPL);
-    //   $test_ts->dashed(false);
-    //   $test_ts->fill(false);
-    //   $test_ts->color('#bdc3c7');
-    //   $test_ts->setMin($typical_ts->min);
-    //   $test_ts->setMax($typical_ts->max);
-    //   $test_ts->yAxis();
-    //   $test_ts->printChart($graph_height, $graph_width, $graph_offset, $test_ts->yaxis_min, $test_ts->yaxis_max);
-    // }
+    if (isset($_GET['test'])) {
+      foreach ($prev_lines as $line) {
+        if (empty($line)) {
+          continue;
+        }
+        $test_ts = new TimeSeries($db, $_GET['meter_id'], $from, $now, $res);
+        $test_ts->data($line, PPL);
+        $test_ts->dashed(false);
+        $test_ts->fill(false);
+        $test_ts->color('#bdc3c7');
+        $test_ts->setMin($min);
+        $test_ts->setMax($max);
+        $test_ts->yAxis();
+        $test_ts->printChart($graph_height, $graph_width, $graph_offset, $test_ts->yaxis_min, $test_ts->yaxis_max);
+      }
+    }
   ?>
 
   <!-- Historical data -->

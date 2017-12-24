@@ -13,6 +13,13 @@ if (!isset($_GET['timeseriesconfig'])) {
   if (empty($_GET['time'])) {
     $_GET['time'] = 'today';
   }
+} else {
+  $stmt = $db->prepare('SELECT * FROM time_series_configs WHERE id = ?');
+  $stmt->execute(array($_GET['timeseriesconfig']));
+  $timeseriesconfigs = $stmt->fetch();
+  foreach ($timeseriesconfigs as $key => $value) {
+    $_GET[$key] = $value;
+  }
 }
 // $dropdown_html1 = '';
 // $dropdown_html2 = '';
