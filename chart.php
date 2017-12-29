@@ -4,7 +4,7 @@ ini_set('display_errors', 'On');
 header('Content-Type: image/svg+xml; charset=UTF-8'); // We'll be outputting a SVG
 require '../includes/db.php';
 require '../includes/class.BuildingOS.php';
-require '../includes/class.TimeSeries.php';
+require 'includes/class.TimeSeries.php';
 require 'includes/vars.php'; // Including in seperate file to keep this file clean. Contains $from, $to, etc
 require 'includes/really-long-switch.php';
 ?>
