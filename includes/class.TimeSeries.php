@@ -1,6 +1,4 @@
 <?php
-require '../../includes/class.Meter.php';
-
 /**
  * For the time series
  * Example usage

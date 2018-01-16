@@ -11,9 +11,9 @@ if ($count < 1) {
   $keyword = null;
 }
 if ($_GET['charachter'] === 'squirrel') {
-  $keyword2 = 'SQ_';
+  $keyword2 = 'SQ\_'; // escaple _! https://stackoverflow.com/a/8236824/2624391
 } else if ($_GET['charachter'] === 'fish') {
-  $keyword2 = 'Wally_';
+  $keyword2 = 'Wally\_';
 } else {
   $keyword2 = null;
 }
@@ -46,6 +46,7 @@ if (empty($result)) { // choose a random default
   echo 'SQ_Fill_NeutralActionsEyeroll$SEP$18160$SEP$none';
 }
 else {
+  $result[] = "\"{$keyword}\" \"{$keyword2}\"";
   echo implode('$SEP$', $result);
 }
 ?>

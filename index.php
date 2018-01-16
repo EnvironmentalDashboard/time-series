@@ -1,5 +1,5 @@
 <?php
-require '../includes/db.php';
+require_once '../includes/db.php';
 error_reporting(-1);
 ini_set('display_errors', 'On');
 date_default_timezone_set('America/New_York');
